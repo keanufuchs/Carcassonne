@@ -120,24 +120,21 @@ electron-builder.yml
 
 ## 1.5 State flow at a glance
 
-```
-   ┌───────────────────┐                    ┌───────────────────┐
-   │   React UI        │  command (sync)    │  Controller       │
-   │                   │ ─────────────────▶ │                   │
-   │                   │  Result            │                   │
-   │                   │ ◀───────────────── │                   │
-   │                   │                    │                   │
-   │  useGameState()   │  subscription      │  pub/sub          │
-   │                   │ ◀────── state ──── │                   │
-   └───────────────────┘                    └─────────┬─────────┘
-                                                      │
-                                                      │ method calls
-                                                      ▼
-                                            ┌───────────────────┐
-                                            │   Game (core)     │
-                                            │   = GameState     │
-                                            │   + transitions   │
-                                            └───────────────────┘
+```mermaid
+sequenceDiagram
+    participant UI as React UI (useGameState)
+    participant C as Controller
+    participant G as Game (Core State)
+
+    Note over UI, C: Synchroner Datenfluss
+    UI->>C: sendCommand(action)
+    C->>G: transition(action)
+    G-->>C: updated state / success
+    C-->>UI: Command Result
+
+    Note over UI, C: Asynchroner Datenfluss (Subscription)
+    G->>C: State Change Event
+    C->>UI: Pub/Sub Broadcast (State Update)
 ```
 
 UI never reads core state directly except through the controller's snapshot.
