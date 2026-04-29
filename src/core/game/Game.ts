@@ -96,6 +96,12 @@ export function placeTile(state: GameState, coord: Coord): Result {
   state.pendingRotation = 0;
   state.phase = 'PLACING_MEEPLE';
   state.version++;
+
+  if (getMeepleTargets(state).length === 0) {
+    _resolveScoring(state);
+    _advanceTurn(state);
+  }
+
   return okVoid();
 }
 
