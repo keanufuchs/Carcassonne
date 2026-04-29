@@ -3,7 +3,7 @@ import { err, okVoid } from '../core/types';
 import type { GameState } from '../core/game/GameState';
 import {
   startGame, drawTile, rotatePending,
-  placeTile, placeMeeple, skipMeeple, getMeepleTargets,
+  placeTile, placeMeeple, skipMeeple, getMeepleTargets, endGame,
 } from '../core/game/Game';
 import { canPlace } from '../core/board/placement';
 import { createPubSub } from './pubsub';
@@ -16,14 +16,15 @@ export interface GameController {
   placeTile(coord: Coord): Result;
   placeMeeple(ref: SegmentRef): Result;
   skipMeeple(): Result;
+  endGame(): Result;
   getState(): Readonly<GameState>;
   previewPlacement(coord: Coord, rotation: Rotation): { legal: true } | { legal: false; reason: ErrorCode };
   getMeepleTargetsForLastTile(): SegmentRef[];
   subscribe(listener: (state: Readonly<GameState>) => void): Unsubscribe;
 }
 
-export function createGameController(): GameController {
-  let state: GameState | null = null;
+export function createGameController(initialState?: GameState): GameController {
+  let state: GameState | null = initialState ?? null;
   const pubsub = createPubSub<Readonly<GameState>>();
 
   function requireState(): GameState {
@@ -75,6 +76,13 @@ export function createGameController(): GameController {
     skipMeeple() {
       const s = requireState();
       const r = skipMeeple(s);
+      if (r.ok) publish();
+      return r;
+    },
+
+    endGame() {
+      const s = requireState();
+      const r = endGame(s);
       if (r.ok) publish();
       return r;
     },

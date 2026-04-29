@@ -178,6 +178,12 @@ function _advanceTurn(state: GameState): void {
   state.version++;
 }
 
+export function endGame(state: GameState): Result {
+  if (state.phase === 'GAME_OVER') return err('WRONG_PHASE', 'Game already over');
+  _applyEndGame(state);
+  return okVoid();
+}
+
 function _applyEndGame(state: GameState): void {
   for (const f of state.board.registry.features.values()) {
     if (f.completed || f.kind === 'FIELD') continue;
