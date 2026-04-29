@@ -1,0 +1,22 @@
+- generic [ref=e16]:
+  - generic [ref=e17]:
+    - generic [ref=e19]:
+      - generic [ref=e20]: Players
+      - generic [ref=e21]:
+        - generic [ref=e23]: Player 1
+        - generic [ref=e24]: "0"
+        - generic "Meeples available" [ref=e25]: ×7
+      - generic [ref=e26]:
+        - generic [ref=e28]: Player 2
+        - generic [ref=e29]: "0"
+        - generic "Meeples available" [ref=e30]: ×7
+    - generic [ref=e32]:
+      - generic [ref=e33]: "Deck: 71 remaining"
+      - img "TILE-V" [ref=e44]
+      - generic [ref=e45]:
+        - button "↺" [ref=e46] [cursor=pointer]
+        - button "↻" [ref=e47] [cursor=pointer]
+    - generic [ref=e37]:
+      - text: Player 1
+      - text: Place the tile
+  - img "TILE-D" [ref=e42]

@@ -1,0 +1,22 @@
+.game-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #111;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.game-sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  background: #1a1a2e;
+  border-right: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  border-bottom: 1px solid #2a2a4a;
+  padding: 4px 0;
+}

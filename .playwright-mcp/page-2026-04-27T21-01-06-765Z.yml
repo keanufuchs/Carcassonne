@@ -1,0 +1,10 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - heading "Carcassonne" [level=1] [ref=e6]
+    - paragraph [ref=e7]: Base Game MVP
+  - generic [ref=e8]:
+    - generic [ref=e9]: Players (2/5)
+    - textbox "Player 1" [ref=e11]
+    - textbox "Player 2" [ref=e13]
+  - button "+ Add Player" [ref=e14] [cursor=pointer]
+  - button "Start Game" [ref=e15] [cursor=pointer]

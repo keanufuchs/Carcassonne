@@ -38,6 +38,36 @@ Full game rules required:
 Use:
 → incremental feature objects with merge/union logic
 
+### Meeple architecture
+
+- Meeples live on **`Feature.meeples: MeeplePlacement[]`** (not on tiles or top-level GameState).
+- `getMeepleTargets(state)` → `SegmentRef[]` — valid segments on the last placed tile only.
+- `placeMeeple(state, ref)` mutates `feature.meeples` and `player.meeplesAvailable -= 1`.
+- `_resolveScoring()` returns meeples automatically when their feature completes.
+- UI: `BoardView` renders targets as 26px circles (`data-testid="meeple-target"`), spread radially around tile center to avoid stacking. `TileView` renders already-placed meeples.
+- See `specs/09_meeples.md` for full legality rules and test selector table.
+
+---
+
+## 3b. RUNNING TESTS
+
+```bash
+# Unit tests (vitest)
+npm test
+
+# Unit tests – watch mode
+npm run test:watch
+
+# E2E tests (Playwright – dev server auto-starts)
+npm run test:e2e
+
+# E2E headed (debug)
+npx playwright test --headed
+
+# View last E2E report
+npx playwright show-report
+```
+
 ---
 
 ## 4. DOCUMENTATION RULES

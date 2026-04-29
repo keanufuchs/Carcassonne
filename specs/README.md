@@ -31,6 +31,7 @@ Read in this order:
 | 6 | [game-flow.md](./game-flow.md) | Turn FSM, full turn sequence, unplaceable-tile handling, end conditions |
 | 7 | [api.md](./api.md) | Controller interface between UI and core; commands, queries, events |
 | 8 | [testing.md](./testing.md) | Test strategy, coverage targets, example test cases |
+| 9 | [09_meeples.md](./09_meeples.md) | Meeple placement rules, legality, return mechanics, UI behavior, test IDs |
 
 ## Guiding principles
 
