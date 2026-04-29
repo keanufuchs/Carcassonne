@@ -1,9 +1,10 @@
-import type { TilePrototype, SegmentKind, Rotation } from '../types/tile';
+import type { TilePrototype, SegmentKind, Rotation, EdgeSlot } from '../types/tile';
 import type { TileId, SegmentRef, Coord } from '../types';
 
 export interface SegmentInstance {
   ref: SegmentRef;
   kind: SegmentKind;
+  edgeSlots: EdgeSlot[];
 }
 
 export interface PlacedTile {
@@ -30,6 +31,7 @@ export function makePlacedTile(
     segmentInstances: proto.segments.map(s => ({
       ref: { tileId, localId: s.localId },
       kind: s.kind,
+      edgeSlots: s.edgeSlots,
     })),
   };
 }

@@ -75,15 +75,43 @@ End-game: meeples are **not** returned (game terminates).
 ### During `PLACING_MEEPLE`
 
 - `getMeepleTargetsForLastTile()` returns valid `SegmentRef[]`.
-- Each ref renders as a **26×26 px circle** on the last-placed tile, positioned with `meepleTargetPos(i, total)` (radial spread around tile center; single target stays at center-top).
+- Each ref renders as a **26×26 px circle** on the last-placed tile, positioned at the visual center of its segment (see §9.5a).
 - Circle color = `currentPlayer.color` at `cc` opacity, gold border, gold glow.
+- `title` attribute shows segment kind (e.g. `"Place meeple on CITY"`).
 - Clicking calls `controller.placeMeeple(ref)`.
 - "Skip Meeple" button always visible during this phase.
 - After placement or skip, targets disappear (phase leaves `PLACING_MEEPLE`).
 
+### §9.5a Segment position algorithm
+
+Meeple targets and placed meeples use **CSS `position: absolute`** with `top`/`left` as percentages — no SVG required.
+
+Each `SegmentInstance` carries `edgeSlots: EdgeSlot[]` (copied from `TilePrototype.segments` at placement time). The visual center is computed by `segmentPosition(kind, edgeSlots, rotation)` in `src/ui/board/segmentPosition.ts`:
+
+1. Map each edge slot to an unrotated (x, y) percentage on the tile:
+
+   | Slot | x% | y% |
+   |------|----|----|
+   | N/L  | 20 | 10 |
+   | N/C  | 50 | 10 |
+   | N/R  | 80 | 10 |
+   | E/L  | 90 | 20 |
+   | E/C  | 90 | 50 |
+   | E/R  | 90 | 80 |
+   | S/L  | 80 | 90 |
+   | S/C  | 50 | 90 |
+   | S/R  | 20 | 90 |
+   | W/L  | 10 | 80 |
+   | W/C  | 10 | 50 |
+   | W/R  | 10 | 20 |
+
+2. Average all points → centroid (x̄, ȳ).
+3. Rotate centroid around tile center (50, 50) by `tile.rotation` degrees (same direction as CSS `transform: rotate()`).
+4. `MONASTERY` or empty `edgeSlots` → fixed center (50, 50).
+
 ### Rendered meeples (placed)
 
-`TileView` reads `feature.meeples` via `board.registry` and renders placed meeples as 14×14 px circles spread horizontally at tile center.
+`TileView` reads `feature.meeples` via `board.registry` and renders placed meeples as **14×14 px circles** at the segment's visual center (same `segmentPosition()` call as targets).
 
 ## 9.6 Test IDs
 

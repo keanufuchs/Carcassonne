@@ -4,6 +4,7 @@ import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
 import { GhostTile } from './GhostTile';
 import { candidatePlacements } from '../../core/board/Board';
+import { segmentPosition } from './segmentPosition';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import './board.css';
 
@@ -16,15 +17,6 @@ const tileImageMap: Record<string, string> = Object.fromEntries(
 interface Props {
   state: GameState;
   controller: GameController;
-}
-
-function meepleTargetPos(i: number, total: number): { top: string; left: string } {
-  const angle = total === 1 ? -Math.PI / 2 : (i / total) * 2 * Math.PI - Math.PI / 2;
-  const r = total === 1 ? 0 : 22;
-  return {
-    top: `${50 + r * Math.sin(angle)}%`,
-    left: `${50 + r * Math.cos(angle)}%`,
-  };
 }
 
 export function BoardView({ state, controller }: Props) {
@@ -76,8 +68,11 @@ export function BoardView({ state, controller }: Props) {
               style={{ gridColumn: col(tile.coord.x), gridRow: row(tile.coord.y), position: 'relative' }}
             >
               <TileView placed={tile} registry={state.board.registry} players={state.players} size={TILE_SIZE} />
-              {targets.map((ref, i) => {
-                const pos = meepleTargetPos(i, targets.length);
+              {targets.map((ref) => {
+                const seg = tile.segmentInstances.find(s => s.ref.localId === ref.localId);
+                const pos = seg
+                  ? segmentPosition(seg.kind, seg.edgeSlots, tile.rotation)
+                  : { x: 50, y: 50 };
                 return (
                   <div
                     key={ref.localId}
@@ -85,7 +80,7 @@ export function BoardView({ state, controller }: Props) {
                     onClick={() => controller.placeMeeple(ref)}
                     style={{
                       position: 'absolute',
-                      top: pos.top, left: pos.left,
+                      top: `${pos.y}%`, left: `${pos.x}%`,
                       transform: 'translate(-50%, -50%)',
                       width: 26, height: 26,
                       borderRadius: '50%',
@@ -95,7 +90,7 @@ export function BoardView({ state, controller }: Props) {
                       zIndex: 5,
                       boxShadow: '0 0 8px rgba(255,215,0,0.5)',
                     }}
-                    title="Place meeple here"
+                    title={`Place meeple on ${seg?.kind ?? '?'}`}
                   />
                 );
               })}
