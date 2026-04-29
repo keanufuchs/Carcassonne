@@ -7,6 +7,7 @@ import type { TilePrototype } from './types/tile';
 import type { Player } from './types';
 import { BASE_GAME_DISTRIBUTION, START_TILE } from './deck/baseGameTiles';
 import { _setNextTileSeq } from './tile/Tile';
+import { registerProto } from './board/placement';
 
 // ── Serialized shapes ──────────────────────────────────────────────────────
 
@@ -141,6 +142,7 @@ export function deserializeState(json: string): GameState {
       rotation: t.rotation as PlacedTile['rotation'],
       segmentInstances: t.segmentInstances,
     });
+    registerProto(getProto(t.prototypeId));
     const n = parseInt(t.tileId.slice(1));
     if (!isNaN(n) && n > maxSeq) maxSeq = n;
   }
@@ -168,7 +170,7 @@ export function deserializeState(json: string): GameState {
     players: d.players,
     currentPlayerIndex: d.currentPlayerIndex,
     phase: d.phase as GameState['phase'],
-    pendingTile: d.pendingTileId ? getProto(d.pendingTileId) : null,
+    pendingTile: d.pendingTileId ? (() => { const p = getProto(d.pendingTileId!); registerProto(p); return p; })() : null,
     pendingRotation: d.pendingRotation as GameState['pendingRotation'],
     lastPlacedTileId: d.lastPlacedTileId,
     lastCompletedFeatures: d.lastCompletedFeatures,

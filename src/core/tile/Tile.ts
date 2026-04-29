@@ -37,3 +37,4 @@ export function makePlacedTile(
 }
 
 export function _resetTileSeq(): void { _nextTileSeq = 1; }
+export function _setNextTileSeq(n: number): void { _nextTileSeq = n; }
