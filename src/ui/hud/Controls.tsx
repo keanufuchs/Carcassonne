@@ -8,6 +8,7 @@ interface Props {
 }
 
 export function Controls({ phase, currentPlayerName, controller }: Props) {
+  const active = phase === 'PLACING_TILE' || phase === 'PLACING_MEEPLE';
   return (
     <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ color: '#aaa', fontSize: 12, textAlign: 'center', lineHeight: 1.4 }}>
@@ -22,6 +23,15 @@ export function Controls({ phase, currentPlayerName, controller }: Props) {
           style={{ background: '#3a3a5a', color: '#ccc', border: '1px solid #555', borderRadius: 4, padding: '6px 10px', cursor: 'pointer', fontSize: 12 }}
         >
           Skip Meeple
+        </button>
+      )}
+      {active && (
+        <button
+          data-testid="end-game-btn"
+          onClick={() => controller.endGame()}
+          style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 4, padding: '6px 10px', cursor: 'pointer', fontSize: 12, marginTop: 4 }}
+        >
+          End Game
         </button>
       )}
     </div>
