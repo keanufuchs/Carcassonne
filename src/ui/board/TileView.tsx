@@ -40,6 +40,7 @@ export function TileView({ placed, registry, players, size = 80 }: Props) {
         return (
           <div
             key={i}
+            title={`${player?.name ?? 'Meeple'} on ${m.seg.kind}`}
             style={{
               position: 'absolute',
               top: `${pos.y}%`, left: `${pos.x}%`,
@@ -49,6 +50,7 @@ export function TileView({ placed, registry, players, size = 80 }: Props) {
               background: player?.color ?? '#888',
               border: '2px solid white',
               zIndex: 2,
+              cursor: 'default',
             }}
           />
         );

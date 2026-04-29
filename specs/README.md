@@ -32,6 +32,7 @@ Read in this order:
 | 7 | [api.md](./api.md) | Controller interface between UI and core; commands, queries, events |
 | 8 | [testing.md](./testing.md) | Test strategy, coverage targets, example test cases |
 | 9 | [09_meeples.md](./09_meeples.md) | Meeple placement rules, legality, return mechanics, UI behavior, test IDs |
+| 10 | [10_git-workflow.md](./10_git-workflow.md) | Git branching model (Gitflow), semantic versioning, conventional commits, release checklist |
 
 ## Guiding principles
 
