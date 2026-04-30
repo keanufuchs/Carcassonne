@@ -3,6 +3,7 @@ import type { FeatureRegistry } from '../../core/feature/segments';
 import type { Player } from '../../core/types';
 import { segmentPosition } from './segmentPosition';
 import tileDistribution from '../../core/deck/tileDistribution.json';
+import { MeepleIcon } from './MeepleIcon';
 
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
@@ -45,14 +46,13 @@ export function TileView({ placed, registry, players, size = 80 }: Props) {
               position: 'absolute',
               top: `${pos.y}%`, left: `${pos.x}%`,
               transform: 'translate(-50%, -50%)',
-              width: 14, height: 14,
-              borderRadius: '50%',
-              background: player?.color ?? '#888',
-              border: '2px solid white',
               zIndex: 2,
               cursor: 'default',
+              filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
             }}
-          />
+          >
+            <MeepleIcon color={player?.color ?? '#888'} size={18} />
+          </div>
         );
       })}
     </div>
