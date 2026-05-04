@@ -1,4 +1,5 @@
 import type { Player } from '../../core/types';
+import { MeepleIcon } from '../board/MeepleIcon';
 
 interface Props {
   players: Player[];
@@ -20,7 +21,7 @@ export function PlayerPanel({ players, currentPlayerIndex }: Props) {
             transition: 'all 0.15s',
           }}
         >
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: p.color, flexShrink: 0 }} />
+          <MeepleIcon color={p.color} size={16} />
           <span style={{ flex: 1, color: '#eee', fontSize: 13, fontWeight: i === currentPlayerIndex ? 700 : 400 }}>
             {p.name}
           </span>
