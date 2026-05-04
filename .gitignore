@@ -25,3 +25,7 @@ dist-ssr
 test-results/
 playwright-report/
 carcassonne.db
+carcassonne.db-shm
+carcassonne.db-wal
+.playwright-mcp/
+_temp/

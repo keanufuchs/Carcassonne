@@ -3,6 +3,7 @@ import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
 import { GhostTile } from './GhostTile';
+import { MeepleIcon } from './MeepleIcon';
 import { candidatePlacements } from '../../core/board/Board';
 import { segmentPosition } from './segmentPosition';
 import tileDistribution from '../../core/deck/tileDistribution.json';
@@ -82,16 +83,14 @@ export function BoardView({ state, controller }: Props) {
                       position: 'absolute',
                       top: `${pos.y}%`, left: `${pos.x}%`,
                       transform: 'translate(-50%, -50%)',
-                      width: 26, height: 26,
-                      borderRadius: '50%',
-                      background: `${currentPlayer.color}cc`,
-                      border: '2px solid gold',
                       cursor: 'pointer',
                       zIndex: 5,
-                      boxShadow: '0 0 8px rgba(255,215,0,0.5)',
+                      filter: 'drop-shadow(0 0 4px gold)',
                     }}
                     title={`Place meeple on ${seg?.kind ?? '?'}`}
-                  />
+                  >
+                    <MeepleIcon color={currentPlayer.color} size={26} opacity={0.85} />
+                  </div>
                 );
               })}
             </div>
