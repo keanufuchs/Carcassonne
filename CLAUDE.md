@@ -126,6 +126,27 @@ api.md
 * tags only on main (`vX.Y.Z`)
 * no builds without tags
 
+### Versioning Strategy
+
+**v1.0.0 = erster finaler Release** — wird erst gesetzt wenn das Projekt vollständig abgeschlossen ist.
+
+Alle Tags **vor v1.0.0** (z. B. `v0.1.0`, `v0.2.0`, …) dienen ausschließlich dazu, den Stakeholdern zwischenstand-fähige Versionen vorzulegen.
+
+#### Selbstevaluation — wann wird ein neuer Tag gesetzt?
+
+Vor jedem Tag selbst prüfen:
+
+| Kriterium | Frage |
+|---|---|
+| Stakeholder-Präsentation | Gibt es einen neuen Meilenstein, den Stakeholder sehen sollen? |
+| Feature-Vollständigkeit | Ist ein in sich geschlossenes Feature-Set stabil und testbar? |
+| Qualität | Laufen alle Tests (unit + E2E) durch? Keine bekannten Blocker? |
+| Sinnhaftigkeit | Bringt der Tag gegenüber dem letzten echten Mehrwert? |
+
+Wenn **alle** Kriterien erfüllt: `MINOR` erhöhen (z. B. `v0.3.0` → `v0.4.0`).  
+Kleine Fixes innerhalb eines Meilensteins: `PATCH` erhöhen (z. B. `v0.3.0` → `v0.3.1`).  
+Kein Tag setzen nur wegen Commits — nur bei echtem Mehrwert für Stakeholder.
+
 ### Commits (mandatory)
 
 ```
@@ -134,7 +155,33 @@ type(scope): description
 
 ---
 
-## 7. PRIORITIES
+## 7. TASK MANAGEMENT (NOTION)
+
+Alle Arbeitspakete und Tasks werden in Notion verwaltet:
+
+* **Seite:** [Carcassonne](https://www.notion.so/3567c6754a298090a159face9651122f)
+* **Datenbank:** [Carcassonne-Tasks](https://www.notion.so/3567c6754a29801fb94ced793d3022a6)
+
+### Pflichtregeln
+
+* Tasks werden **ausschließlich aus Notion** bezogen — Notion ist die einzige Source of Truth.
+* Bevor du mit einem Task beginnst: aktuellen Status aus Notion lesen.
+* Nach jeder Statusänderung **muss der Status in Notion sofort aktualisiert werden**.
+* Neue Tasks werden nur in Notion angelegt, nie nur lokal dokumentiert.
+
+### Status-Werte
+
+| Status | Bedeutung |
+|---|---|
+| Offen | Noch nicht begonnen |
+| In Bearbeitung | Aktiv in Arbeit |
+| Review | Fertig, wartet auf Prüfung |
+| Erledigt | Abgeschlossen |
+| Blockiert | Abhängigkeit blockiert Fortschritt |
+
+---
+
+## 8. PRIORITIES
 
 Focus on:
 

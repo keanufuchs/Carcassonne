@@ -65,7 +65,7 @@ export function BoardView({ state, controller }: Props) {
           return (
             <div
               key={tile.tileId}
-              data-testid="placed-tile"
+              data-testid={`placed-tile-${tile.coord.x},${tile.coord.y}`}
               style={{ gridColumn: col(tile.coord.x), gridRow: row(tile.coord.y), position: 'relative' }}
             >
               <TileView placed={tile} registry={state.board.registry} players={state.players} size={TILE_SIZE} />

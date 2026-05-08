@@ -29,6 +29,15 @@ describe('canPlace', () => {
     expect(canPlace(board, TILE_D, { x: 5, y: 5 }, 0)).toBe(false);
   });
 
+  it('rotation can turn an invalid placement into a valid one', () => {
+    const board = createEmptyBoard();
+    placeTileInternal(board, TILE_D, { x: 0, y: 0 }, 0);
+    // TILE_U rot 0: W=[FIELD,FIELD,FIELD] vs TILE_D.E=[FIELD,ROAD,FIELD] → C-slot mismatch
+    expect(canPlace(board, TILE_U, { x: 1, y: 0 }, 0)).toBe(false);
+    // TILE_U rot 90: W face becomes TILE_U.S=[FIELD,ROAD,FIELD] → matches TILE_D.E
+    expect(canPlace(board, TILE_U, { x: 1, y: 0 }, 90)).toBe(true);
+  });
+
   it('rejects edge-terrain mismatch', () => {
     const board = createEmptyBoard();
     placeTileInternal(board, TILE_D, { x: 0, y: 0 }, 0);

@@ -5,9 +5,20 @@
 - **All core logic gets unit tests.** This is non-negotiable; it's where almost all bugs hide.
 - **Controller gets integration tests** that exercise full turn flows through the public API.
 - **UI gets smoke tests only.** A React Testing Library test that renders `App` with a fresh game and confirms the start tile shows up. No heavy DOM coverage.
-- **No E2E tests in MVP.** Adding Playwright/Spectron is deferred until the UI stabilizes.
+- **E2E tests via Playwright** — automated game sessions driven by the random AI opponent (MH-05). Required per Stakeholder-Meeting 04.05.2026.
 
-Test runner: **Vitest**. Mirror `src/core/` under `tests/core/`.
+Test runner: **Vitest** (unit/integration). Mirror `src/core/` under `tests/core/`.
+E2E runner: **Playwright** — see section 8.6.
+
+### Review-Workflow
+
+Every task passes through: `Offen → In Bearbeitung → Review → Erledigt`
+
+**Review criteria before marking Erledigt:**
+- Code reviewed by a different team member (Tester ≠ Entwickler per Vorgaben §3)
+- All tests green (`npm test`)
+- McCabe complexity checked — must stay < 15 per function (see 8.7)
+- No new lint errors
 
 ## 8.2 Coverage targets
 
@@ -308,6 +319,66 @@ A small set of helpers in `tests/helpers/`:
 
 Tests should prefer these helpers over re-implementing setup, both for readability and so that schema changes ripple through one place.
 
-## 8.5 Continuous integration (post-MVP)
+## 8.5 Continuous integration
 
-Out of scope for this spec. Local `npm test` and `npm run lint` are sufficient until the UI ships.
+Run locally before every PR merge to develop:
+
+```bash
+npm test              # Vitest unit + integration
+npm run test:e2e      # Playwright E2E (dev server auto-starts)
+npm run lint          # ESLint incl. complexity plugin
+```
+
+All three must be green before a branch enters **Review** status.
+
+## 8.6 E2E-Testautomatisierung (Stakeholder-Anforderung)
+
+> Anforderung aus Meeting 04.05.2026: E2E-Automatisierung mit „dummer KI" die zufällige Züge macht.
+
+The random AI opponent (MH-05, `src/core/ai/random.ts`) drives full automated game sessions via Playwright:
+
+```ts
+// tests/e2e/random-game.spec.ts
+test('random AI plays a full game without crash', async ({ page }) => {
+  await page.goto('/');
+  await page.getByText('2-Player Game').click();
+  // Drive turns until GAME_OVER phase
+  while (await page.getByTestId('phase').textContent() !== 'GAME_OVER') {
+    await page.getByTestId('ai-move-btn').click();
+  }
+  await expect(page.getByTestId('winner-banner')).toBeVisible();
+});
+```
+
+**Scope of E2E tests:**
+- Full 2-player game completes without JS error (smoke)
+- Placement of all 72 tiles without unhandled exception
+- Score screen renders with non-zero totals
+- Hot-seat player switch works correctly
+
+**Not in E2E scope:** pixel-perfect UI assertions, network multiplayer (covered by integration tests).
+
+## 8.7 Code-Metriken (Vorgaben §3 — Analytische QS)
+
+Per Vorgaben: McCabe-Zahl, Lines of Code, Halstead-Metriken müssen gemessen und in der Dokumentation festgehalten werden.
+
+| Metrik | Zielwert | Tool |
+|---|---|---|
+| McCabe (cyclomatic complexity) | **< 15** pro Funktion | `eslint-plugin-complexity` |
+| Lines of Code (LoC) | Klassen < 300 LoC, Funktionen < 50 LoC | manuell / `cloc` |
+| Halstead-Metriken | Dokumentiert (kein fester Grenzwert) | `escomplex` oder manuell |
+| Anweisungsüberdeckung C0 | ≥ 95% (core), ≥ 80% (controller) | Vitest coverage |
+| Zweigüberdeckung C1 | ≥ 90% (core) | Vitest coverage |
+
+ESLint-Konfiguration:
+
+```json
+// .eslintrc additions
+{
+  "rules": {
+    "complexity": ["error", 15]
+  }
+}
+```
+
+Messergebnisse werden in der Projektdokumentation (PM-05) tabellarisch festgehalten.

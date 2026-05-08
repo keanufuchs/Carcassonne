@@ -25,7 +25,7 @@ test.describe('Carcassonne MVP', () => {
     await startGame(page);
     await drawTile(page);
 
-    const initial = await page.locator('[data-testid="placed-tile"]').count();
+    const initial = await page.locator('[data-testid^="placed-tile-"]').count();
 
     // Rotate up to 3 times to find a legal placement (drawn tile may not fit at rotation 0)
     const legal = page.locator('[data-testid="ghost-tile"][data-legal="true"]');
@@ -40,7 +40,7 @@ test.describe('Carcassonne MVP', () => {
     // After placement we enter PLACING_MEEPLE — skip it to confirm board updated
     await page.click('[data-testid="skip-meeple-btn"]');
 
-    await expect(page.locator('[data-testid="placed-tile"]')).toHaveCount(initial + 1);
+    await expect(page.locator('[data-testid^="placed-tile-"]')).toHaveCount(initial + 1);
   });
 
   test('rotate tile – rotation updates visually', async ({ page }) => {
@@ -120,14 +120,14 @@ test.describe('Carcassonne MVP', () => {
     await startGame(page);
     await drawTile(page);
 
-    const initial = await page.locator('[data-testid="placed-tile"]').count();
+    const initial = await page.locator('[data-testid^="placed-tile-"]').count();
 
     const illegal = page.locator('[data-testid="ghost-tile"][data-legal="false"]');
     const illegalCount = await illegal.count();
 
     if (illegalCount > 0) {
       await illegal.first().click({ force: true });
-      await expect(page.locator('[data-testid="placed-tile"]')).toHaveCount(initial);
+      await expect(page.locator('[data-testid^="placed-tile-"]')).toHaveCount(initial);
     } else {
       test.skip(true, 'All candidate placements are legal for this tile – no illegal ghost to test');
     }

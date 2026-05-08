@@ -16,9 +16,10 @@ const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
 };
 
-function PrimaryBtn({ enabled, onClick, children }: { enabled: boolean; onClick: () => void; children: React.ReactNode }) {
+function PrimaryBtn({ enabled, onClick, children, testId }: { enabled: boolean; onClick: () => void; children: React.ReactNode; testId?: string }) {
   return (
     <button
+      data-testid={testId}
       onClick={onClick}
       disabled={!enabled}
       style={{
@@ -33,7 +34,7 @@ function PrimaryBtn({ enabled, onClick, children }: { enabled: boolean; onClick:
 }
 
 export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLocal }: Props) {
-  const [tab, setTab]   = useState<Tab>(initialGameId ? 'join' : 'create');
+  const [tab, setTab]   = useState<Tab>(initialGameId ? 'join' : 'local');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -127,7 +128,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                 + Add Player
               </button>
             )}
-            <PrimaryBtn enabled={localNames.every(n => n.trim())} onClick={() => onStartLocal(localNames.map(n => n.trim()).filter(Boolean))}>
+            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => onStartLocal(localNames.map(n => n.trim()).filter(Boolean))}>
               Start Local Game
             </PrimaryBtn>
           </div>
