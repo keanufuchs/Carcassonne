@@ -147,6 +147,25 @@ Wenn **alle** Kriterien erfüllt: `MINOR` erhöhen (z. B. `v0.3.0` → `v0.4.0`)
 Kleine Fixes innerhalb eines Meilensteins: `PATCH` erhöhen (z. B. `v0.3.0` → `v0.3.1`).  
 Kein Tag setzen nur wegen Commits — nur bei echtem Mehrwert für Stakeholder.
 
+### Notion-gesteuertes Tagging
+
+Jeder Task in `Carcassonne-Tasks` hat eine optionale Spalte **`Release-Tag`** (Select, z. B. `v0.4.0`).
+
+**Regel:** Sobald **alle** Tasks mit demselben `Release-Tag`-Wert den Status `Erledigt` haben → diesen Git-Tag setzen.
+
+**Workflow:**
+
+1. In Notion prüfen: alle Tasks mit diesem `Release-Tag` = `Erledigt`?
+2. Selbstevaluations-Kriterien (Tabelle oben) erfüllt?
+3. Release-Branch erstellen, auf `main` mergen, Tag setzen:
+   ```bash
+   git checkout -b release/vX.Y.Z develop
+   git checkout main && git merge release/vX.Y.Z
+   git tag vX.Y.Z && git push origin vX.Y.Z
+   ```
+
+> Notion ist die einzige Source of Truth für Tagging-Entscheidungen.
+
 ### Commits (mandatory)
 
 ```

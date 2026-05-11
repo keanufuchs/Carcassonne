@@ -1,6 +1,6 @@
 export type {
   Terrain, EdgeSide, SlotPos, Rotation,
-  SegmentKind, SegmentLocalId, EdgeSlot,
+  SegmentKind, EdgeSlot,
   SegmentBlueprint, TilePrototype,
 } from './types/tile';
 
@@ -15,7 +15,6 @@ export type PlayerId  = string;
 export type FeatureId = string;
 export type TileId    = string;
 export type SegmentLocalId = number;
-
 export type SegmentRef = { tileId: TileId; localId: SegmentLocalId };
 export const segmentKey = (s: SegmentRef): string => `${s.tileId}#${s.localId}`;
 export const parseSegmentKey = (k: string): SegmentRef => {

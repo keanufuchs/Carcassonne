@@ -3,9 +3,8 @@ import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
 import { GhostTile } from './GhostTile';
-import { MeepleIcon } from './MeepleIcon';
 import { candidatePlacements } from '../../core/board/Board';
-import { segmentPosition } from './segmentPosition';
+import { segmentKey, parseSegmentKey } from '../../core/types';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import './board.css';
 
@@ -22,6 +21,7 @@ interface Props {
 
 export function BoardView({ state, controller }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
 
   // state.board.tiles is mutated in place; state.version busts the memo cache correctly.
@@ -35,6 +35,29 @@ export function BoardView({ state, controller }: Props) {
   const meepleTargets = state.phase === 'PLACING_MEEPLE'
     ? controller.getMeepleTargetsForLastTile()
     : [];
+
+  const targetFeatureIds = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const ref of meepleTargets) {
+      const fid = state.board.registry.segmentToFeature.get(segmentKey(ref));
+      if (fid) map.set(ref.localId, fid);
+    }
+    return map;
+  }, [meepleTargets, state.board.registry, state.version]);
+
+  const featureHighlightByTile = useMemo(() => {
+    if (!hoveredFeatureId) return new Map<string, number[]>();
+    const feature = state.board.registry.features.get(hoveredFeatureId);
+    if (!feature) return new Map<string, number[]>();
+    const byTile = new Map<string, number[]>();
+    for (const key of feature.segments) {
+      const { tileId, localId } = parseSegmentKey(key);
+      const arr = byTile.get(tileId) ?? [];
+      arr.push(localId);
+      byTile.set(tileId, arr);
+    }
+    return byTile;
+  }, [hoveredFeatureId, state.board.registry, state.version]);
 
   const allCoords = [...placedTiles.map(t => t.coord), ...candidates];
   if (allCoords.length === 0) return <div className="board-scroll" />;
@@ -61,38 +84,26 @@ export function BoardView({ state, controller }: Props) {
         }}
       >
         {placedTiles.map(tile => {
-          const targets = meepleTargets.filter(r => r.tileId === tile.tileId);
+          const isLastPlaced = tile.tileId === state.lastPlacedTileId;
+          const targets = isLastPlaced ? meepleTargets : [];
           return (
             <div
               key={tile.tileId}
               data-testid={`placed-tile-${tile.coord.x},${tile.coord.y}`}
               style={{ gridColumn: col(tile.coord.x), gridRow: row(tile.coord.y), position: 'relative' }}
             >
-              <TileView placed={tile} registry={state.board.registry} players={state.players} size={TILE_SIZE} />
-              {targets.map((ref) => {
-                const seg = tile.segmentInstances.find(s => s.ref.localId === ref.localId);
-                const pos = seg
-                  ? segmentPosition(seg.kind, seg.edgeSlots, tile.rotation)
-                  : { x: 50, y: 50 };
-                return (
-                  <div
-                    key={ref.localId}
-                    data-testid="meeple-target"
-                    onClick={() => controller.placeMeeple(ref)}
-                    style={{
-                      position: 'absolute',
-                      top: `${pos.y}%`, left: `${pos.x}%`,
-                      transform: 'translate(-50%, -50%)',
-                      cursor: 'pointer',
-                      zIndex: 5,
-                      filter: 'drop-shadow(0 0 4px gold)',
-                    }}
-                    title={`Place meeple on ${seg?.kind ?? '?'}`}
-                  >
-                    <MeepleIcon color={currentPlayer.color} size={26} opacity={0.85} />
-                  </div>
-                );
-              })}
+              <TileView
+                placed={tile}
+                registry={state.board.registry}
+                players={state.players}
+                size={TILE_SIZE}
+                targets={targets}
+                currentPlayerColor={currentPlayer.color}
+                onPlace={ref => controller.placeMeeple(ref)}
+                featureHighlightIds={featureHighlightByTile.get(tile.tileId) ?? []}
+                targetFeatureIds={isLastPlaced ? targetFeatureIds : undefined}
+                onHoverFeature={isLastPlaced ? setHoveredFeatureId : undefined}
+              />
             </div>
           );
         })}

@@ -12,3 +12,34 @@
   display: grid;
   position: relative;
 }
+
+.segment-hit {
+  cursor: pointer;
+  fill: transparent;
+  stroke: none;
+  transition: fill 100ms ease, stroke 100ms ease;
+}
+.segment-hit:hover {
+  fill: var(--player-color);
+  opacity: 0.4;
+  stroke: gold;
+  stroke-width: 2;
+}
+.segment-hit:active {
+  opacity: 0.65;
+}
+
+.segment-hit-line {
+  cursor: pointer;
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20;
+  transition: stroke 100ms ease;
+}
+.segment-hit-line:hover {
+  stroke: var(--player-color);
+  opacity: 0.4;
+}
+.segment-hit-line:active {
+  opacity: 0.65;
+}

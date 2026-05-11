@@ -1,7 +1,11 @@
 import type { PlacedTile, SegmentInstance } from '../../core/tile/Tile';
 import type { FeatureRegistry } from '../../core/feature/segments';
 import type { Player } from '../../core/types';
+import type { SegmentRef } from '../../core/types';
 import { segmentPosition } from './segmentPosition';
+import { useTileSvgPaths } from './useTileSvgPaths';
+import { SegmentHitZone } from './SegmentHitZone';
+import { FeatureHighlightZone } from './FeatureHighlightZone';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import { MeepleIcon } from './MeepleIcon';
 
@@ -14,10 +18,17 @@ interface Props {
   registry: FeatureRegistry;
   players: Player[];
   size?: number;
+  targets?: SegmentRef[];
+  currentPlayerColor?: string;
+  onPlace?: (ref: SegmentRef) => void;
+  featureHighlightIds?: number[];
+  targetFeatureIds?: Map<number, string>;
+  onHoverFeature?: (id: string | null) => void;
 }
 
-export function TileView({ placed, registry, players, size = 80 }: Props) {
+export function TileView({ placed, registry, players, size = 80, targets = [], currentPlayerColor, onPlace, featureHighlightIds = [], targetFeatureIds, onHoverFeature }: Props) {
   const imgSrc = tileImageMap[placed.prototypeId] ?? '';
+  const shapes = useTileSvgPaths(imgSrc);
 
   const meeples = placed.segmentInstances.flatMap((seg: SegmentInstance) => {
     const key = `${seg.ref.tileId}#${seg.ref.localId}`;
@@ -55,6 +66,27 @@ export function TileView({ placed, registry, players, size = 80 }: Props) {
           </div>
         );
       })}
+      {shapes && featureHighlightIds.length > 0 && currentPlayerColor && (
+        <FeatureHighlightZone
+          shapes={shapes}
+          highlightLocalIds={featureHighlightIds}
+          rotation={placed.rotation}
+          tileSize={size}
+          playerColor={currentPlayerColor}
+        />
+      )}
+      {targets.length > 0 && shapes && onPlace && currentPlayerColor && (
+        <SegmentHitZone
+          shapes={shapes}
+          targets={targets}
+          rotation={placed.rotation}
+          tileSize={size}
+          playerColor={currentPlayerColor}
+          onPlace={onPlace}
+          targetFeatureIds={targetFeatureIds}
+          onHoverFeature={onHoverFeature}
+        />
+      )}
     </div>
   );
 }

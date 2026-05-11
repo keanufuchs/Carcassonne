@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="300" height="300">
-  <rect id="segment-FIELD" width="100" height="100" fill="#7fbf6a" data-kind="FIELD"/>
+  <rect width="100" height="100" fill="#7fbf6a"/>
+  <rect id="segment-FIELD-1" x="0" y="0" width="45" height="100" fill="#7fbf6a" data-kind="FIELD"/>
+  <rect id="segment-FIELD-2" x="55" y="0" width="45" height="100" fill="#7fbf6a" data-kind="FIELD"/>
   <rect id="segment-ROAD-0" x="45" y="0" width="10" height="100" fill="#ffffff" data-kind="ROAD"/>
 </svg>
