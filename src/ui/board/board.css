@@ -1,11 +1,11 @@
 .board-scroll {
-  overflow: auto;
+  overflow: hidden;
   flex: 1;
   background: #2d5016;
-  cursor: default;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
+  position: relative;
 }
 
 .board-grid {
