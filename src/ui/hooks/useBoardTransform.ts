@@ -11,7 +11,7 @@ export interface BoardTransform {
 }
 
 export function useBoardTransform(
-  containerRef: RefObject<HTMLDivElement>,
+  containerRef: RefObject<HTMLDivElement | null>,
   centerX: number,
   centerY: number,
 ) {
@@ -21,6 +21,12 @@ export function useBoardTransform(
   const panStart = useRef({ mx: 0, my: 0, ox: 0, oy: 0 });
   const transformRef = useRef(transform);
   transformRef.current = transform;
+
+  const stopPan = useCallback(() => {
+    if (!isPanningRef.current) return;
+    isPanningRef.current = false;
+    setIsPanning(false);
+  }, []);
 
   // Center start tile (0,0) in viewport after mount
   useEffect(() => {
@@ -46,10 +52,8 @@ export function useBoardTransform(
         const rect = el.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-        // Board-local coordinates under the mouse before zoom
         const bx = (mx - prev.offsetX) / prev.scale;
         const by = (my - prev.offsetY) / prev.scale;
-        // Shift offset so the same board point stays under the mouse
         return {
           scale: newScale,
           offsetX: mx - bx * newScale,
@@ -72,7 +76,6 @@ export function useBoardTransform(
 
   const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
-    // Don't start pan when clicking on interactive board elements
     const target = e.target as HTMLElement;
     if (target.closest('[data-testid="ghost-tile"], [data-testid="meeple-target"]')) return;
     isPanningRef.current = true;
@@ -94,12 +97,6 @@ export function useBoardTransform(
       offsetX: panStart.current.ox + dx,
       offsetY: panStart.current.oy + dy,
     }));
-  }, []);
-
-  const stopPan = useCallback(() => {
-    if (!isPanningRef.current) return;
-    isPanningRef.current = false;
-    setIsPanning(false);
   }, []);
 
   return { transform, isPanning, onMouseDown, onMouseMove, stopPan };
