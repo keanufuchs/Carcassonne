@@ -39,8 +39,16 @@ async function apiError(res: Response): Promise<never> {
   }
 }
 
+async function apiFetch(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch {
+    throw new Error('Server not reachable. Start with: npm run dev:full');
+  }
+}
+
 export async function createGame(playerName: string): Promise<NetworkSession> {
-  const res = await fetch(`${API}/api/games`, {
+  const res = await apiFetch(`${API}/api/games`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ playerName }),
@@ -54,7 +62,7 @@ export async function joinGame(
   playerName: string,
   existingSessionId?: string,
 ): Promise<NetworkSession> {
-  const res = await fetch(`${API}/api/games/${gameId}/join`, {
+  const res = await apiFetch(`${API}/api/games/${gameId}/join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ playerName, sessionId: existingSessionId }),
