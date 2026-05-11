@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
 import { GhostTile } from './GhostTile';
 import { candidatePlacements } from '../../core/board/Board';
 import { segmentKey, parseSegmentKey } from '../../core/types';
+import { useBoardTransform } from '../hooks/useBoardTransform';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import './board.css';
 
@@ -22,6 +23,7 @@ interface Props {
 export function BoardView({ state, controller }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
 
   // state.board.tiles is mutated in place; state.version busts the memo cache correctly.
@@ -60,20 +62,36 @@ export function BoardView({ state, controller }: Props) {
   }, [hoveredFeatureId, state.board.registry, state.version]);
 
   const allCoords = [...placedTiles.map(t => t.coord), ...candidates];
-  if (allCoords.length === 0) return <div className="board-scroll" />;
 
-  const minX = Math.min(...allCoords.map(c => c.x)) - 1;
-  const maxX = Math.max(...allCoords.map(c => c.x)) + 1;
-  const minY = Math.min(...allCoords.map(c => c.y)) - 1;
-  const maxY = Math.max(...allCoords.map(c => c.y)) + 1;
+  // Bounding box — safe defaults for empty board (should not occur in practice)
+  const minX = allCoords.length > 0 ? Math.min(...allCoords.map(c => c.x)) - 1 : -1;
+  const maxX = allCoords.length > 0 ? Math.max(...allCoords.map(c => c.x)) + 1 : 1;
+  const minY = allCoords.length > 0 ? Math.min(...allCoords.map(c => c.y)) - 1 : -1;
+  const maxY = allCoords.length > 0 ? Math.max(...allCoords.map(c => c.y)) + 1 : 1;
   const cols  = maxX - minX + 1;
   const rows  = maxY - minY + 1;
 
   const col = (x: number) => x - minX + 1;
   const row = (y: number) => y - minY + 1;
 
+  // Pixel center of start tile (0,0) in the board grid — used for initial centering only
+  const centerX = -minX * TILE_SIZE + TILE_SIZE / 2;
+  const centerY = -minY * TILE_SIZE + TILE_SIZE / 2;
+
+  const { transform, isPanning, onMouseDown, onMouseMove, stopPan } = useBoardTransform(containerRef, centerX, centerY);
+
+  if (allCoords.length === 0) return <div className="board-scroll" ref={containerRef} />;
+
   return (
-    <div className="board-scroll">
+    <div
+      className="board-scroll"
+      ref={containerRef}
+      style={{ cursor: isPanning ? 'grabbing' : 'grab', userSelect: 'none' }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={stopPan}
+      onMouseLeave={stopPan}
+    >
       <div
         className="board-grid"
         style={{
@@ -81,6 +99,8 @@ export function BoardView({ state, controller }: Props) {
           gridTemplateRows: `repeat(${rows}, ${TILE_SIZE}px)`,
           width: cols * TILE_SIZE,
           height: rows * TILE_SIZE,
+          transform: `translate(${transform.offsetX}px, ${transform.offsetY}px) scale(${transform.scale})`,
+          transformOrigin: '0 0',
         }}
       >
         {placedTiles.map(tile => {
