@@ -34,7 +34,7 @@ function SegmentHitShape({ shape, playerColor, onPlace, onMouseEnter }: HitShape
   if (tagName === 'line') {
     return (
       <line
-        className="segment-hit-line"
+        className="segment-hit-line segment-hit-pulse"
         style={{ '--player-color': playerColor } as React.CSSProperties}
         pointerEvents="all"
         data-testid="meeple-target"
