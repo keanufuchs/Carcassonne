@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface Props {
   initialGameId?: string;
   onCreateGame: (playerName: string) => Promise<void>;
   onJoinGame: (gameId: string, playerName: string) => Promise<void>;
-  onStartLocal: (names: string[]) => void;
+  onStartLocal: (names: string[], aiDifficulty?: 'Einfach' | 'Normal' | 'Schwer') => void;
 }
 
 type Tab = 'create' | 'join' | 'local';
@@ -14,6 +14,34 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid #444', borderRadius: 5,
   padding: '7px 10px', fontSize: 14, outline: 'none',
   width: '100%', boxSizing: 'border-box',
+};
+
+const aiCardStyle: React.CSSProperties = {
+  background: 'linear-gradient(180deg, rgba(58,58,106,0.30) 0%, rgba(26,26,46,0.9) 100%)',
+  border: '1px solid #3a3a6a',
+  borderRadius: 9,
+  padding: '10px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+};
+
+const difficultyBadgeStyle: Record<'Einfach' | 'Normal' | 'Schwer', React.CSSProperties> = {
+  Einfach: {
+    background: 'rgba(74, 222, 128, 0.16)',
+    border: '1px solid rgba(74, 222, 128, 0.45)',
+    color: '#86efac',
+  },
+  Normal: {
+    background: 'rgba(96, 165, 250, 0.16)',
+    border: '1px solid rgba(96, 165, 250, 0.45)',
+    color: '#93c5fd',
+  },
+  Schwer: {
+    background: 'rgba(248, 113, 113, 0.16)',
+    border: '1px solid rgba(248, 113, 113, 0.45)',
+    color: '#fca5a5',
+  },
 };
 
 function PrimaryBtn({ enabled, onClick, children, testId }: { enabled: boolean; onClick: () => void; children: React.ReactNode; testId?: string }) {
@@ -42,6 +70,9 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [joinCode, setJoinCode]     = useState(initialGameId ?? '');
   const [joinName, setJoinName]     = useState('');
   const [localNames, setLocalNames] = useState(['Player 1', 'Player 2']);
+  const [aiCoop, setAiCoop] = useState(false);
+  const [difficulty, setDifficulty] = useState<'Einfach' | 'Normal' | 'Schwer'>('Normal');
+  const selectRef = useRef<HTMLSelectElement | null>(null);
 
   function switchTab(t: Tab) { setTab(t); setError(''); }
 
@@ -115,20 +146,87 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
             {localNames.map((name, i) => (
               <div key={i} style={{ display: 'flex', gap: 6 }}>
                 <input style={inputStyle} value={name} placeholder={`Player ${i + 1}`}
-                  onChange={e => { const n = [...localNames]; n[i] = e.target.value; setLocalNames(n); }} />
+                  onChange={e => { const n = [...localNames]; n[i] = e.target.value; setLocalNames(n); }}
+                  disabled={aiCoop && i === 1} />
                 {localNames.length > 2 && (
                   <button onClick={() => setLocalNames(localNames.filter((_, idx) => idx !== i))}
                     style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 5, cursor: 'pointer', padding: '0 10px', fontSize: 16 }}>✕</button>
                 )}
               </div>
             ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ color: '#888', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input type="checkbox" checked={aiCoop} onChange={e => {
+                  const checked = e.target.checked;
+                  setAiCoop(checked);
+                  setLocalNames(prev => {
+                    const copy = [...prev];
+                    if (checked) {
+                      if (copy.length < 2) copy[1] = 'AI';
+                      else copy[1] = 'AI';
+                    } else {
+                      if (copy[1] === 'AI') copy[1] = 'Player 2';
+                    }
+                    return copy;
+                  });
+                  if (checked) setTimeout(() => selectRef.current?.focus(), 50);
+                }} />
+                <span style={{ fontSize: 12, color: '#ddd', fontWeight: 600 }}>KI-Coop Modus</span>
+              </label>
+
+              {aiCoop && (
+                <div style={aiCardStyle}>
+                  <div style={{ color: '#ffd700', fontSize: 12, fontWeight: 700, letterSpacing: 0.6 }}>KI-EINSTELLUNGEN</div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <label style={{ color: '#bbb', fontSize: 12, minWidth: 85 }}>Schwierigkeit</label>
+                    <select
+                      ref={selectRef}
+                      value={difficulty}
+                      onChange={e => setDifficulty(e.target.value as 'Einfach' | 'Normal' | 'Schwer')}
+                      style={{
+                        background: '#252540',
+                        color: '#eee',
+                        border: '1px solid #4f4f80',
+                        borderRadius: 6,
+                        padding: '7px 10px',
+                        fontSize: 13,
+                        minWidth: 140,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <option value="Einfach">Einfach</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Schwer">Schwer</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ color: '#9aa3c7', fontSize: 12 }}>
+                      Spieler 2 ist die KI
+                    </div>
+                    <span
+                      style={{
+                        ...difficultyBadgeStyle[difficulty],
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: 0.3,
+                        padding: '3px 8px',
+                        borderRadius: 999,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {difficulty}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
             {localNames.length < 5 && (
               <button onClick={() => setLocalNames([...localNames, `Player ${localNames.length + 1}`])}
                 style={{ background: 'transparent', color: '#6a8ab8', border: '1px dashed #4a6a9a', borderRadius: 5, padding: '7px', cursor: 'pointer', fontSize: 13 }}>
                 + Add Player
               </button>
             )}
-            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => onStartLocal(localNames.map(n => n.trim()).filter(Boolean))}>
+            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => onStartLocal(localNames.map(n => n.trim()).filter(Boolean), aiCoop ? difficulty : undefined)}>
               Start Local Game
             </PrimaryBtn>
           </div>

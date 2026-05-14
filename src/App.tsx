@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
+import { createRandomAI } from './controller/RandomAI';
+import { createGreedyAI } from './controller/GreedyAI';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -118,6 +120,7 @@ export default function App() {
 
   const networkRef = useRef<NetworkController | null>(null);
   const localRef   = useRef<GameController | null>(null);
+  const aiRef = useRef<any | null>(null);
 
   // Restore local game from save
   if (savedLocal && !localRef.current) {
@@ -171,12 +174,28 @@ export default function App() {
     setMode('connecting');
   }
 
-  function handleStartLocal(names: string[]): void {
+  function handleStartLocal(names: string[], aiDifficulty?: 'Einfach' | 'Normal' | 'Schwer'): void {
     clearLocalGame();
+    aiRef.current?.stop?.();
+    aiRef.current = null;
     const ctrl = createGameController();
     ctrl.subscribe(saveLocalGame);
     ctrl.startGame(names);
     localRef.current = ctrl;
+    // Start AI based on difficulty when player 2 is AI
+    if ((names[1] ?? '').startsWith('AI')) {
+      const difficulty = aiDifficulty ?? 'Normal';
+      if (difficulty === 'Einfach') {
+        aiRef.current = createRandomAI(ctrl, 1);
+        aiRef.current.start();
+      } else if (difficulty === 'Normal') {
+        aiRef.current = createGreedyAI(ctrl, 1, { placeMeepleProbability: 0.6 });
+        aiRef.current.start();
+      } else if (difficulty === 'Schwer') {
+        aiRef.current = createGreedyAI(ctrl, 1, { placeMeepleProbability: 1 });
+        aiRef.current.start();
+      }
+    }
     setMode('game');
   }
 
