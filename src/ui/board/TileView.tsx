@@ -40,7 +40,7 @@ export function TileView({ placed, registry, players, size = 80, targets = [], c
   });
 
   return (
-    <div style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
+    <div className="placed-tile-shell" style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
       <img
         src={imgSrc}
         alt={placed.prototypeId}
@@ -52,6 +52,7 @@ export function TileView({ placed, registry, players, size = 80, targets = [], c
         return (
           <div
             key={i}
+            className="meeple-piece"
             title={`${player?.name ?? 'Meeple'} on ${m.seg.kind}`}
             style={{
               position: 'absolute',
