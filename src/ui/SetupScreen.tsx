@@ -4,7 +4,7 @@ interface Props {
   initialGameId?: string;
   onCreateGame: (playerName: string) => Promise<void>;
   onJoinGame: (gameId: string, playerName: string) => Promise<void>;
-  onStartLocal: (names: string[], aiDifficulty?: 'Einfach' | 'Normal' | 'Schwer') => void;
+  onStartLocal: (names: string[], aiDifficulty?: 'Einfach' | 'Normal' | 'Schwer', aiPlayerIndex?: number) => void;
 }
 
 type Tab = 'create' | 'join' | 'local';
@@ -150,7 +150,11 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                   onChange={e => { const n = [...localNames]; n[i] = e.target.value; setLocalNames(n); }}
                   disabled={aiCoop && i === aiPlayerIndex} />
                 {localNames.length > 2 && (
-                  <button onClick={() => setLocalNames(localNames.filter((_, idx) => idx !== i))}
+                  <button onClick={() => {
+                    const next = localNames.filter((_, idx) => idx !== i);
+                    setLocalNames(next);
+                    setAiPlayerIndex(prev => Math.max(0, Math.min(prev, next.length - 1)));
+                  }}
                     style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 5, cursor: 'pointer', padding: '0 10px', fontSize: 16 }}>✕</button>
                 )}
               </div>
@@ -208,7 +212,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                     <div style={{ color: '#9aa3c7', fontSize: 12 }}>
-                      Spieler 2 ist die KI
+                      Spieler {aiPlayerIndex + 1} ist die KI
                     </div>
                     <span
                       style={{
@@ -233,11 +237,14 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                 + Add Player
               </button>
             )}
-            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => {
-              const finalNames = localNames.map(n => n.trim());
-              if (aiCoop) finalNames[aiPlayerIndex] = 'AI';
-              onStartLocal(finalNames, aiCoop ? difficulty : undefined);
-            }}>
+            <PrimaryBtn
+              enabled={localNames.every(n => n.trim()) && (!aiCoop || (aiPlayerIndex >= 0 && aiPlayerIndex < localNames.length))}
+              testId="start-game-btn"
+              onClick={() => {
+                const finalNames = localNames.map(n => n.trim());
+                if (aiCoop) finalNames[aiPlayerIndex] = 'AI';
+                onStartLocal(finalNames, aiCoop ? difficulty : undefined, aiCoop ? aiPlayerIndex : undefined);
+              }}>
               Start Local Game
             </PrimaryBtn>
           </div>
