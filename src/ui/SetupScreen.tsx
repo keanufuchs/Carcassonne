@@ -153,7 +153,11 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                   <button onClick={() => {
                     const next = localNames.filter((_, idx) => idx !== i);
                     setLocalNames(next);
-                    setAiPlayerIndex(prev => Math.max(0, Math.min(prev, next.length - 1)));
+                    setAiPlayerIndex(prev => {
+                      if (i < prev) return Math.max(0, prev - 1);
+                      // If deleted index is >= prev, clamp to new length-1
+                      return Math.max(0, Math.min(prev, next.length - 1));
+                    });
                   }}
                     style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 5, cursor: 'pointer', padding: '0 10px', fontSize: 16 }}>✕</button>
                 )}
