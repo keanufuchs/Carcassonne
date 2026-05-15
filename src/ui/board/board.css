@@ -140,11 +140,6 @@
   transform: scale(0.92);
 }
 
-@keyframes meeple-focus-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes meeple-focus-breathe {
   0%, 100% { transform: scale(0.98); opacity: 0.78; }
   50% { transform: scale(1.03); opacity: 1; }

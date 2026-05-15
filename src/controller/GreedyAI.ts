@@ -1,6 +1,6 @@
 import type { GameController } from './GameController';
 import { candidatePlacements, countPlacedNeighbors } from '../core/board/Board';
-import type { Coord, SegmentRef } from '../core/types';
+import type { Coord, SegmentRef } from '../core/types'; // countPlacedNeighbors used in chooseGreedyPlacement
 
 export function findLegalPlacements(controller: GameController) {
   const s = controller.getState();
@@ -9,8 +9,8 @@ export function findLegalPlacements(controller: GameController) {
   const legal: { coord: Coord; rotation: number }[] = [];
   for (const coord of coords) {
     for (const rot of rotations) {
-      const p = controller.previewPlacement(coord, rot as any);
-      if ((p as any).legal === true) legal.push({ coord, rotation: rot });
+      const p = controller.previewPlacement(coord, rot);
+      if (p.legal === true) legal.push({ coord, rotation: rot });
     }
   }
   return legal;
