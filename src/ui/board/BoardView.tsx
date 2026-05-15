@@ -221,7 +221,7 @@ export function BoardView({ state, controller }: Props) {
         meepleFocusTimerRef.current = null;
       }
     };
-  }, [meepleFocusKey, meepleFocusTarget, meepleFocusSnapshot, hasMeepleFocus];
+  }, [meepleFocusKey, meepleFocusTarget, meepleFocusSnapshot, hasMeepleFocus]);
 
   useEffect(() => {
     if (meepleFocusPhase === 'idle') {
