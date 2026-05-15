@@ -71,6 +71,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [joinName, setJoinName]     = useState('');
   const [localNames, setLocalNames] = useState(['Player 1', 'Player 2']);
   const [aiCoop, setAiCoop] = useState(false);
+  const [aiPlayerIndex, setAiPlayerIndex] = useState(1); // which slot will be AI when enabled
   const [difficulty, setDifficulty] = useState<'Einfach' | 'Normal' | 'Schwer'>('Normal');
   const selectRef = useRef<HTMLSelectElement | null>(null);
 
@@ -147,7 +148,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
               <div key={i} style={{ display: 'flex', gap: 6 }}>
                 <input style={inputStyle} value={name} placeholder={`Player ${i + 1}`}
                   onChange={e => { const n = [...localNames]; n[i] = e.target.value; setLocalNames(n); }}
-                  disabled={aiCoop && i === 1} />
+                  disabled={aiCoop && i === aiPlayerIndex} />
                 {localNames.length > 2 && (
                   <button onClick={() => setLocalNames(localNames.filter((_, idx) => idx !== i))}
                     style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 5, cursor: 'pointer', padding: '0 10px', fontSize: 16 }}>✕</button>
@@ -159,20 +160,26 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                 <input type="checkbox" checked={aiCoop} onChange={e => {
                   const checked = e.target.checked;
                   setAiCoop(checked);
-                  setLocalNames(prev => {
-                    const copy = [...prev];
-                    if (checked) {
-                      if (copy.length < 2) copy[1] = 'AI';
-                      else copy[1] = 'AI';
-                    } else {
-                      if (copy[1] === 'AI') copy[1] = 'Player 2';
-                    }
-                    return copy;
-                  });
-                  if (checked) setTimeout(() => selectRef.current?.focus(), 50);
+                  if (!checked) {
+                    setAiPlayerIndex(1); // Reset to default AI slot when disabling
+                  }
                 }} />
                 <span style={{ fontSize: 12, color: '#ddd', fontWeight: 600 }}>KI-Coop Modus</span>
               </label>
+              {aiCoop && localNames.length > 1 && (
+                <label style={{ color: '#888', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, color: '#ddd' }}>AI plays as:</span>
+                  <select
+                    value={aiPlayerIndex}
+                    onChange={e => setAiPlayerIndex(parseInt(e.target.value))}
+                    style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #555', background: '#1a1a1a', color: '#ddd' }}
+                  >
+                    {localNames.map((_, i) => (
+                      <option key={i} value={i}>{i + 1}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               {aiCoop && (
                 <div style={aiCardStyle}>
@@ -226,7 +233,11 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                 + Add Player
               </button>
             )}
-            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => onStartLocal(localNames.map(n => n.trim()).filter(Boolean), aiCoop ? difficulty : undefined)}>
+            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => {
+              const finalNames = localNames.map(n => n.trim());
+              if (aiCoop) finalNames[aiPlayerIndex] = 'AI';
+              onStartLocal(finalNames, aiCoop ? difficulty : undefined);
+            }}>
               Start Local Game
             </PrimaryBtn>
           </div>

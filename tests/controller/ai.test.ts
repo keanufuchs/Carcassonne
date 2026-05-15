@@ -20,7 +20,7 @@ describe('AI helpers', () => {
     ctrl.drawTile();
     const legal = findGreedyLegal(ctrl);
     expect(legal.length).toBeGreaterThan(0);
-    const pick = chooseGreedyPlacement(legal, ctrl as any);
+    const pick = chooseGreedyPlacement(legal, ctrl);
     expect(pick).toBeTruthy();
     // pick must be one of legal
     const found = legal.some(l => l.coord.x === pick!.coord.x && l.coord.y === pick!.coord.y && l.rotation === pick!.rotation);

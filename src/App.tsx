@@ -24,6 +24,7 @@ import './ui/styles/game.css';
 // ── Local game persistence ─────────────────────────────────────────────────
 
 const LOCAL_SAVE_KEY = 'carc_local_game';
+const LOCAL_SAVE_AI_KEY = 'carc_local_game_ai';
 
 function saveLocalGame(state: Readonly<import('./core/game/GameState').GameState>): void {
   try { localStorage.setItem(LOCAL_SAVE_KEY, serializeState(state)); } catch { /* quota */ }
@@ -38,6 +39,7 @@ function loadLocalGame(): import('./core/game/GameState').GameState | null {
 
 function clearLocalGame(): void {
   localStorage.removeItem(LOCAL_SAVE_KEY);
+  try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
 }
 
 // ── Network session persistence ────────────────────────────────────────────
@@ -118,15 +120,45 @@ export default function App() {
 
   const [lobbyInfo, setLobbyInfo] = useState<LobbyInfo | null>(null);
 
+  type AIController = { start(): void; stop(): void };
+
   const networkRef = useRef<NetworkController | null>(null);
   const localRef   = useRef<GameController | null>(null);
-  const aiRef = useRef<any | null>(null);
+  const aiRef = useRef<AIController | null>(null);
+  const aiDifficultyRef = useRef<'Einfach' | 'Normal' | 'Schwer' | null>(null);
 
-  // Restore local game from save
+  // Restore local game from save (including AI metadata)
   if (savedLocal && !localRef.current) {
     localRef.current = createGameController(savedLocal);
     // auto-save on every subsequent change
     localRef.current.subscribe(saveLocalGame);
+
+    // Recreate AI controller if AI meta is present in storage
+    try {
+      const raw = localStorage.getItem(LOCAL_SAVE_AI_KEY);
+      if (raw) {
+        const aiMeta = JSON.parse(raw) as { difficulty: 'Einfach' | 'Normal' | 'Schwer'; playerIndex: number } | null;
+        if (aiMeta && aiRef.current === null) {
+          const ctrl = localRef.current;
+          const idx = typeof aiMeta.playerIndex === 'number' ? aiMeta.playerIndex : 1;
+          if (aiMeta.difficulty === 'Einfach') {
+            aiRef.current = createRandomAI(ctrl, idx);
+            aiRef.current.start();
+            aiDifficultyRef.current = 'Einfach';
+          } else if (aiMeta.difficulty === 'Normal') {
+            aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 0.6 });
+            aiRef.current.start();
+            aiDifficultyRef.current = 'Normal';
+          } else if (aiMeta.difficulty === 'Schwer') {
+            aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 1 });
+            aiRef.current.start();
+            aiDifficultyRef.current = 'Schwer';
+          }
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
   }
 
   // Reconnect network game from URL + localStorage on mount
@@ -182,19 +214,26 @@ export default function App() {
     ctrl.subscribe(saveLocalGame);
     ctrl.startGame(names);
     localRef.current = ctrl;
-    // Start AI based on difficulty when player 2 is AI
-    if ((names[1] ?? '').startsWith('AI')) {
-      const difficulty = aiDifficulty ?? 'Normal';
-      if (difficulty === 'Einfach') {
-        aiRef.current = createRandomAI(ctrl, 1);
+    // Start AI if names include an 'AI' marker; persist AI metadata
+    const aiIndex = names.findIndex(n => n === 'AI');
+    if (aiIndex >= 0 && aiDifficulty) {
+      aiDifficultyRef.current = aiDifficulty;
+      if (aiDifficulty === 'Einfach') {
+        aiRef.current = createRandomAI(ctrl, aiIndex);
         aiRef.current.start();
-      } else if (difficulty === 'Normal') {
-        aiRef.current = createGreedyAI(ctrl, 1, { placeMeepleProbability: 0.6 });
+      } else if (aiDifficulty === 'Normal') {
+        aiRef.current = createGreedyAI(ctrl, aiIndex, { placeMeepleProbability: 0.6 });
         aiRef.current.start();
-      } else if (difficulty === 'Schwer') {
-        aiRef.current = createGreedyAI(ctrl, 1, { placeMeepleProbability: 1 });
+      } else if (aiDifficulty === 'Schwer') {
+        aiRef.current = createGreedyAI(ctrl, aiIndex, { placeMeepleProbability: 1 });
         aiRef.current.start();
       }
+      try {
+        localStorage.setItem(LOCAL_SAVE_AI_KEY, JSON.stringify({ difficulty: aiDifficulty, playerIndex: aiIndex }));
+      } catch {}
+    } else {
+      aiDifficultyRef.current = null;
+      try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
     }
     setMode('game');
   }
