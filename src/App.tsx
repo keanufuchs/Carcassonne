@@ -127,39 +127,48 @@ export default function App() {
   const aiRef = useRef<AIController | null>(null);
   const aiDifficultyRef = useRef<'Einfach' | 'Normal' | 'Schwer' | null>(null);
 
-  // Restore local game from save (including AI metadata)
+  // Restore local game from save (controller only)
   if (savedLocal && !localRef.current) {
     localRef.current = createGameController(savedLocal);
     // auto-save on every subsequent change
     localRef.current.subscribe(saveLocalGame);
+  }
 
-    // Recreate AI controller if AI meta is present in storage
+  // Restore AI controller from persisted meta after mount to avoid starting side-effects during render.
+  useEffect(() => {
+    if (!localRef.current) return;
     try {
       const raw = localStorage.getItem(LOCAL_SAVE_AI_KEY);
-      if (raw) {
-        const aiMeta = JSON.parse(raw) as { difficulty: 'Einfach' | 'Normal' | 'Schwer'; playerIndex: number } | null;
-        if (aiMeta && aiRef.current === null) {
-          const ctrl = localRef.current;
-          const idx = typeof aiMeta.playerIndex === 'number' ? aiMeta.playerIndex : 1;
-          if (aiMeta.difficulty === 'Einfach') {
-            aiRef.current = createRandomAI(ctrl, idx);
-            aiRef.current.start();
-            aiDifficultyRef.current = 'Einfach';
-          } else if (aiMeta.difficulty === 'Normal') {
-            aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 0.6 });
-            aiRef.current.start();
-            aiDifficultyRef.current = 'Normal';
-          } else if (aiMeta.difficulty === 'Schwer') {
-            aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 1 });
-            aiRef.current.start();
-            aiDifficultyRef.current = 'Schwer';
-          }
-        }
+      if (!raw) return;
+      const aiMeta = JSON.parse(raw) as { difficulty: 'Einfach' | 'Normal' | 'Schwer'; playerIndex: number } | null;
+      if (!aiMeta) return;
+      const ctrl = localRef.current!;
+      const idx = typeof aiMeta.playerIndex === 'number' ? aiMeta.playerIndex : 1;
+      if (aiMeta.difficulty === 'Einfach') {
+        aiRef.current = createRandomAI(ctrl, idx);
+        aiRef.current.start();
+        aiDifficultyRef.current = 'Einfach';
+      } else if (aiMeta.difficulty === 'Normal') {
+        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 0.6 });
+        aiRef.current.start();
+        aiDifficultyRef.current = 'Normal';
+      } else if (aiMeta.difficulty === 'Schwer') {
+        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 1 });
+        aiRef.current.start();
+        aiDifficultyRef.current = 'Schwer';
       }
     } catch {
       // ignore parse errors
     }
-  }
+
+    return () => {
+      if (aiRef.current) {
+        try { aiRef.current.stop(); } catch {}
+        aiRef.current = null;
+      }
+      aiDifficultyRef.current = null;
+    };
+  }, []);
 
   // Reconnect network game from URL + localStorage on mount
   useEffect(() => {
@@ -206,7 +215,7 @@ export default function App() {
     setMode('connecting');
   }
 
-  function handleStartLocal(names: string[], aiDifficulty?: 'Einfach' | 'Normal' | 'Schwer'): void {
+  function handleStartLocal(names: string[], aiDifficulty?: 'Einfach' | 'Normal' | 'Schwer', aiPlayerIndex?: number): void {
     clearLocalGame();
     aiRef.current?.stop?.();
     aiRef.current = null;
@@ -214,22 +223,22 @@ export default function App() {
     ctrl.subscribe(saveLocalGame);
     ctrl.startGame(names);
     localRef.current = ctrl;
-    // Start AI if names include an 'AI' marker; persist AI metadata
-    const aiIndex = names.findIndex(n => n === 'AI');
-    if (aiIndex >= 0 && aiDifficulty) {
+    // Start AI if an explicit aiPlayerIndex and difficulty are provided; persist AI metadata
+    if (typeof aiPlayerIndex === 'number' && aiDifficulty) {
+      const idx = Math.max(0, Math.min(aiPlayerIndex, names.length - 1));
       aiDifficultyRef.current = aiDifficulty;
       if (aiDifficulty === 'Einfach') {
-        aiRef.current = createRandomAI(ctrl, aiIndex);
+        aiRef.current = createRandomAI(ctrl, idx);
         aiRef.current.start();
       } else if (aiDifficulty === 'Normal') {
-        aiRef.current = createGreedyAI(ctrl, aiIndex, { placeMeepleProbability: 0.6 });
+        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 0.6 });
         aiRef.current.start();
       } else if (aiDifficulty === 'Schwer') {
-        aiRef.current = createGreedyAI(ctrl, aiIndex, { placeMeepleProbability: 1 });
+        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 1 });
         aiRef.current.start();
       }
       try {
-        localStorage.setItem(LOCAL_SAVE_AI_KEY, JSON.stringify({ difficulty: aiDifficulty, playerIndex: aiIndex }));
+        localStorage.setItem(LOCAL_SAVE_AI_KEY, JSON.stringify({ difficulty: aiDifficulty, playerIndex: idx }));
       } catch {}
     } else {
       aiDifficultyRef.current = null;
