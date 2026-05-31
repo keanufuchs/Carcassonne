@@ -25,7 +25,6 @@ export function BoardView({ state, controller }: Props) {
   const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
-
   // state.board.tiles is mutated in place; state.version busts the memo cache correctly.
   const placedTiles = useMemo(() => [...state.board.tiles.values()], [state.board.tiles, state.version]);
 

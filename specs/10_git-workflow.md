@@ -357,7 +357,36 @@ Rules:
 
 ---
 
-## 12. QUICK DECISION TABLE (FOR AGENTS)
+## 12. STAKEHOLDER TAGS (MANDATORY)
+
+Für jedes Stakeholder-Meeting muss ein eindeutig reproduzierbarer Entwicklungsstand als Git-Tag existieren.
+
+### 12.1 Tag-Format
+
+```text
+stakeholder-v<NR>-<YYYY-MM-DD>
+```
+
+### 12.2 Bekannte Stakeholder-Tags
+
+| Tag | Meeting | Datum | Status |
+|-----|---------|-------|--------|
+| `stakeholder-v1` | Meeting #1 | 04.05.2026 | ✅ Erstellt |
+| `stakeholder-v2-2026-05-11` | Meeting #2 | 11.05.2026 | ✅ Erstellt |
+| `stakeholder-v3-2026-06-01` | Meeting #3 | bis 02.06.2026 | 🔴 Ausstehend |
+| `stakeholder-v4-2026-06-10` | Meeting #4 (Pre-Release Demo) | bis 10.06.2026 | 🔴 Ausstehend |
+
+### 12.3 Regeln
+
+* Stakeholder-Tags werden **vor** dem jeweiligen Meeting angelegt.
+* Der Tag enthält exakt den Entwicklungsstand, der für das Meeting vorgesehen war.
+* Auch nach Fortsetzung der Entwicklung bleibt dieser Stand unverändert reproduzierbar.
+* Stakeholder-Tags sind **zusätzlich** zu den semantischen Release-Tags (`vX.Y.Z`).
+* Stakeholder-Tags werden auf dem Branch angelegt, der den aktuellen Entwicklungsstand enthält (typischerweise `develop` oder ein `release/*`-Branch).
+
+---
+
+## 13. QUICK DECISION TABLE (FOR AGENTS)
 
 | Question                 | Answer              |
 | ------------------------ | ------------------- |
@@ -372,7 +401,7 @@ Rules:
 
 ---
 
-## 13. MACHINE-INTENT SUMMARY
+## 14. MACHINE-INTENT SUMMARY
 
 * This workflow is **state-machine driven**
 * Branch names, commits, and tags are **inputs**

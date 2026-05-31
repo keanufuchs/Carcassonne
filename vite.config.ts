@@ -29,6 +29,7 @@ export default defineConfig(async ({ mode }) => {
     base: isElectron ? './' : '/',
     plugins,
     server: {
+      host: true,
       proxy: { '/api': 'http://localhost:3001' },
     },
   };

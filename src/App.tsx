@@ -17,6 +17,8 @@ import { EndGameScreen } from './ui/hud/EndGameScreen';
 import { SetupScreen } from './ui/SetupScreen';
 import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
+import { executeAITurn } from './ai';
+import type { AIMode } from './ai';
 import './ui/styles/game.css';
 
 // ── Local game persistence ─────────────────────────────────────────────────
@@ -63,9 +65,25 @@ function pushUrl(gameId: string): void {
 
 // ── Game view ──────────────────────────────────────────────────────────────
 
-function GameApp({ controller }: { controller: GameController }) {
+function GameApp({ controller, aiModes }: { controller: GameController; aiModes?: AIMode[] }) {
   const state = useGameState();
   const currentPlayer = state.players[state.currentPlayerIndex];
+  const aiRunning = useRef(false);
+
+  // Auto-execute AI turns
+  useEffect(() => {
+    if (!aiModes || state.phase === 'GAME_OVER') return;
+    const currentMode = aiModes[state.currentPlayerIndex];
+    if (!currentMode || currentMode === 'human') return;
+    if (aiRunning.current) return;
+
+    aiRunning.current = true;
+    const run = async () => {
+      await executeAITurn(controller, currentMode);
+      aiRunning.current = false;
+    };
+    run();
+  }, [state.phase, state.currentPlayerIndex, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="game-layout">
@@ -171,14 +189,17 @@ export default function App() {
     setMode('connecting');
   }
 
-  function handleStartLocal(names: string[]): void {
+  function handleStartLocal(players: import('./ui/SetupScreen').PlayerSetup[]): void {
     clearLocalGame();
     const ctrl = createGameController();
     ctrl.subscribe(saveLocalGame);
-    ctrl.startGame(names);
+    ctrl.startGame(players.map(p => p.name));
     localRef.current = ctrl;
+    setAiModes(players.map(p => p.aiMode));
     setMode('game');
   }
+
+  const [aiModes, setAiModes] = useState<AIMode[] | undefined>();
 
   function handleStartNetworkGame(): void {
     networkRef.current?.startGame([]);
@@ -220,7 +241,7 @@ export default function App() {
 
   return (
     <ControllerContext.Provider value={controller}>
-      <GameApp controller={controller} />
+      <GameApp controller={controller} aiModes={aiModes} />
     </ControllerContext.Provider>
   );
 }

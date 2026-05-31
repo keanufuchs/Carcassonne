@@ -1,5 +1,46 @@
 # 8. Testing
 
+## 8.0 Qualitätssicherungskonzept (QS-01)
+
+Gemäß Stakeholder-Meetings 04.05.2026 + 11.05.2026:
+
+### Teststrategie (4 Ebenen)
+
+| Ebene | Tool | Scope | Ziel |
+|-------|------|-------|------|
+| **Unit Tests** | Vitest | Core-Logik (tile, feature, board, scoring) | ≥ 95% lines, ≥ 90% branches |
+| **Integration Tests** | Vitest | Controller-Flows, Turn-Zyklen | ≥ 80% lines |
+| **System Tests** | Vitest | Vollständige Spielabläufe, KI-Integration | Spielregel-Konformität |
+| **E2E Tests** | Playwright | UI + Backend, vollständige Partien | UI-Funktionalität, User Flows |
+
+### Status-Workflow (Task-Board)
+
+```
+Offen → In Bearbeitung → Review → Erledigt
+                              ↓
+                         Blockiert
+```
+
+**Review-Kriterien:**
+- Code-Review durch anderes Teammitglied
+- Alle Tests grün
+- McCabe-Zahl geprüft (< 15)
+- Keine neuen Lint-Fehler
+
+### E2E-Automatisierung (QS-03)
+
+- Playwright-Tests mit zufälligem KI-Gegner (MH-05) für automatisierte vollständige Partien
+- Testet: vollständige 2-Spieler-Partie vom Start bis Spielende
+- Deckt ab: Kachelplatzierung, Meeple-Platzierung, Scoring, Spielende
+
+### Code-Metriken (QS-04)
+
+- **McCabe-Zyklomatische Komplexität:** < 15 pro Funktion (eslint-plugin-complexity)
+- **LoC:** Überwachung via ts-prune
+- **Halstead:** Complexity-Report im CI
+
+---
+
 ## 8.1 Strategy
 
 - **All core logic gets unit tests.** This is non-negotiable; it's where almost all bugs hide.
