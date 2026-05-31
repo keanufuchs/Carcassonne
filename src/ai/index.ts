@@ -3,17 +3,14 @@ export { computeHeuristicMove } from './heuristic';
 export { computeIntelligentMove } from './intelligent';
 export { computeRandomMove } from './random';
 
-/**
- * Execute a full AI move (draw, place, optionally place meeple, skip otherwise).
- * Returns true if the game is still ongoing, false if game over.
- */
 import type { GameController } from '../controller/GameController';
-import type { GameState } from '../core/game/GameState';
 import type { AIDecision } from './AI';
 
 export type AIMode = 'random' | 'heuristic' | 'intelligent';
 
-const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export async function executeAITurn(
   controller: GameController,
@@ -22,16 +19,22 @@ export async function executeAITurn(
   const state = controller.getState();
   if (state.phase === 'GAME_OVER') return;
 
-  await sleep(600);
+  // Restored mid-turn: tile already placed, meeple phase not yet resolved
+  if (state.phase === 'PLACING_MEEPLE') {
+    await delay(400);
+    controller.skipMeeple();
+    return;
+  }
 
-  // Draw tile
+  await delay(600);
+
+  // Draw tile (no-op if tile already drawn, e.g. restored after draw)
   controller.drawTile();
-  await sleep(500);
+  await delay(500);
   const afterDraw = controller.getState();
   if (afterDraw.phase === 'GAME_OVER') return;
   if (!afterDraw.pendingTile) return;
 
-  // Compute move
   let decision: AIDecision;
   switch (mode) {
     case 'heuristic':
@@ -46,18 +49,15 @@ export async function executeAITurn(
       break;
   }
 
-  // Apply rotation to match the decision
   const currentRot = controller.getState().pendingRotation;
   const rotDiff = ((decision.rotation - currentRot) + 360) % 360;
   const steps = rotDiff / 90;
   for (let i = 0; i < steps; i++) controller.rotatePending('CW');
 
-  // Place tile
   controller.placeTile(decision.coord);
   const afterPlace = controller.getState();
   if (afterPlace.phase === 'GAME_OVER') return;
 
-  // Place meeple if we have targets and the decision wants one
   if (afterPlace.phase === 'PLACING_MEEPLE') {
     const targets = controller.getMeepleTargetsForLastTile();
     if (decision.meepleRef && targets.some(t =>

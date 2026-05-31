@@ -87,7 +87,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
       aiRunning.current = false;
     };
     run();
-  }, [state.phase, state.currentPlayerIndex, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="game-layout">
@@ -152,41 +152,16 @@ export default function App() {
     localRef.current.subscribe(saveLocalGame);
   }
 
-  // Restore AI controller from persisted meta after mount to avoid starting side-effects during render.
+  // Restore aiModes from localStorage after page reload
   useEffect(() => {
     if (!localRef.current) return;
     try {
       const raw = localStorage.getItem(LOCAL_SAVE_AI_KEY);
       if (!raw) return;
-      const aiMeta = JSON.parse(raw) as { difficulty: 'Einfach' | 'Normal' | 'Schwer'; playerIndex: number } | null;
-      if (!aiMeta) return;
-      const ctrl = localRef.current!;
-      const idx = typeof aiMeta.playerIndex === 'number' ? aiMeta.playerIndex : 1;
-      if (aiMeta.difficulty === 'Einfach') {
-        aiRef.current = createRandomAI(ctrl, idx);
-        aiRef.current.start();
-        aiDifficultyRef.current = 'Einfach';
-      } else if (aiMeta.difficulty === 'Normal') {
-        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 0.6 });
-        aiRef.current.start();
-        aiDifficultyRef.current = 'Normal';
-      } else if (aiMeta.difficulty === 'Schwer') {
-        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 1 });
-        aiRef.current.start();
-        aiDifficultyRef.current = 'Schwer';
-      }
-    } catch {
-      // ignore parse errors
-    }
-
-    return () => {
-      if (aiRef.current) {
-        try { aiRef.current.stop(); } catch {}
-        aiRef.current = null;
-      }
-      aiDifficultyRef.current = null;
-    };
-  }, []);
+      const modes = JSON.parse(raw);
+      if (Array.isArray(modes)) setAiModes(modes);
+    } catch { /* ignore */ }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reconnect network game from URL + localStorage on mount
   useEffect(() => {
@@ -241,7 +216,9 @@ export default function App() {
     ctrl.subscribe(saveLocalGame);
     ctrl.startGame(players.map(p => p.name));
     localRef.current = ctrl;
-    setAiModes(players.map(p => p.aiMode));
+    const modes = players.map(p => p.aiMode);
+    setAiModes(modes);
+    try { localStorage.setItem(LOCAL_SAVE_AI_KEY, JSON.stringify(modes)); } catch { /* quota */ }
     setMode('game');
   }
 
