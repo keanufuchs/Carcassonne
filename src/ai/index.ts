@@ -99,14 +99,16 @@ function chooseMeeple(
 
   if (mode === 'random') return chooseRandomMeeple(state, targets);
 
-  // The intelligent (LLM) AI decides the meeple jointly with the tile, so honour
-  // that explicit choice when it maps to a legal target (matched by the stable
-  // localId). The heuristic AI sets no meepleRef — it decides the meeple here,
-  // after the tile is placed. Either way, fall back to the heuristic chooser.
-  if (decision.meepleRef) {
-    const match = targets.find(t => t.localId === decision.meepleRef!.localId);
-    if (match) return match;
+  // The intelligent (LLM) AI decides the meeple jointly with the tile. When that
+  // decision is authoritative (meepleResolved), honour it verbatim — including an
+  // explicit "no meeple" — instead of overriding it with the heuristic chooser.
+  // meepleRef is matched to a real target by the stable localId, never tile id.
+  if (decision.meepleResolved) {
+    if (!decision.meepleRef) return null;
+    return targets.find(t => t.localId === decision.meepleRef!.localId) ?? null;
   }
 
+  // Heuristic mode, or the LLM fell back to a heuristic move: decide the meeple
+  // here, after the tile is placed.
   return chooseHeuristicMeeple(state, targets);
 }

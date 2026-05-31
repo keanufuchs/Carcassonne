@@ -1,8 +1,8 @@
 import type { Coord, Rotation } from '../core/types';
 import type { GameState } from '../core/game/GameState';
 import { canPlace } from '../core/board/placement';
-import { candidatePlacements } from '../core/board/Board';
 import { serializeState } from '../core/serialize';
+import { legalMovesView, boardFeaturesView, playerStatusView } from './boardAnalysis';
 import type { AIDecision } from './AI';
 import { computeHeuristicMove } from './heuristic';
 import type { AIStatusEvent } from './index';
@@ -14,7 +14,6 @@ const DEFAULT_MODEL   = 'anthropic/claude-sonnet-4-6';
 const MOVE_TIMEOUT_MS = 20_000;
 const MCP_BASE        = 'http://localhost:3002';
 const MAX_TOOL_ROUNDS = 6;
-const ALL_ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 // ── Credentials ────────────────────────────────────────────────────────────
 
@@ -38,7 +37,12 @@ const TOOLS = [
       name: 'list_legal_moves',
       description:
         'Returns all legal tile placements for the current pending tile. ' +
-        'Call this first to see which coordinates and rotations are valid.',
+        'Call this first to see which coordinates and rotations are valid. ' +
+        'Each move includes "connectsTo": the existing city/road features that ' +
+        'placing the tile there would actually join (with each feature\'s id, kind, ' +
+        'openEdges, shieldCount, completed, and meeple owner ids). A move with an ' +
+        'empty connectsTo starts a NEW feature and does not extend anything. Use ' +
+        'this to verify—not guess—whether a move extends or completes a feature.',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -49,7 +53,9 @@ const TOOLS = [
       description:
         'Returns all features (cities, roads, monasteries, fields) on the board ' +
         'with their kind, tile count, open edges, shield count, completion status, ' +
-        'and which players own meeples on each.',
+        'and which players own meeples on each. Each feature also includes ' +
+        '"tileCoords" (board {x,y} of its tiles) and "openEdgeNeighborCoords" ' +
+        '(empty cells adjacent to open edges — placing a tile there extends/closes the feature).',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -138,47 +144,9 @@ async function executeTool(
 
 function executeToolLocally(name: string, state: GameState): unknown {
   switch (name) {
-    case 'list_legal_moves': {
-      if (!state.pendingTile) return { moves: [] };
-      const moves: { coord: { x: number; y: number }; rotation: number }[] = [];
-      for (const coord of candidatePlacements(state.board))
-        for (const rot of ALL_ROTATIONS)
-          if (canPlace(state.board, state.pendingTile, coord, rot))
-            moves.push({ coord: { x: coord.x, y: coord.y }, rotation: rot });
-      return {
-        moves: moves.slice(0, 30),
-        totalMoves: moves.length,
-        tileId: state.pendingTile.id,
-        hasMonastery: state.pendingTile.hasMonastery,
-        hasShield: state.pendingTile.hasShield,
-      };
-    }
-    case 'get_board_features': {
-      const features = [...state.board.registry.features.values()].map(f => ({
-        id: f.id,
-        kind: f.kind,
-        tileCount: new Set([...f.segments].map(s => s.split('#')[0])).size,
-        openEdges: f.openEdges,
-        shieldCount: f.shieldCount,
-        completed: f.completed,
-        meeples: f.meeples.map(m => m.playerId),
-      }));
-      return { features, boardTileCount: state.board.tiles.size };
-    }
-    case 'get_player_status': {
-      const cur = state.players[state.currentPlayerIndex];
-      return {
-        players: state.players.map((p, i) => ({
-          id: p.id, name: p.name, score: p.score,
-          meeplesAvailable: p.meeplesAvailable,
-          isCurrent: i === state.currentPlayerIndex,
-        })),
-        tilesRemaining: state.deck.remaining.length,
-        currentPlayerId: cur.id,
-        currentPlayerName: cur.name,
-        pendingTileId: state.pendingTile?.id ?? null,
-      };
-    }
+    case 'list_legal_moves':    return legalMovesView(state);
+    case 'get_board_features':  return boardFeaturesView(state);
+    case 'get_player_status':   return playerStatusView(state);
     default: return { error: `Unknown tool: ${name}` };
   }
 }
@@ -217,7 +185,20 @@ strong; avoid fields/farms unless clearly advantageous. To claim, include the
 "meeple" object in submit_move with the chosen segment's localId. Omit it to place
 no meeple.
 
-Use the tools to analyze the board, then call submit_move with your decision.`;
+Verifying move consequences (do NOT guess the geometry — read it):
+- list_legal_moves gives every legal move with a "connectsTo" array listing the
+  existing city/road features that move would actually JOIN. If connectsTo is empty,
+  the move starts a NEW feature and extends nothing — never claim otherwise.
+- To EXTEND or COMPLETE your city/road, pick a move whose connectsTo contains a
+  feature you own (your id appears in its "meeples"). A feature with openEdges:1 in
+  connectsTo is one edge from closing.
+- get_board_features additionally gives each feature's "tileCoords" and
+  "openEdgeNeighborCoords" (empty cells next to its open edges) for orientation.
+
+Your stated reasoning MUST match the connectsTo data: only say "extend"/"complete"
+a feature if the chosen move's connectsTo actually contains it.
+
+Use the tools to analyze the board, verify consequences via connectsTo, then call submit_move.`;
 }
 
 // ── Tool result summary ────────────────────────────────────────────────────
@@ -328,7 +309,9 @@ async function _callWithTools(
             ? { tileId: state.pendingTile.id, localId } as const
             : undefined;
 
-          return { coord: finalCoord, rotation, meepleRef };
+          // The LLM jointly decided tile + meeple; honour it verbatim, including
+          // an explicit "no meeple" (meepleRef undefined) — see meepleResolved.
+          return { coord: finalCoord, rotation, meepleRef, meepleResolved: true };
         }
 
         onStatus?.({ type: 'tool_call', name: toolName });
