@@ -26,11 +26,11 @@ export async function executeAITurn(
     return;
   }
 
-  await delay(600);
+  // await delay(600);
 
   // Draw tile (no-op if tile already drawn, e.g. restored after draw)
   controller.drawTile();
-  await delay(500);
+  // await delay(500);
   const afterDraw = controller.getState();
   if (afterDraw.phase === 'GAME_OVER') return;
   if (!afterDraw.pendingTile) return;

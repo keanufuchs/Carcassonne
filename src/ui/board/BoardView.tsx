@@ -83,15 +83,11 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
   const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
   const [boardBouncePhase, setBoardBouncePhase] = useState<'idle' | 'bouncing'>('idle');
   const [meepleFocusPhase, setMeepleFocusPhase] = useState<'idle' | 'entering' | 'active' | 'exiting'>('idle');
-  const [meepleFocusSnapshot, setMeepleFocusSnapshot] = useState<{
-    centerX: number;
-    centerY: number;
-    scale: number;
-  } | null>(null);
   const [meepleFocusViewportCenter, setMeepleFocusViewportCenter] = useState<{ x: number; y: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const boardBounceTimerRef = useRef<number | null>(null);
   const meepleFocusTimerRef = useRef<number | null>(null);
+  const wasMeepleFocusedRef = useRef(false);
   const previousPlacedTileIdRef = useRef<string | null>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
 
@@ -161,15 +157,25 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
     };
   }, [state.lastPlacedTileId]);
 
-  const meepleFocusTarget = lastPlacedTile && meepleTargets.length > 0
-    ? {
-        x: (lastPlacedTile.coord.x + COORD_OFFSET + 0.5) * TILE_SIZE,
-        y: (lastPlacedTile.coord.y + COORD_OFFSET + 0.5) * TILE_SIZE,
-        scale: 1.8,
-        viewportX: meepleFocusViewportCenter?.x,
-        viewportY: meepleFocusViewportCenter?.y,
-      }
-    : null;
+  // Must be memoized: this object is passed to useBoardTransform, whose effect
+  // depends on its reference. A fresh object literal every render would make
+  // that effect re-run (and call setTransform) on every render, producing an
+  // infinite update loop ("Maximum update depth exceeded") during meeple focus.
+  const meepleHasFocusTarget = lastPlacedTile !== null && meepleTargets.length > 0;
+  const focusViewportX = meepleFocusViewportCenter?.x;
+  const focusViewportY = meepleFocusViewportCenter?.y;
+  const meepleFocusTarget = useMemo(
+    () => meepleHasFocusTarget && lastPlacedTile
+      ? {
+          x: (lastPlacedTile.coord.x + COORD_OFFSET + 0.5) * TILE_SIZE,
+          y: (lastPlacedTile.coord.y + COORD_OFFSET + 0.5) * TILE_SIZE,
+          scale: 1.8,
+          viewportX: focusViewportX,
+          viewportY: focusViewportY,
+        }
+      : null,
+    [meepleHasFocusTarget, lastPlacedTile, focusViewportX, focusViewportY],
+  );
 
   const meepleFocusKey = state.lastPlacedTileId && meepleTargets.length > 0
     ? `focus-${state.lastPlacedTileId}`
@@ -190,20 +196,14 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
       meepleFocusTimerRef.current = null;
     }
 
-    if (hasMeepleFocus && meepleFocusTarget) {
-      setMeepleFocusSnapshot({
-        centerX: meepleFocusTarget.x,
-        centerY: meepleFocusTarget.y,
-        scale: meepleFocusTarget.scale ?? 1.75,
-      });
+    if (hasMeepleFocus) {
+      wasMeepleFocusedRef.current = true;
       setMeepleFocusPhase('entering');
       meepleFocusTimerRef.current = window.setTimeout(() => setMeepleFocusPhase('active'), MEEPLE_FOCUS_ANIMATION_MS);
-    } else if (meepleFocusSnapshot) {
+    } else if (wasMeepleFocusedRef.current) {
+      wasMeepleFocusedRef.current = false;
       setMeepleFocusPhase('exiting');
-      meepleFocusTimerRef.current = window.setTimeout(() => {
-        setMeepleFocusPhase('idle');
-        setMeepleFocusSnapshot(null);
-      }, MEEPLE_FOCUS_ANIMATION_MS);
+      meepleFocusTimerRef.current = window.setTimeout(() => setMeepleFocusPhase('idle'), MEEPLE_FOCUS_ANIMATION_MS);
     }
 
     return () => {
@@ -212,7 +212,7 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
         meepleFocusTimerRef.current = null;
       }
     };
-  }, [meepleFocusKey, meepleFocusTarget, meepleFocusSnapshot, hasMeepleFocus]);
+  }, [meepleFocusKey, hasMeepleFocus]);
 
   useEffect(() => {
     if (meepleFocusPhase === 'idle') {
@@ -245,14 +245,15 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
     };
   }, [meepleFocusPhase]);
 
-  const showMeepleFocus = meepleFocusPhase !== 'idle' && meepleFocusSnapshot !== null;
-  const focusCenterX = meepleFocusSnapshot
-    ? transform.offsetX + (meepleFocusSnapshot.centerX * transform.scale)
-    : 0;
-  const focusCenterY = meepleFocusSnapshot
-    ? transform.offsetY + (meepleFocusSnapshot.centerY * transform.scale)
-    : 0;
-  const focusTileSize = TILE_SIZE * transform.scale;
+  // The focus highlight is rendered INSIDE the board canvas in canvas-pixel
+  // coordinates, so it inherits the exact same transform AND transition as the
+  // tiles. This keeps the ring/spotlight locked to the focused tile during the
+  // zoom animation (positioning it in screen space made it snap to the final
+  // location while the canvas was still easing, leaving the overlay detached).
+  const showMeepleFocus = meepleFocusPhase !== 'idle' && lastPlacedTile !== null;
+  const focusTileLeft = lastPlacedTile ? (lastPlacedTile.coord.x + COORD_OFFSET) * TILE_SIZE : 0;
+  const focusTileTop = lastPlacedTile ? (lastPlacedTile.coord.y + COORD_OFFSET) * TILE_SIZE : 0;
+  const focusSpotlightSize = TILE_SIZE * 2.7;
   const boardBounceOffset = boardBouncePhase === 'bouncing' ? '-2px' : '0px';
 
   if (placedTiles.length === 0) return <div className="board-scroll" ref={containerRef} />;
@@ -346,31 +347,32 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
               </div>
             );
           })}
+
+          {showMeepleFocus && (
+            <div className="meeple-focus-overlay" data-state={meepleFocusPhase} aria-hidden="true">
+              <div
+                className="meeple-focus-spotlight"
+                style={{
+                  left: focusTileLeft + TILE_SIZE / 2 - focusSpotlightSize / 2,
+                  top: focusTileTop + TILE_SIZE / 2 - focusSpotlightSize / 2,
+                  width: focusSpotlightSize,
+                  height: focusSpotlightSize,
+                }}
+              />
+              <div
+                className="meeple-focus-ring"
+                style={{
+                  left: focusTileLeft - 5,
+                  top: focusTileTop - 5,
+                  width: TILE_SIZE + 10,
+                  height: TILE_SIZE + 10,
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {showMeepleFocus && (
-        <div className="meeple-focus-overlay" data-state={meepleFocusPhase} aria-hidden="true">
-          <div
-            className="meeple-focus-spotlight"
-            style={{
-              left: focusCenterX - focusTileSize * 1.35,
-              top: focusCenterY - focusTileSize * 1.35,
-              width: focusTileSize * 2.7,
-              height: focusTileSize * 2.7,
-            }}
-          />
-          <div
-            className="meeple-focus-ring"
-            style={{
-              left: focusCenterX - focusTileSize / 2 - 6,
-              top: focusCenterY - focusTileSize / 2 - 6,
-              width: focusTileSize + 12,
-              height: focusTileSize + 12,
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }

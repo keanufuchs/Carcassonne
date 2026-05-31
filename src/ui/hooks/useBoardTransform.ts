@@ -79,8 +79,17 @@ export function useBoardTransform(
       });
       stopPan();
     } else if (prev !== null) {
-      // Exiting focus: restore scale to 1, keep current pan position
-      setTransform(t => ({ ...t, scale: 1 }));
+      // Exiting focus: zoom back out to scale 1 while keeping the previously
+      // focused tile anchored under the same viewport point. The offset was
+      // computed for the zoomed scale, so simply restoring scale=1 without
+      // recomputing the offset would leave the whole board off-screen.
+      const viewportX = prev.viewportX ?? el.clientWidth / 2;
+      const viewportY = prev.viewportY ?? el.clientHeight / 2;
+      setTransform({
+        scale: 1,
+        offsetX: viewportX - prev.x,
+        offsetY: viewportY - prev.y,
+      });
       stopPan();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
