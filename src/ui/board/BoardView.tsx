@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
@@ -184,12 +184,26 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
   const centerX = -minX * TILE_SIZE + TILE_SIZE / 2;
   const centerY = -minY * TILE_SIZE + TILE_SIZE / 2;
 
-  const { transform, isPanning, onMouseDown, onMouseMove, stopPan } = useBoardTransform(
+  const { transform, isPanning, onMouseDown, onMouseMove, stopPan, adjustGridOrigin } = useBoardTransform(
     containerRef,
     centerX,
     centerY,
     meepleFocusTarget,
   );
+
+  // Compensate when the grid origin (minX/minY) shifts due to new tiles or candidates appearing.
+  // useLayoutEffect runs before paint so there is no visual jump.
+  const prevMinXRef = useRef(minX);
+  const prevMinYRef = useRef(minY);
+  useLayoutEffect(() => {
+    const dMinX = minX - prevMinXRef.current;
+    const dMinY = minY - prevMinYRef.current;
+    prevMinXRef.current = minX;
+    prevMinYRef.current = minY;
+    if (dMinX !== 0 || dMinY !== 0) {
+      adjustGridOrigin(dMinX, dMinY, TILE_SIZE);
+    }
+  }, [minX, minY, adjustGridOrigin]);
 
   const hasMeepleFocus = meepleFocusTarget !== null;
 

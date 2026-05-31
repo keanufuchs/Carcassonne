@@ -145,5 +145,13 @@ export function useBoardTransform(
     }));
   }, []);
 
-  return { transform, isPanning, onMouseDown, onMouseMove, stopPan };
+  const adjustGridOrigin = useCallback((dMinX: number, dMinY: number, tileSize: number) => {
+    setTransform(prev => ({
+      ...prev,
+      offsetX: prev.offsetX + dMinX * tileSize * prev.scale,
+      offsetY: prev.offsetY + dMinY * tileSize * prev.scale,
+    }));
+  }, []);
+
+  return { transform, isPanning, onMouseDown, onMouseMove, stopPan, adjustGridOrigin };
 }
