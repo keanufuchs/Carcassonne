@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Player } from '../../core/types';
 
 interface Props {
@@ -6,7 +7,25 @@ interface Props {
 }
 
 export function EndGameScreen({ players, onRestart }: Props) {
+  const [showMap, setShowMap] = useState(false);
   const sorted = [...players].sort((a, b) => b.score - a.score);
+
+  if (showMap) {
+    return (
+      <button
+        onClick={() => setShowMap(false)}
+        style={{
+          position: 'fixed', bottom: 24, right: 24, zIndex: 100,
+          background: '#1a1a2e', color: '#ffd700',
+          border: '2px solid #4a4a6a', borderRadius: 8,
+          padding: '10px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 600,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+        }}
+      >
+        Back to Results
+      </button>
+    );
+  }
 
   return (
     <div style={{
@@ -23,7 +42,7 @@ export function EndGameScreen({ players, onRestart }: Props) {
       }}>
         <h2 style={{ color: '#ffd700', margin: 0, fontSize: 26 }}>Game Over</h2>
         <p style={{ color: '#ccc', margin: 0 }}>
-          🏆 {sorted[0].name} wins with {sorted[0].score} points!
+          {sorted[0].name} wins with {sorted[0].score} points!
         </p>
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sorted.map((p, i) => (
@@ -35,17 +54,30 @@ export function EndGameScreen({ players, onRestart }: Props) {
             </div>
           ))}
         </div>
-        <button
-          onClick={onRestart}
-          style={{
-            marginTop: 4,
-            background: '#4a4a8a', color: '#eee',
-            border: 'none', borderRadius: 6,
-            padding: '10px 28px', cursor: 'pointer', fontSize: 14, fontWeight: 600,
-          }}
-        >
-          Play Again
-        </button>
+        <div style={{ display: 'flex', gap: 10, width: '100%', marginTop: 4 }}>
+          <button
+            onClick={() => setShowMap(true)}
+            style={{
+              flex: 1,
+              background: '#2a2a4a', color: '#aaa',
+              border: '1px solid #4a4a6a', borderRadius: 6,
+              padding: '10px 0', cursor: 'pointer', fontSize: 14, fontWeight: 600,
+            }}
+          >
+            View Map
+          </button>
+          <button
+            onClick={onRestart}
+            style={{
+              flex: 1,
+              background: '#4a4a8a', color: '#eee',
+              border: 'none', borderRadius: 6,
+              padding: '10px 0', cursor: 'pointer', fontSize: 14, fontWeight: 600,
+            }}
+          >
+            Play Again
+          </button>
+        </div>
       </div>
     </div>
   );
