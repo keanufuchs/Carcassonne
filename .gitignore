@@ -10,7 +10,14 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+dist-electron
+release
 *.local
+
+
+.claude/
+_temp/
+*.db
 
 # Editor directories and files
 .vscode/*
@@ -25,3 +32,7 @@ dist-ssr
 test-results/
 playwright-report/
 carcassonne.db
+carcassonne.db-shm
+carcassonne.db-wal
+.playwright-mcp/
+_temp/

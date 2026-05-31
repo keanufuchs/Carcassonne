@@ -3,8 +3,8 @@ import cors from 'cors';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer } from 'http';
 import { randomUUID } from 'crypto';
-import { db, type GameRow, type SessionRow } from './db.js';
-import { serializeState, deserializeState } from '../src/core/serialize.js';
+import { fileURLToPath } from 'url';
+import { serializeState } from '../src/core/serialize.js';
 import {
   startGame,
   drawTile,
@@ -16,10 +16,24 @@ import {
 } from '../src/core/game/Game.js';
 import type { GameState } from '../src/core/game/GameState.js';
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+// ── In-memory state ────────────────────────────────────────────────────────
 
-// ── In-memory game states ──────────────────────────────────────────────────
-const gameStates = new Map<string, GameState>();
+interface GameRecord {
+  id: string;
+  hostSessionId: string;
+  status: 'LOBBY' | 'PLAYING' | 'GAME_OVER';
+  state: GameState | null;
+}
+
+interface SessionRecord {
+  id: string;
+  gameId: string;
+  playerName: string;
+  playerIndex: number;
+}
+
+const games    = new Map<string, GameRecord>();
+const sessions = new Map<string, SessionRecord>();
 
 function generateGameId(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -28,31 +42,23 @@ function generateGameId(): string {
   return id;
 }
 
-function getOrLoadState(gameId: string): GameState | null {
-  if (gameStates.has(gameId)) return gameStates.get(gameId)!;
-  const row = db.prepare('SELECT state_json FROM games WHERE id = ?').get(gameId) as GameRow | undefined;
-  if (!row?.state_json) return null;
-  const state = deserializeState(row.state_json);
-  gameStates.set(gameId, state);
-  return state;
-}
-
-function saveState(gameId: string, state: GameState): void {
-  const status = state.phase === 'GAME_OVER' ? 'GAME_OVER' : 'PLAYING';
-  db.prepare('UPDATE games SET state_json = ?, status = ?, updated_at = unixepoch() WHERE id = ?')
-    .run(serializeState(state), status, gameId);
+function getGameSessions(gameId: string): SessionRecord[] {
+  return [...sessions.values()]
+    .filter(s => s.gameId === gameId)
+    .sort((a, b) => a.playerIndex - b.playerIndex);
 }
 
 // ── WebSocket rooms ────────────────────────────────────────────────────────
+
 const rooms = new Map<string, Set<WebSocket>>();
 interface WsMeta { gameId: string; sessionId: string; playerIndex: number }
 const wsMeta = new Map<WebSocket, WsMeta>();
 
 function broadcastState(gameId: string): void {
-  const state = gameStates.get(gameId);
+  const game = games.get(gameId);
   const room = rooms.get(gameId);
-  if (!state || !room) return;
-  const stateJson = serializeState(state);
+  if (!game?.state || !room) return;
+  const stateJson = serializeState(game.state);
   for (const ws of room) {
     const meta = wsMeta.get(ws);
     if (ws.readyState === WebSocket.OPEN && meta) {
@@ -62,101 +68,91 @@ function broadcastState(gameId: string): void {
 }
 
 function broadcastLobby(gameId: string): void {
-  const sessions = db.prepare('SELECT * FROM sessions WHERE game_id = ? ORDER BY player_index').all(gameId) as SessionRow[];
-  const game = db.prepare('SELECT host_session_id FROM games WHERE id = ?').get(gameId) as GameRow | undefined;
+  const game = games.get(gameId);
   const room = rooms.get(gameId);
-  if (!room) return;
-  const players = sessions.map(s => ({ name: s.player_name, index: s.player_index }));
+  if (!game || !room) return;
+  const players = getGameSessions(gameId).map(s => ({ name: s.playerName, index: s.playerIndex }));
   for (const ws of room) {
     const meta = wsMeta.get(ws);
     if (ws.readyState === WebSocket.OPEN && meta) {
-      ws.send(JSON.stringify({ type: 'lobby', gameId, players, isHost: meta.sessionId === game?.host_session_id }));
+      ws.send(JSON.stringify({ type: 'lobby', gameId, players, isHost: meta.sessionId === game.hostSessionId }));
     }
   }
 }
 
 // ── HTTP API ───────────────────────────────────────────────────────────────
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.post('/api/games', (req, res) => {
-  try {
-    const { playerName } = req.body as { playerName?: string };
-    if (!playerName?.trim()) { res.status(400).json({ error: 'playerName required' }); return; }
+  const { playerName } = req.body as { playerName?: string };
+  if (!playerName?.trim()) { res.status(400).json({ error: 'playerName required' }); return; }
 
-    let gameId = generateGameId();
-    while (db.prepare('SELECT id FROM games WHERE id = ?').get(gameId)) gameId = generateGameId();
+  let gameId = generateGameId();
+  while (games.has(gameId)) gameId = generateGameId();
 
-    const sessionId = randomUUID();
-    db.prepare('INSERT INTO games (id, host_session_id) VALUES (?, ?)').run(gameId, sessionId);
-    db.prepare('INSERT INTO sessions (id, game_id, player_name, player_index) VALUES (?, ?, ?, ?)').run(sessionId, gameId, playerName.trim(), 0);
+  const sessionId = randomUUID();
+  games.set(gameId, { id: gameId, hostSessionId: sessionId, status: 'LOBBY', state: null });
+  sessions.set(sessionId, { id: sessionId, gameId, playerName: playerName.trim(), playerIndex: 0 });
 
-    res.json({ gameId, sessionId, playerIndex: 0 });
-  } catch (e) {
-    console.error('POST /api/games error:', e);
-    res.status(500).json({ error: String(e) });
-  }
+  res.json({ gameId, sessionId, playerIndex: 0 });
 });
 
 app.post('/api/games/:id/join', (req, res) => {
-  try {
-    const gameId = req.params.id;
-    const { playerName, sessionId: existingSession } = req.body as { playerName?: string; sessionId?: string };
+  const gameId = req.params.id;
+  const { playerName, sessionId: existingSession } = req.body as { playerName?: string; sessionId?: string };
 
-    const game = db.prepare('SELECT * FROM games WHERE id = ?').get(gameId) as GameRow | undefined;
-    if (!game) { res.status(404).json({ error: 'Game not found' }); return; }
-    if (game.status !== 'LOBBY') { res.status(400).json({ error: 'Game already started' }); return; }
+  const game = games.get(gameId);
+  if (!game) { res.status(404).json({ error: 'Game not found' }); return; }
+  if (game.status !== 'LOBBY') { res.status(400).json({ error: 'Game already started' }); return; }
 
-    if (existingSession) {
-      const s = db.prepare('SELECT * FROM sessions WHERE id = ? AND game_id = ?').get(existingSession, gameId) as SessionRow | undefined;
-      if (s) { res.json({ gameId, sessionId: existingSession, playerIndex: s.player_index }); return; }
-    }
-
-    if (!playerName?.trim()) { res.status(400).json({ error: 'playerName required' }); return; }
-    const sessions = db.prepare('SELECT * FROM sessions WHERE game_id = ?').all(gameId) as SessionRow[];
-    if (sessions.length >= 5) { res.status(400).json({ error: 'Game is full' }); return; }
-
-    const newSessionId = randomUUID();
-    db.prepare('INSERT INTO sessions (id, game_id, player_name, player_index) VALUES (?, ?, ?, ?)').run(newSessionId, gameId, playerName.trim(), sessions.length);
-
-    res.json({ gameId, sessionId: newSessionId, playerIndex: sessions.length });
-  } catch (e) {
-    console.error('POST /api/games/:id/join error:', e);
-    res.status(500).json({ error: String(e) });
+  if (existingSession) {
+    const s = sessions.get(existingSession);
+    if (s && s.gameId === gameId) { res.json({ gameId, sessionId: existingSession, playerIndex: s.playerIndex }); return; }
   }
+
+  if (!playerName?.trim()) { res.status(400).json({ error: 'playerName required' }); return; }
+  const gameSessions = getGameSessions(gameId);
+  if (gameSessions.length >= 5) { res.status(400).json({ error: 'Game is full' }); return; }
+
+  const newSessionId = randomUUID();
+  sessions.set(newSessionId, { id: newSessionId, gameId, playerName: playerName.trim(), playerIndex: gameSessions.length });
+
+  res.json({ gameId, sessionId: newSessionId, playerIndex: gameSessions.length });
 });
 
 app.get('/api/games/:id', (req, res) => {
-  const game = db.prepare('SELECT * FROM games WHERE id = ?').get(req.params.id) as GameRow | undefined;
+  const game = games.get(req.params.id);
   if (!game) { res.status(404).json({ error: 'Game not found' }); return; }
-  const sessions = db.prepare('SELECT * FROM sessions WHERE game_id = ? ORDER BY player_index').all(req.params.id) as SessionRow[];
-  res.json({ gameId: req.params.id, status: game.status, hostSessionId: game.host_session_id, players: sessions.map(s => ({ name: s.player_name, index: s.player_index })) });
+  const players = getGameSessions(req.params.id).map(s => ({ name: s.playerName, index: s.playerIndex }));
+  res.json({ gameId: req.params.id, status: game.status, players });
 });
 
 // ── WebSocket ──────────────────────────────────────────────────────────────
-const server = createServer(app);
-const wss = new WebSocketServer({ server });
+
+const httpServer = createServer(app);
+const wss = new WebSocketServer({ server: httpServer });
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url ?? '/', 'http://localhost');
   const sessionId = url.searchParams.get('sessionId');
   if (!sessionId) { ws.close(4001, 'sessionId required'); return; }
 
-  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId) as SessionRow | undefined;
+  const session = sessions.get(sessionId);
   if (!session) { ws.close(4002, 'Invalid session'); return; }
 
-  const { game_id: gameId, player_index: playerIndex } = session;
+  const { gameId, playerIndex } = session;
   wsMeta.set(ws, { gameId, sessionId, playerIndex });
   if (!rooms.has(gameId)) rooms.set(gameId, new Set());
   rooms.get(gameId)!.add(ws);
 
-  const game = db.prepare('SELECT * FROM games WHERE id = ?').get(gameId) as GameRow;
+  const game = games.get(gameId)!;
   if (game.status === 'LOBBY') {
     broadcastLobby(gameId);
-  } else {
-    const state = getOrLoadState(gameId);
-    if (state) ws.send(JSON.stringify({ type: 'state', state: serializeState(state), playerIndex }));
+  } else if (game.state) {
+    ws.send(JSON.stringify({ type: 'state', state: serializeState(game.state), playerIndex }));
   }
 
   ws.on('message', (data) => {
@@ -165,27 +161,32 @@ wss.on('connection', (ws, req) => {
 
     const meta = wsMeta.get(ws);
     if (!meta) return;
-    const { gameId, playerIndex } = meta;
+    const currentGame = games.get(meta.gameId);
+    if (!currentGame) return;
 
     if (msg.type === 'startGame') {
-      const g = db.prepare('SELECT * FROM games WHERE id = ?').get(gameId) as GameRow;
-      if (meta.sessionId !== g.host_session_id) { ws.send(JSON.stringify({ type: 'error', message: 'Only host can start' })); return; }
-      const s = db.prepare('SELECT * FROM sessions WHERE game_id = ? ORDER BY player_index').all(gameId) as SessionRow[];
-      if (s.length < 2) { ws.send(JSON.stringify({ type: 'error', message: 'Need at least 2 players' })); return; }
-      const state = startGame(s.map(p => p.player_name));
-      gameStates.set(gameId, state);
-      saveState(gameId, state);
-      broadcastState(gameId);
+      if (meta.sessionId !== currentGame.hostSessionId) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Only host can start' })); return;
+      }
+      const gameSessions = getGameSessions(meta.gameId);
+      if (gameSessions.length < 2) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Need at least 2 players' })); return;
+      }
+      const state = startGame(gameSessions.map(p => p.playerName));
+      currentGame.state = state;
+      currentGame.status = 'PLAYING';
+      broadcastState(meta.gameId);
       return;
     }
 
     if (msg.type === 'action') {
-      const state = getOrLoadState(gameId);
-      if (!state) { ws.send(JSON.stringify({ type: 'error', message: 'Game not found' })); return; }
-
+      if (!currentGame.state) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Game not started' })); return;
+      }
+      const state = currentGame.state;
       const isEndGame = msg.name === 'endGame';
-      const isRotate   = msg.name === 'rotatePending';
-      if (!isEndGame && !isRotate && playerIndex !== state.currentPlayerIndex) {
+      const isRotate  = msg.name === 'rotatePending';
+      if (!isEndGame && !isRotate && meta.playerIndex !== state.currentPlayerIndex) {
         ws.send(JSON.stringify({ type: 'error', message: 'Not your turn' })); return;
       }
 
@@ -201,8 +202,12 @@ wss.on('connection', (ws, req) => {
         }
       } catch (e) { ws.send(JSON.stringify({ type: 'error', message: String(e) })); return; }
 
-      if (result.ok) { saveState(gameId, state); broadcastState(gameId); }
-      else { ws.send(JSON.stringify({ type: 'error', message: result.message })); }
+      if (result.ok) {
+        if (state.phase === 'GAME_OVER') currentGame.status = 'GAME_OVER';
+        broadcastState(meta.gameId);
+      } else {
+        ws.send(JSON.stringify({ type: 'error', message: result.message }));
+      }
     }
   });
 
@@ -212,4 +217,13 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-server.listen(PORT, () => console.log(`Carcassonne server on :${PORT}`));
+// ── Start ──────────────────────────────────────────────────────────────────
+
+export function startServer(port = 3001): void {
+  httpServer.listen(port, () => console.log(`Carcassonne server on :${port}`));
+}
+
+// Direct execution: tsx server/index.ts
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  startServer(process.env.PORT ? parseInt(process.env.PORT) : 3001);
+}

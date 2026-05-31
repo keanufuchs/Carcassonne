@@ -116,7 +116,6 @@ export function placeMeeple(state: GameState, ref: SegmentRef): Result {
 
   const feature = lookupBySegment(state.board.registry, ref);
   if (feature.meeples.length > 0) return err('MEEPLE_FEATURE_OCCUPIED', 'Feature already has a meeple');
-  if (feature.completed) return err('MEEPLE_FEATURE_COMPLETED', 'Feature is already completed');
 
   feature.meeples.push({ playerId: player.id, segmentRef: ref });
   player.meeplesAvailable -= 1;
@@ -144,7 +143,7 @@ export function getMeepleTargets(state: GameState): SegmentRef[] {
   return placed.segmentInstances
     .filter(seg => {
       const feature = lookupBySegment(state.board.registry, seg.ref);
-      return feature.meeples.length === 0 && !feature.completed;
+      return feature.meeples.length === 0;
     })
     .map(seg => seg.ref);
 }

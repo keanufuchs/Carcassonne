@@ -1,0 +1,45 @@
+import { app, BrowserWindow } from 'electron';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { startServer } from '../server/index.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
+
+let win: BrowserWindow | null = null;
+
+function createWindow() {
+  win = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    minWidth: 900,
+    minHeight: 600,
+    title: 'Carcassonne',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
+  }
+
+  win.on('closed', () => { win = null; });
+}
+
+app.whenReady().then(() => {
+  startServer(3001);
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});

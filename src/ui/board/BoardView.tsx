@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
 import { GhostTile } from './GhostTile';
 import { candidatePlacements } from '../../core/board/Board';
-import { segmentPosition } from './segmentPosition';
+import { segmentKey, parseSegmentKey } from '../../core/types';
 import { useBoardTransform } from '../hooks/useBoardTransform';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import './board.css';
@@ -22,9 +22,9 @@ interface Props {
 
 export function BoardView({ state, controller }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
-  const { transform, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, isPanning } = useBoardTransform();
-
   // state.board.tiles is mutated in place; state.version busts the memo cache correctly.
   const placedTiles = useMemo(() => [...state.board.tiles.values()], [state.board.tiles, state.version]);
 
@@ -37,28 +37,59 @@ export function BoardView({ state, controller }: Props) {
     ? controller.getMeepleTargetsForLastTile()
     : [];
 
-  const allCoords = [...placedTiles.map(t => t.coord), ...candidates];
-  if (allCoords.length === 0) return <div className="board-scroll" />;
+  const targetFeatureIds = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const ref of meepleTargets) {
+      const fid = state.board.registry.segmentToFeature.get(segmentKey(ref));
+      if (fid) map.set(ref.localId, fid);
+    }
+    return map;
+  }, [meepleTargets, state.board.registry, state.version]);
 
-  const minX = Math.min(...allCoords.map(c => c.x)) - 1;
-  const maxX = Math.max(...allCoords.map(c => c.x)) + 1;
-  const minY = Math.min(...allCoords.map(c => c.y)) - 1;
-  const maxY = Math.max(...allCoords.map(c => c.y)) + 1;
+  const featureHighlightByTile = useMemo(() => {
+    if (!hoveredFeatureId) return new Map<string, number[]>();
+    const feature = state.board.registry.features.get(hoveredFeatureId);
+    if (!feature) return new Map<string, number[]>();
+    const byTile = new Map<string, number[]>();
+    for (const key of feature.segments) {
+      const { tileId, localId } = parseSegmentKey(key);
+      const arr = byTile.get(tileId) ?? [];
+      arr.push(localId);
+      byTile.set(tileId, arr);
+    }
+    return byTile;
+  }, [hoveredFeatureId, state.board.registry, state.version]);
+
+  const allCoords = [...placedTiles.map(t => t.coord), ...candidates];
+
+  // Bounding box — safe defaults for empty board (should not occur in practice)
+  const minX = allCoords.length > 0 ? Math.min(...allCoords.map(c => c.x)) - 1 : -1;
+  const maxX = allCoords.length > 0 ? Math.max(...allCoords.map(c => c.x)) + 1 : 1;
+  const minY = allCoords.length > 0 ? Math.min(...allCoords.map(c => c.y)) - 1 : -1;
+  const maxY = allCoords.length > 0 ? Math.max(...allCoords.map(c => c.y)) + 1 : 1;
   const cols  = maxX - minX + 1;
   const rows  = maxY - minY + 1;
 
   const col = (x: number) => x - minX + 1;
   const row = (y: number) => y - minY + 1;
 
+  // Pixel center of start tile (0,0) in the board grid — used for initial centering only
+  const centerX = -minX * TILE_SIZE + TILE_SIZE / 2;
+  const centerY = -minY * TILE_SIZE + TILE_SIZE / 2;
+
+  const { transform, isPanning, onMouseDown, onMouseMove, stopPan } = useBoardTransform(containerRef, centerX, centerY);
+
+  if (allCoords.length === 0) return <div className="board-scroll" ref={containerRef} />;
+
   return (
     <div
       className="board-scroll"
-      onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+      ref={containerRef}
+      style={{ cursor: isPanning ? 'grabbing' : 'grab', userSelect: 'none' }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={stopPan}
+      onMouseLeave={stopPan}
     >
       <div
         className="board-grid"
@@ -68,45 +99,30 @@ export function BoardView({ state, controller }: Props) {
           width: cols * TILE_SIZE,
           height: rows * TILE_SIZE,
           transform: `translate(${transform.offsetX}px, ${transform.offsetY}px) scale(${transform.scale})`,
-          transformOrigin: 'top left',
-          transition: isPanning ? 'none' : 'transform 0.1s ease-out',
+          transformOrigin: '0 0',
         }}
       >
         {placedTiles.map(tile => {
-          const targets = meepleTargets.filter(r => r.tileId === tile.tileId);
+          const isLastPlaced = tile.tileId === state.lastPlacedTileId;
+          const targets = isLastPlaced ? meepleTargets : [];
           return (
             <div
               key={tile.tileId}
-              data-testid="placed-tile"
+              data-testid={`placed-tile-${tile.coord.x},${tile.coord.y}`}
               style={{ gridColumn: col(tile.coord.x), gridRow: row(tile.coord.y), position: 'relative' }}
             >
-              <TileView placed={tile} registry={state.board.registry} players={state.players} size={TILE_SIZE} />
-              {targets.map((ref) => {
-                const seg = tile.segmentInstances.find(s => s.ref.localId === ref.localId);
-                const pos = seg
-                  ? segmentPosition(seg.kind, seg.edgeSlots, tile.rotation)
-                  : { x: 50, y: 50 };
-                return (
-                  <div
-                    key={ref.localId}
-                    data-testid="meeple-target"
-                    onClick={() => controller.placeMeeple(ref)}
-                    style={{
-                      position: 'absolute',
-                      top: `${pos.y}%`, left: `${pos.x}%`,
-                      transform: 'translate(-50%, -50%)',
-                      width: 26, height: 26,
-                      borderRadius: '50%',
-                      background: `${currentPlayer.color}cc`,
-                      border: '2px solid gold',
-                      cursor: 'pointer',
-                      zIndex: 5,
-                      boxShadow: '0 0 8px rgba(255,215,0,0.5)',
-                    }}
-                    title={`Place meeple on ${seg?.kind ?? '?'}`}
-                  />
-                );
-              })}
+              <TileView
+                placed={tile}
+                registry={state.board.registry}
+                players={state.players}
+                size={TILE_SIZE}
+                targets={targets}
+                currentPlayerColor={currentPlayer.color}
+                onPlace={ref => controller.placeMeeple(ref)}
+                featureHighlightIds={featureHighlightByTile.get(tile.tileId) ?? []}
+                targetFeatureIds={isLastPlaced ? targetFeatureIds : undefined}
+                onHoverFeature={isLastPlaced ? setHoveredFeatureId : undefined}
+              />
             </div>
           );
         })}
