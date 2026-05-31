@@ -66,9 +66,10 @@ function playTilePlacementSound(): void {
 interface Props {
   state: GameState;
   controller: GameController;
+  isAiTurn?: boolean;
 }
 
-export function BoardView({ state, controller }: Props) {
+export function BoardView({ state, controller, isAiTurn = false }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
   const [boardBouncePhase, setBoardBouncePhase] = useState<'idle' | 'bouncing'>('idle');
@@ -311,7 +312,7 @@ export function BoardView({ state, controller }: Props) {
                   registry={state.board.registry}
                   players={state.players}
                   size={TILE_SIZE}
-                  targets={targets}
+                  targets={isAiTurn ? [] : targets}
                   currentPlayerColor={currentPlayer.color}
                   onPlace={ref => controller.placeMeeple(ref)}
                   featureHighlightIds={featureHighlightByTile.get(tile.tileId) ?? []}
@@ -332,7 +333,7 @@ export function BoardView({ state, controller }: Props) {
                 <GhostTile
                   size={TILE_SIZE}
                   legal={preview.legal}
-                  onClick={() => preview.legal && controller.placeTile(coord)}
+                  onClick={() => !isAiTurn && preview.legal && controller.placeTile(coord)}
                   onHover={() => setHovered(key)}
                   onLeave={() => setHovered(null)}
                   imageSrc={imgSrc}

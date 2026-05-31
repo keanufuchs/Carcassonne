@@ -112,7 +112,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
           />
         </div>
       </div>
-      <BoardView state={state} controller={controller} />
+      <BoardView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} />
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen players={state.players} onRestart={() => { clearLocalGame(); window.location.reload(); }} />
       )}
