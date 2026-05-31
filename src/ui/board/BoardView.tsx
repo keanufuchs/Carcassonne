@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
+import { CoordRulers } from './CoordRulers';
 import { GhostTile } from './GhostTile';
 import { candidatePlacements } from '../../core/board/Board';
 import { segmentKey, parseSegmentKey } from '../../core/types';
@@ -270,6 +271,7 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
       onMouseUp={stopPan}
       onMouseLeave={stopPan}
     >
+      <CoordRulers transform={transform} />
       <div
         className="board-stage"
         style={{
