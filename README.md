@@ -2,6 +2,8 @@
 
 Digital implementation of the Carcassonne base game — Electron + React + TypeScript.
 
+**Notion (Single Source of Truth):** [Carcassonne Workspace](https://www.notion.so/Carcassonne-dfae27f8f8af839c9c1281293e1a5af7)
+
 ## Quick Start
 
 ```bash

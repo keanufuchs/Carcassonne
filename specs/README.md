@@ -2,7 +2,7 @@
 
 A spec-driven design for a desktop digital implementation of the **Carcassonne** base game (full rules), built with Electron + React + TypeScript.
 
-**Abgabetermin:** 15.06.2026 | **Aktuelle Version:** v0.5.0 | **Notion:** [Carcassonne Workspace](https://www.notion.so/Carcassonne-dfae27f8f8af839c9c1281293e1a5af7)
+**Abgabetermin:** 15.06.2026 | **Aktuelle Version:** v0.6.0 | **Notion:** [Carcassonne Workspace](https://www.notion.so/Carcassonne-dfae27f8f8af839c9c1281293e1a5af7)
 
 ## Scope
 
@@ -25,7 +25,7 @@ A spec-driven design for a desktop digital implementation of the **Carcassonne**
 | Game end + final scoring (MH-07) | ✅ | v0.2.0 |
 | Board zoom + pan (MH-08) | ✅ | v0.4.0 |
 | Network multiplayer WebSocket/LAN (EW-01) | ✅ | v0.2.0 |
-| Intelligent AI agent via Claude API (EW-02) | 🔴 Offen | — |
+| Intelligent AI agent via Claude API + MCP (EW-02) | 🔵 Review | v0.6.0 |
 
 ## Chosen extensions (Stakeholder decision 04.05.2026)
 
@@ -60,14 +60,14 @@ Read in this order:
 |---|------|--------|
 | 1 | 04.05.2026 | ✅ Abgeschlossen |
 | 2 | 11.05.2026 | ✅ Abgeschlossen |
-| 3 | bis 02.06.2026 | 🔴 Offen |
+| 3 | 01.06.2026 | 🔵 Vorbereitet — [Notion](https://www.notion.so/Carcassonne-dfae27f8f8af839c9c1281293e1a5af7) |
 | 4 | bis 10.06.2026 (Pre-Release Demo) | 🔴 Offen |
 
 ## Acceptance criteria (v1.0.0)
 
-- [ ] All Must-Haves fully implemented and tested
-- [ ] 2 extensions stable: Network Multiplayer + Intelligent AI Agent
-- [ ] Test system documented in writing
+- [x] All Must-Haves fully implemented and tested
+- [x] 2 extensions stable: Network Multiplayer + Intelligent AI Agent (EW-02 Review)
+- [x] Test system documented in writing (`docs/Testsystem.md`)
 - [ ] E2E tests automated and runnable
 - [ ] Electron app stable on Windows, no crashes
 - [ ] Demo passed in final stakeholder meeting
