@@ -177,3 +177,66 @@ export type ErrorCode =
 ```
 
 Core *does* throw for **programmer errors** (impossible states reached): registry inconsistency, segment not found, etc. Tests assert these throw on injected corrupt state.
+
+## 6.7 Game modes
+
+### 6.7.1 Hot-Seat (MH-04)
+
+Default mode. 2–5 human players share one device. Turn FSM as described in §6.2–§6.3.
+
+### 6.7.2 Random AI (MH-05)
+
+Zufallsbasierter KI-Gegner als Basis für E2E-Tests. Wählt zufällig aus allen legalen Zügen. Kein strategisches Verständnis.
+
+```typescript
+// src/ai/random.ts
+export class RandomAI implements AI {
+  async computeMove(state: GameState): Promise<AIMove> {
+    const legal = getLegalMoves(state);
+    return legal[Math.floor(Math.random() * legal.length)];
+  }
+}
+```
+
+### 6.7.3 Intelligent AI (EW-02)
+
+Intelligenter KI-Agent via Claude Reasoning Model (Anthropic API). Bewertet mögliche Züge strategisch.
+
+**Architektur:**
+- MCP Server (`src/ai/mcp-server/`) stellt Spielzustand und legale Züge als Tools bereit
+- Claude API (Sonnet 4.6 / Opus 4.7) bekommt Spielzustand und wählt Zug
+- Heuristik-Fallback bei API-Ausfall/Timeout
+
+**MCP Tools:**
+- `get_game_state` — serialisierter GameState
+- `get_legal_moves` — alle legalen Platzierungen `[{ coord, rotation }]`
+- `execute_move` — führt gewählten Zug aus
+
+**Heuristik-Fallback (ohne API):**
+1. Bevorzuge Platzierungen, die eigene Features abschließen
+2. Vermeide Platzierungen, die gegnerische Features abschließen
+3. Priorisiere Kacheln mit hohem Erweiterungspotential
+
+**Constraints:**
+- Antwortzeit < 10s
+- API-Key via Env-Variable (`ANTHROPIC_API_KEY`), nie hardcoded
+- Messbar bessere Spielstärke als RandomAI
+
+### 6.7.4 Network Multiplayer (EW-01)
+
+WebSocket-basierter Netzwerk-Multiplayer für 2–5 Spieler im LAN.
+
+**Architektur:**
+- `src/multiplayer/server.ts` — WebSocket-Server, Host
+- `src/multiplayer/client.ts` — WebSocket-Client, verbindet zu Host
+- `src/multiplayer/protocol.ts` — Nachrichtenformat, Turn-Synchronisation
+- `src/multiplayer/session.ts` — Session-Persistenz (save/load)
+
+**Spielfluss:**
+1. Host startet Server, zeigt Lobby
+2. Clients verbinden sich via IP/Port
+3. Host startet Spiel → alle Clients erhalten initialen GameState
+4. Turns werden serialisiert und synchronisiert
+5. Spielende zeigt Ergebnisse auf allen Clients
+
+**Fallback:** Bei Netzwerkproblemen bleibt Hot-Seat vollständig. Hochrisiko-Paket — Stakeholder-Entscheidung bei Verzögerung.

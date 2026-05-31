@@ -5,6 +5,7 @@ import { TileView } from './TileView';
 import { GhostTile } from './GhostTile';
 import { candidatePlacements } from '../../core/board/Board';
 import { segmentPosition } from './segmentPosition';
+import { useBoardTransform } from '../hooks/useBoardTransform';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import './board.css';
 
@@ -22,6 +23,7 @@ interface Props {
 export function BoardView({ state, controller }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
+  const { transform, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, isPanning } = useBoardTransform();
 
   // state.board.tiles is mutated in place; state.version busts the memo cache correctly.
   const placedTiles = useMemo(() => [...state.board.tiles.values()], [state.board.tiles, state.version]);
@@ -49,7 +51,15 @@ export function BoardView({ state, controller }: Props) {
   const row = (y: number) => y - minY + 1;
 
   return (
-    <div className="board-scroll">
+    <div
+      className="board-scroll"
+      onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+    >
       <div
         className="board-grid"
         style={{
@@ -57,6 +67,9 @@ export function BoardView({ state, controller }: Props) {
           gridTemplateRows: `repeat(${rows}, ${TILE_SIZE}px)`,
           width: cols * TILE_SIZE,
           height: rows * TILE_SIZE,
+          transform: `translate(${transform.offsetX}px, ${transform.offsetY}px) scale(${transform.scale})`,
+          transformOrigin: 'top left',
+          transition: isPanning ? 'none' : 'transform 0.1s ease-out',
         }}
       >
         {placedTiles.map(tile => {

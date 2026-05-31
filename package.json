@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "server": "tsx server/index.ts",
-    "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
+    "mcp": "tsx server/mcp-ai.ts",
+    "dev:full": "concurrently \"npm run dev\" \"npm run server\" \"npm run mcp\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -24,7 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

@@ -1,11 +1,52 @@
 # 8. Testing
 
+## 8.0 Qualitätssicherungskonzept (QS-01)
+
+Gemäß Stakeholder-Meetings 04.05.2026 + 11.05.2026:
+
+### Teststrategie (4 Ebenen)
+
+| Ebene | Tool | Scope | Ziel |
+|-------|------|-------|------|
+| **Unit Tests** | Vitest | Core-Logik (tile, feature, board, scoring) | ≥ 95% lines, ≥ 90% branches |
+| **Integration Tests** | Vitest | Controller-Flows, Turn-Zyklen | ≥ 80% lines |
+| **System Tests** | Vitest | Vollständige Spielabläufe, KI-Integration | Spielregel-Konformität |
+| **E2E Tests** | Playwright | UI + Backend, vollständige Partien | UI-Funktionalität, User Flows |
+
+### Status-Workflow (Task-Board)
+
+```
+Offen → In Bearbeitung → Review → Erledigt
+                              ↓
+                         Blockiert
+```
+
+**Review-Kriterien:**
+- Code-Review durch anderes Teammitglied
+- Alle Tests grün
+- McCabe-Zahl geprüft (< 15)
+- Keine neuen Lint-Fehler
+
+### E2E-Automatisierung (QS-03)
+
+- Playwright-Tests mit zufälligem KI-Gegner (MH-05) für automatisierte vollständige Partien
+- Testet: vollständige 2-Spieler-Partie vom Start bis Spielende
+- Deckt ab: Kachelplatzierung, Meeple-Platzierung, Scoring, Spielende
+
+### Code-Metriken (QS-04)
+
+- **McCabe-Zyklomatische Komplexität:** < 15 pro Funktion (eslint-plugin-complexity)
+- **LoC:** Überwachung via ts-prune
+- **Halstead:** Complexity-Report im CI
+
+---
+
 ## 8.1 Strategy
 
 - **All core logic gets unit tests.** This is non-negotiable; it's where almost all bugs hide.
 - **Controller gets integration tests** that exercise full turn flows through the public API.
-- **UI gets smoke tests only.** A React Testing Library test that renders `App` with a fresh game and confirms the start tile shows up. No heavy DOM coverage.
-- **No E2E tests in MVP.** Adding Playwright/Spectron is deferred until the UI stabilizes.
+- **System tests** cover complete game flows, rule conformance, and AI integration.
+- **E2E tests** automate complete games via Playwright with the random AI opponent.
 
 Test runner: **Vitest**. Mirror `src/core/` under `tests/core/`.
 
@@ -308,6 +349,6 @@ A small set of helpers in `tests/helpers/`:
 
 Tests should prefer these helpers over re-implementing setup, both for readability and so that schema changes ripple through one place.
 
-## 8.5 Continuous integration (post-MVP)
+## 8.5 Continuous integration
 
-Out of scope for this spec. Local `npm test` and `npm run lint` are sufficient until the UI ships.
+CI via GitHub Actions: `npm test` + `npm run lint` on every push to `develop` and all PRs. E2E tests run on `release/*` branches and before tagging.
