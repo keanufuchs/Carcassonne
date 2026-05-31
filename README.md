@@ -28,13 +28,15 @@ When starting a local game, each player can be set to one of four modes:
 
 ---
 
-## Claude AI Setup (API Key)
+## Claude AI Setup (OpenRouter)
 
-The Claude AI mode requires an Anthropic API key.
+The Claude AI mode uses [OpenRouter](https://openrouter.ai) — one API key that works with Claude, GPT-4o, Llama, Mistral, Gemini and hundreds of other models.
 
-### 1. Get an API key
+### 1. Get an OpenRouter API key
 
-Sign up at [console.anthropic.com](https://console.anthropic.com) and create an API key.
+Sign up at [openrouter.ai](https://openrouter.ai) and create an API key (`sk-or-...`).
+
+> OpenRouter has a generous free tier and pay-as-you-go pricing. `anthropic/claude-sonnet-4-6` costs ~$3/M tokens.
 
 ### 2. Set the key
 
@@ -42,18 +44,32 @@ Create a `.env` file in the project root:
 
 ```bash
 # .env
-VITE_ANTHROPIC_API_KEY=sk-ant-api03-...
+VITE_OPENROUTER_API_KEY=sk-or-v1-...
+
+# Optional: change the model (default: anthropic/claude-sonnet-4-6)
+VITE_AI_MODEL=anthropic/claude-sonnet-4-6
 ```
 
-> The key is only used client-side in the Electron/browser renderer. It is never sent to the game server.
+### 3. Use a different model (optional)
 
-### 3. Start the app
+Any model on openrouter.ai that supports **tool use / function calling** works:
+
+| Model | ID |
+|-------|----|
+| Claude Sonnet 4.6 (default) | `anthropic/claude-sonnet-4-6` |
+| GPT-4o | `openai/gpt-4o` |
+| GPT-4o mini | `openai/gpt-4o-mini` |
+| Llama 3.3 70B | `meta-llama/llama-3.3-70b-instruct` |
+| Mistral Large | `mistralai/mistral-large` |
+| Gemini 2.0 Flash | `google/gemini-2.0-flash-001` |
+
+### 4. Start the app
 
 ```bash
 npm run dev:full
 ```
 
-If no API key is set (or the request times out), the Claude AI falls back to the **Heuristic AI** automatically — no crash, no error.
+If no API key is set (or the request times out), the Claude AI falls back to **Heuristic AI** automatically — no crash, no error.
 
 ---
 
@@ -150,6 +166,7 @@ docs/           — Test system documentation, meeting prep
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_ANTHROPIC_API_KEY` | For Claude AI | Anthropic API key (prefix `sk-ant-`) |
+| `VITE_OPENROUTER_API_KEY` | For Claude AI | OpenRouter API key (prefix `sk-or-`) |
+| `VITE_AI_MODEL` | No | Model ID on OpenRouter (default: `anthropic/claude-sonnet-4-6`) |
 | `PORT` | No | Game server port (default: 3001) |
 | `MCP_PORT` | No | MCP AI server port (default: 3002) |

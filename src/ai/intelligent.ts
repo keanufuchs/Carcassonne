@@ -6,110 +6,117 @@ import { serializeState } from '../core/serialize';
 import type { AIDecision } from './AI';
 import { computeHeuristicMove } from './heuristic';
 
-const CLAUDE_MODEL = 'claude-sonnet-4-6';
+// ── Config ─────────────────────────────────────────────────────────────────
+
+const OPENROUTER_BASE = 'https://openrouter.ai/api/v1';
+const DEFAULT_MODEL   = 'anthropic/claude-sonnet-4-6';
 const MOVE_TIMEOUT_MS = 20_000;
-const MCP_BASE = 'http://localhost:3002';
+const MCP_BASE        = 'http://localhost:3002';
 const MAX_TOOL_ROUNDS = 6;
 const ALL_ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
-// ── Claude tool definitions ────────────────────────────────────────────────
+// ── Credentials ────────────────────────────────────────────────────────────
+
+function getConfig(): { apiKey: string; model: string } | null {
+  const env = (typeof import.meta !== 'undefined')
+    ? (import.meta as Record<string, unknown> & { env?: Record<string, string> }).env ?? {}
+    : (typeof process !== 'undefined' ? process.env ?? {} : {});
+
+  const apiKey = env.VITE_OPENROUTER_API_KEY ?? env.OPENROUTER_API_KEY ?? '';
+  const model  = env.VITE_AI_MODEL ?? env.AI_MODEL ?? DEFAULT_MODEL;
+
+  return apiKey ? { apiKey, model } : null;
+}
+
+// ── OpenAI-compatible tool definitions ────────────────────────────────────
 
 const TOOLS = [
   {
-    name: 'list_legal_moves',
-    description:
-      'Returns all legal tile placements for the current pending tile. ' +
-      'Call this first to see which coordinates and rotations are valid.',
-    input_schema: { type: 'object', properties: {}, required: [] },
+    type: 'function',
+    function: {
+      name: 'list_legal_moves',
+      description:
+        'Returns all legal tile placements for the current pending tile. ' +
+        'Call this first to see which coordinates and rotations are valid.',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
   },
   {
-    name: 'get_board_features',
-    description:
-      'Returns all features (cities, roads, monasteries, fields) currently on the board. ' +
-      'Shows each feature\'s kind, tile count, open edges, shield count, completion status, ' +
-      'and which players have meeples on it.',
-    input_schema: { type: 'object', properties: {}, required: [] },
+    type: 'function',
+    function: {
+      name: 'get_board_features',
+      description:
+        'Returns all features (cities, roads, monasteries, fields) on the board ' +
+        'with their kind, tile count, open edges, shield count, completion status, ' +
+        'and which players own meeples on each.',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
   },
   {
-    name: 'get_player_status',
-    description:
-      'Returns current player scores, available meeple counts, and how many tiles remain in the deck.',
-    input_schema: { type: 'object', properties: {}, required: [] },
+    type: 'function',
+    function: {
+      name: 'get_player_status',
+      description:
+        'Returns current player scores, available meeple counts, and tiles remaining.',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
   },
   {
-    name: 'submit_move',
-    description:
-      'Submit your chosen placement. Call this exactly once when you have decided on the best move.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        coord: {
-          type: 'object',
-          description: 'Board coordinates where the tile should be placed',
-          properties: {
-            x: { type: 'integer' },
-            y: { type: 'integer' },
+    type: 'function',
+    function: {
+      name: 'submit_move',
+      description: 'Submit your chosen placement. Call this once when you have decided.',
+      parameters: {
+        type: 'object',
+        properties: {
+          coord: {
+            type: 'object',
+            properties: {
+              x: { type: 'integer', description: 'Board X coordinate' },
+              y: { type: 'integer', description: 'Board Y coordinate' },
+            },
+            required: ['x', 'y'],
           },
-          required: ['x', 'y'],
+          rotation: {
+            type: 'integer',
+            enum: [0, 90, 180, 270],
+            description: 'Tile rotation in degrees clockwise',
+          },
+          reasoning: {
+            type: 'string',
+            description: 'Brief explanation of why this is the best move',
+          },
         },
-        rotation: {
-          type: 'integer',
-          enum: [0, 90, 180, 270],
-          description: 'Tile rotation in degrees clockwise',
-        },
-        reasoning: {
-          type: 'string',
-          description: 'Brief explanation of why this is the best move',
-        },
+        required: ['coord', 'rotation'],
       },
-      required: ['coord', 'rotation'],
     },
   },
 ];
 
-// ── API key ────────────────────────────────────────────────────────────────
+// ── MCP tool execution (server → local fallback) ───────────────────────────
 
-function getApiKey(): string | null {
-  if (typeof import.meta !== 'undefined' && (import.meta as Record<string, unknown> & { env?: Record<string, string> }).env?.VITE_ANTHROPIC_API_KEY) {
-    return (import.meta as Record<string, unknown> & { env?: Record<string, string> }).env!.VITE_ANTHROPIC_API_KEY;
-  }
-  if (typeof process !== 'undefined' && process.env?.ANTHROPIC_API_KEY) {
-    return process.env.ANTHROPIC_API_KEY;
-  }
-  return null;
-}
-
-// ── MCP tool execution (server with local fallback) ────────────────────────
-
-async function executeTool(toolName: string, state: GameState, stateJson: string): Promise<unknown> {
-  // Try MCP server first
+async function executeTool(name: string, state: GameState, stateJson: string): Promise<unknown> {
   try {
-    const res = await fetch(`${MCP_BASE}/tools/${toolName}`, {
+    const res = await fetch(`${MCP_BASE}/tools/${name}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ state: stateJson }),
       signal: AbortSignal.timeout(3000),
     });
     if (res.ok) return await res.json();
-  } catch {
-    // MCP server unavailable — run locally
-  }
-  return executeToolLocally(toolName, state);
+  } catch { /* MCP server offline */ }
+  return executeToolLocally(name, state);
 }
 
-function executeToolLocally(toolName: string, state: GameState): unknown {
-  switch (toolName) {
+function executeToolLocally(name: string, state: GameState): unknown {
+  switch (name) {
     case 'list_legal_moves': {
-      if (!state.pendingTile) return { moves: [], tileId: null };
-      const candidates = candidatePlacements(state.board);
+      if (!state.pendingTile) return { moves: [] };
       const moves: { coord: { x: number; y: number }; rotation: number }[] = [];
-      for (const coord of candidates) {
-        for (const rot of ALL_ROTATIONS) {
-          if (canPlace(state.board, state.pendingTile, coord, rot)) {
+      for (const coord of candidatePlacements(state.board))
+        for (const rot of ALL_ROTATIONS)
+          if (canPlace(state.board, state.pendingTile, coord, rot))
             moves.push({ coord: { x: coord.x, y: coord.y }, rotation: rot });
-          }
-        }
-      }
       return {
         moves: moves.slice(0, 30),
         totalMoves: moves.length,
@@ -119,109 +126,83 @@ function executeToolLocally(toolName: string, state: GameState): unknown {
       };
     }
     case 'get_board_features': {
-      const features = [...state.board.registry.features.values()].map(f => {
-        const tileIds = new Set([...f.segments].map(s => s.split('#')[0]));
-        return {
-          id: f.id,
-          kind: f.kind,
-          tileCount: tileIds.size,
-          openEdges: f.openEdges,
-          shieldCount: f.shieldCount,
-          completed: f.completed,
-          meeples: f.meeples.map(m => m.playerId),
-        };
-      });
-      return {
-        features,
-        boardTileCount: state.board.tiles.size,
-        activeFeaturesWithMeeples: features.filter(f => f.meeples.length > 0 && !f.completed),
-      };
+      const features = [...state.board.registry.features.values()].map(f => ({
+        id: f.id,
+        kind: f.kind,
+        tileCount: new Set([...f.segments].map(s => s.split('#')[0])).size,
+        openEdges: f.openEdges,
+        shieldCount: f.shieldCount,
+        completed: f.completed,
+        meeples: f.meeples.map(m => m.playerId),
+      }));
+      return { features, boardTileCount: state.board.tiles.size };
     }
     case 'get_player_status': {
-      const currentPlayer = state.players[state.currentPlayerIndex];
+      const cur = state.players[state.currentPlayerIndex];
       return {
         players: state.players.map((p, i) => ({
-          id: p.id,
-          name: p.name,
-          score: p.score,
+          id: p.id, name: p.name, score: p.score,
           meeplesAvailable: p.meeplesAvailable,
           isCurrent: i === state.currentPlayerIndex,
         })),
         tilesRemaining: state.deck.remaining.length,
-        currentPlayerId: currentPlayer.id,
-        currentPlayerName: currentPlayer.name,
+        currentPlayerId: cur.id,
+        currentPlayerName: cur.name,
         pendingTileId: state.pendingTile?.id ?? null,
       };
     }
-    default:
-      return { error: `Unknown tool: ${toolName}` };
+    default: return { error: `Unknown tool: ${name}` };
   }
 }
 
-// ── Prompt building ────────────────────────────────────────────────────────
+// ── System prompt ──────────────────────────────────────────────────────────
 
 function buildSystemPrompt(state: GameState): string {
-  const currentPlayer = state.players[state.currentPlayerIndex];
-  return `You are a strategic Carcassonne AI playing as "${currentPlayer.name}" (ID: ${currentPlayer.id}).
-
-Your goal: maximize your score while preventing opponents from scoring.
+  const p = state.players[state.currentPlayerIndex];
+  return `You are a strategic Carcassonne AI playing as "${p.name}" (ID: ${p.id}).
 
 Scoring rules:
-- Completed ROAD: 1 point per tile in the road
-- Completed CITY: 2 points per tile + 2 points per shield
-- Completed MONASTERY: 9 points (tile itself + all 8 neighbors filled)
-- End-game (incomplete features): 1 pt/tile for roads, 1 pt/tile+1/shield for cities, 1 pt per neighbor for monasteries
+- Completed ROAD: 1 pt/tile
+- Completed CITY: 2 pts/tile + 2 pts/shield
+- Completed MONASTERY: 9 pts (tile + all 8 neighbors filled)
+- End-game incomplete: 1 pt/tile for roads/monasteries, 1 pt/tile + 1/shield for cities
 
-Decision process:
-1. Call list_legal_moves to see your options
-2. Optionally call get_board_features and get_player_status for context
-3. Call submit_move with your chosen placement
+Strategy: complete your own features > block opponent completions > extend your features.
 
-Priority when choosing a move:
-1. Complete your own high-value features (cities with shields > monasteries > roads)
-2. Block opponents who are close to completing large features
-3. Extend your own incomplete features
-4. Avoid giving opponents easy completions`;
+Use the tools to analyze the board, then call submit_move with your decision.`;
 }
 
-// ── Claude API with tool use ───────────────────────────────────────────────
+// ── OpenAI-compatible multi-turn tool loop ─────────────────────────────────
 
-interface ClaudeMessage {
+interface OAIMessage {
   role: string;
-  content: unknown;
+  content: string | null;
+  tool_calls?: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }>;
+  tool_call_id?: string;
+  name?: string;
 }
 
-interface ToolUseBlock {
-  type: 'tool_use';
-  id: string;
-  name: string;
-  input: Record<string, unknown>;
-}
-
-async function _callClaudeWithTools(state: GameState, apiKey: string): Promise<AIDecision | null> {
+async function _callWithTools(state: GameState, apiKey: string, model: string): Promise<AIDecision | null> {
   const stateJson = serializeState(state);
-  const systemPrompt = buildSystemPrompt(state);
 
-  const messages: ClaudeMessage[] = [
-    {
-      role: 'user',
-      content: 'It\'s your turn. Use the tools to analyze the position, then submit your move.',
-    },
+  const messages: OAIMessage[] = [
+    { role: 'system', content: buildSystemPrompt(state) },
+    { role: 'user',   content: "It's your turn. Analyze the board and submit your move." },
   ];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://github.com/carcassonne-game',
+        'X-Title': 'Carcassonne AI',
       },
       body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 1024,
-        system: systemPrompt,
+        model,
         tools: TOOLS,
+        tool_choice: 'auto',
         messages,
       }),
     });
@@ -229,65 +210,56 @@ async function _callClaudeWithTools(state: GameState, apiKey: string): Promise<A
     if (!response.ok) return null;
 
     const data = await response.json() as {
-      stop_reason: string;
-      content: Array<{ type: string; text?: string } | ToolUseBlock>;
+      choices: Array<{
+        finish_reason: string;
+        message: OAIMessage;
+      }>;
     };
 
-    if (data.stop_reason === 'tool_use') {
-      const toolUseBlocks = data.content.filter(
-        (b): b is ToolUseBlock => b.type === 'tool_use',
-      );
+    const choice = data.choices?.[0];
+    if (!choice) return null;
 
-      messages.push({ role: 'assistant', content: data.content });
+    const msg = choice.message;
+    messages.push(msg);
 
-      const toolResults: Array<{
-        type: 'tool_result';
-        tool_use_id: string;
-        content: string;
-      }> = [];
+    if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
+      const toolResults: OAIMessage[] = [];
 
-      for (const toolUse of toolUseBlocks) {
-        if (toolUse.name === 'submit_move') {
-          const input = toolUse.input as { coord: { x: number; y: number }; rotation: number };
-          if (
-            !input.coord ||
-            typeof input.coord.x !== 'number' ||
-            typeof input.coord.y !== 'number' ||
-            ![0, 90, 180, 270].includes(input.rotation)
-          ) {
-            return null;
-          }
+      for (const tc of msg.tool_calls) {
+        const toolName = tc.function.name;
+        let args: Record<string, unknown> = {};
+        try { args = JSON.parse(tc.function.arguments || '{}'); } catch { /* ignore */ }
 
-          const coord: Coord = { x: input.coord.x, y: input.coord.y };
-          const rotation = input.rotation as Rotation;
+        if (toolName === 'submit_move') {
+          const coord: Coord = { x: args.x as number ?? (args.coord as { x: number })?.x, y: args.y as number ?? (args.coord as { y: number })?.y };
+          // Handle both flat {x,y} and nested {coord:{x,y}} argument shapes
+          const flat = args as { x?: number; y?: number; rotation?: number; coord?: { x: number; y: number } };
+          const cx = flat.x ?? flat.coord?.x;
+          const cy = flat.y ?? flat.coord?.y;
+          const rotation = (flat.rotation ?? 0) as Rotation;
 
-          if (!state.pendingTile || !canPlace(state.board, state.pendingTile, coord, rotation)) {
-            return null;
-          }
+          if (cx === undefined || cy === undefined || ![0, 90, 180, 270].includes(rotation)) return null;
 
-          return { coord, rotation, meepleRef: undefined };
+          const finalCoord: Coord = { x: cx, y: cy };
+          if (!state.pendingTile || !canPlace(state.board, state.pendingTile, finalCoord, rotation)) return null;
+
+          return { coord: finalCoord, rotation, meepleRef: undefined };
         }
 
-        const result = await executeTool(toolUse.name, state, stateJson);
+        const result = await executeTool(toolName, state, stateJson);
         toolResults.push({
-          type: 'tool_result',
-          tool_use_id: toolUse.id,
+          role: 'tool',
+          tool_call_id: tc.id,
+          name: toolName,
           content: JSON.stringify(result),
         });
       }
 
-      if (toolResults.length > 0) {
-        messages.push({ role: 'user', content: toolResults });
-      }
-    } else if (data.stop_reason === 'end_turn') {
-      // Claude responded with text — try to parse JSON fallback
-      const textBlock = data.content.find(
-        (b): b is { type: 'text'; text: string } => b.type === 'text',
-      );
-      if (textBlock?.text) {
-        return _parseDecisionFromText(textBlock.text, state);
-      }
-      return null;
+      messages.push(...toolResults);
+
+    } else if (choice.finish_reason === 'stop') {
+      // Model responded with text — try JSON parse as last resort
+      return _parseDecisionFromText(msg.content ?? '', state);
     } else {
       return null;
     }
@@ -298,21 +270,16 @@ async function _callClaudeWithTools(state: GameState, apiKey: string): Promise<A
 
 function _parseDecisionFromText(text: string, state: GameState): AIDecision | null {
   try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
-    const parsed = JSON.parse(jsonMatch[0]) as {
-      coord?: { x: number; y: number };
-      rotation?: number;
-    };
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]) as { coord?: { x: number; y: number }; rotation?: number };
     if (!parsed.coord || typeof parsed.coord.x !== 'number') return null;
     if (![0, 90, 180, 270].includes(parsed.rotation ?? -1)) return null;
 
     const coord: Coord = { x: parsed.coord.x, y: parsed.coord.y };
     const rotation = (parsed.rotation ?? 0) as Rotation;
+    if (!state.pendingTile || !canPlace(state.board, state.pendingTile, coord, rotation)) return null;
 
-    if (!state.pendingTile || !canPlace(state.board, state.pendingTile, coord, rotation)) {
-      return null;
-    }
     return { coord, rotation, meepleRef: undefined };
   } catch {
     return null;
@@ -322,29 +289,28 @@ function _parseDecisionFromText(text: string, state: GameState): AIDecision | nu
 // ── Public API ─────────────────────────────────────────────────────────────
 
 /**
- * Intelligent AI that uses Claude API with MCP tool use when available,
- * with heuristic fallback.
+ * Intelligent AI via OpenRouter (OpenAI-compatible API).
  *
- * Flow:
- * 1. Claude calls list_legal_moves to see options (via MCP server)
- * 2. Claude optionally calls get_board_features / get_player_status
- * 3. Claude calls submit_move with the chosen placement
- * 4. If API unavailable / timeout / invalid move → heuristic fallback
+ * Supports any model available on openrouter.ai — Claude, GPT-4o, Llama,
+ * Mistral, Gemini and more. Defaults to anthropic/claude-sonnet-4-6.
+ *
+ * Set env vars:
+ *   VITE_OPENROUTER_API_KEY=sk-or-...
+ *   VITE_AI_MODEL=anthropic/claude-sonnet-4-6   (optional override)
+ *
+ * Falls back to heuristic AI if key missing, timeout, or invalid move.
  */
 export async function computeIntelligentMove(state: GameState): Promise<AIDecision> {
-  const apiKey = getApiKey();
+  const config = getConfig();
 
-  if (apiKey) {
+  if (config) {
     try {
       const result = await Promise.race([
-        _callClaudeWithTools(state, apiKey),
+        _callWithTools(state, config.apiKey, config.model),
         new Promise<null>(resolve => setTimeout(() => resolve(null), MOVE_TIMEOUT_MS)),
       ]);
-
       if (result) return result;
-    } catch {
-      // Fall through to heuristic
-    }
+    } catch { /* fall through */ }
   }
 
   return computeHeuristicMove(state);
