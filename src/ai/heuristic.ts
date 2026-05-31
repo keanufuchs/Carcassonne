@@ -2,8 +2,8 @@ import type { Coord, SegmentRef, Rotation } from '../core/types';
 import type { GameState } from '../core/game/GameState';
 import { canPlace } from '../core/board/placement';
 import { candidatePlacements } from '../core/board/Board';
-import { getMeepleTargets } from '../core/game/Game';
 import { lookupBySegment } from '../core/feature/segments';
+import type { Feature } from '../core/feature/Feature';
 import type { AIDecision } from './AI';
 
 const ALL_ROTATIONS: Rotation[] = [0, 90, 180, 270];
@@ -11,18 +11,20 @@ const ALL_ROTATIONS: Rotation[] = [0, 90, 180, 270];
 interface ScoredMove {
   coord: Coord;
   rotation: Rotation;
-  meepleRef?: SegmentRef;
   score: number;
 }
 
 /**
- * Heuristic-based fallback AI.
+ * Heuristic AI.
  *
- * Strategy (priority order):
- * 1. Complete own features (highest immediate point gain)
- * 2. Block opponent features (prevent opponent from scoring)
+ * Two independent, sequential steps (no joint search):
+ * 1. `computeHeuristicMove` chooses the best tile placement by board position.
+ * 2. After the tile is placed, `chooseHeuristicMeeple` picks a meeple on it.
+ *
+ * Placement strategy (priority order):
+ * 1. Connect to / extend own features
+ * 2. Avoid helping opponent features
  * 3. Place on high-expansion-potential positions
- * 4. Always place a meeple if a good feature exists
  */
 export function computeHeuristicMove(state: GameState): AIDecision {
   const currentPlayer = state.players[state.currentPlayerIndex];
@@ -33,17 +35,11 @@ export function computeHeuristicMove(state: GameState): AIDecision {
     for (const rot of ALL_ROTATIONS) {
       if (!canPlace(state.board, state.pendingTile!, coord, rot)) continue;
 
-      // Simulate placement to evaluate: this is a light heuristic based on
-      // immediate scoring potential, not a full simulation
       let score = 0;
-
       // Bonus for adjacency count (more neighbors = more feature connections)
-      const neighborCount = countAdjacentTiles(state, coord);
-      score += neighborCount * 5;
-
+      score += countAdjacentTiles(state, coord) * 5;
       // Bonus for connecting to own features
       score += estimateOwnFeatureConnections(state, coord, currentPlayer.id) * 15;
-
       // Penalty for connecting to opponent features (may help them)
       score -= estimateOpponentFeatureConnections(state, coord, currentPlayer.id) * 10;
 
@@ -56,23 +52,11 @@ export function computeHeuristicMove(state: GameState): AIDecision {
     return { coord: candidates[0] ?? { x: 0, y: 1 }, rotation: 0 };
   }
 
-  // Sort by score descending, pick best
+  // Pick the best tile placement. The meeple decision is made separately, after
+  // the tile is placed (see chooseHeuristicMeeple).
   moves.sort((a, b) => b.score - a.score);
   const best = moves[0];
-
-  // Decide meeple placement
-  let meepleRef: SegmentRef | undefined;
-  if (currentPlayer.meeplesAvailable > 0) {
-    // We'll simulate placement to check meeple targets via the actual game API
-    // For the heuristic, we evaluate during the AI decide cycle
-    const targets = getMeepleTargetsForPlacement(state, best.coord);
-    if (targets.length > 0) {
-      // Prefer placing on features that can complete soon
-      meepleRef = pickBestMeepleTarget(targets, state);
-    }
-  }
-
-  return { coord: best.coord, rotation: best.rotation, meepleRef };
+  return { coord: best.coord, rotation: best.rotation };
 }
 
 function countAdjacentTiles(state: GameState, coord: Coord): number {
@@ -124,33 +108,50 @@ function estimateOpponentFeatureConnections(state: GameState, coord: Coord, play
   return score;
 }
 
-// These helpers are called from AI decide cycle (before actual placement)
-function getMeepleTargetsForPlacement(state: GameState, coord: Coord): SegmentRef[] {
-  // We can't call getMeepleTargets directly because it checks lastPlacedTileId.
-  // Instead, we check all segments of the pending tile that would be placed.
-  if (!state.pendingTile) return [];
-  const tileId = state.pendingTile.id;
-  return state.pendingTile.segments
-    .filter(seg => {
-      // Check if any adjacent features on this tile are already occupied
-      // We approximate: skip monastery if player has few meeples (save for better features)
-      return true; // Heuristic: all segments are valid targets
-    })
-    .map(seg => ({ tileId, localId: seg.localId }));
+// ── Meeple choice (step 2, after the tile is placed) ──────────────────────────
+
+// Base attractiveness by feature kind. Fields are never claimed by the heuristic
+// (farms tie up a meeple until end-game for little reliable gain).
+const MEEPLE_BASE: Record<string, number> = {
+  CITY: 8, MONASTERY: 7, ROAD: 4, FIELD: -Infinity,
+};
+
+/**
+ * Value of claiming the feature behind `ref` on the just-placed tile. Rewards
+ * high-value kinds, larger features, and proximity to completion. Returns
+ * -Infinity for fields so they are never chosen.
+ */
+function scoreMeepleTarget(state: GameState, ref: SegmentRef): number {
+  let feature: Feature;
+  try { feature = lookupBySegment(state.board.registry, ref); } catch { return -Infinity; }
+
+  const base = MEEPLE_BASE[feature.kind] ?? -Infinity;
+  if (base === -Infinity) return -Infinity;
+
+  const tileCount = new Set(Array.from(feature.segments, s => s.split('#')[0])).size;
+  if (feature.completed) return base + 12 + tileCount;
+  if (feature.kind === 'MONASTERY') return base + (feature.monasterySurroundCount ?? 0);
+  // Cities/roads: closer to closing (fewer open edges) = more reliable points.
+  return base + Math.max(0, 6 - feature.openEdges * 2);
 }
 
-function pickBestMeepleTarget(targets: SegmentRef[], state: GameState): SegmentRef | undefined {
-  // Prioritize: CITY > MONASTERY > ROAD > FIELD
-  // This is a simplified heuristic
-  if (!state.pendingTile) return targets[0];
+/**
+ * Decide which (if any) legal meeple target on the just-placed tile to claim.
+ * Called after placement, so `targets` are the real, legal `SegmentRef`s.
+ * Claims the highest-value non-field feature, or none if only fields are open.
+ */
+export function chooseHeuristicMeeple(
+  state: GameState,
+  targets: SegmentRef[],
+): SegmentRef | null {
+  const player = state.players[state.currentPlayerIndex];
+  if (player.meeplesAvailable <= 0 || targets.length === 0) return null;
 
-  const scored = targets.map(ref => {
-    const seg = state.pendingTile!.segments.find(s => s.localId === ref.localId);
-    if (!seg) return { ref, score: 0 };
-    const kindScores: Record<string, number> = { CITY: 40, MONASTERY: 30, ROAD: 20, FIELD: 10 };
-    return { ref, score: kindScores[seg.kind] ?? 0 };
-  });
-
-  scored.sort((a, b) => b.score - a.score);
-  return scored[0].ref;
+  let best: SegmentRef | null = null;
+  let bestScore = 0;
+  for (const ref of targets) {
+    const s = scoreMeepleTarget(state, ref);
+    if (s > bestScore) { bestScore = s; best = ref; }
+  }
+  return best;
 }

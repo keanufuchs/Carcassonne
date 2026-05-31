@@ -20,3 +20,13 @@
   border-bottom: 1px solid #2a2a4a;
   padding: 4px 0;
 }
+
+.game-timeline {
+  width: 175px;
+  flex-shrink: 0;
+  background: #1a1a2e;
+  border-left: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

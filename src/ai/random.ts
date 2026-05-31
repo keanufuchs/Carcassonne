@@ -1,8 +1,7 @@
-import type { Rotation } from '../core/types';
+import type { Rotation, SegmentRef } from '../core/types';
 import type { GameState } from '../core/game/GameState';
 import { canPlace } from '../core/board/placement';
 import { candidatePlacements } from '../core/board/Board';
-import { getMeepleTargets } from '../core/game/Game';
 import type { AIDecision } from './AI';
 
 const ALL_ROTATIONS: Rotation[] = [0, 90, 180, 270];
@@ -34,7 +33,22 @@ export async function computeRandomMove(state: GameState): Promise<AIDecision> {
 
   const chosen = legalMoves[Math.floor(Math.random() * legalMoves.length)];
 
-  // For meeple decision, we need to actually place first, then check targets
-  // We just return the placement; meeple decision happens after placement
+  // Meeple decision happens after placement (see chooseRandomMeeple), when the
+  // real tile id and legal targets are known.
   return { coord: chosen.coord, rotation: chosen.rotation };
+}
+
+/**
+ * Random meeple decision for the just-placed tile. Called after placement, so
+ * `targets` are the real, legal `SegmentRef`s. Claims a random target most of
+ * the time, occasionally skipping to vary play (and conserve meeples).
+ */
+export function chooseRandomMeeple(
+  state: GameState,
+  targets: SegmentRef[],
+): SegmentRef | null {
+  const player = state.players[state.currentPlayerIndex];
+  if (player.meeplesAvailable <= 0 || targets.length === 0) return null;
+  if (Math.random() < 0.25) return null;
+  return targets[Math.floor(Math.random() * targets.length)];
 }

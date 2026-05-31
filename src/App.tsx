@@ -16,6 +16,8 @@ import { PlayerPanel } from './ui/hud/PlayerPanel';
 import { TilePreview } from './ui/hud/TilePreview';
 import { Controls } from './ui/hud/Controls';
 import { EndGameScreen } from './ui/hud/EndGameScreen';
+import { TurnTimeline } from './ui/hud/TurnTimeline';
+import type { MoveRecord } from './ui/hud/TurnTimeline';
 import { SetupScreen } from './ui/SetupScreen';
 import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
@@ -73,6 +75,12 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   const state = useGameState();
   const currentPlayer = state.players[state.currentPlayerIndex];
   const aiRunning = useRef(false);
+  const pendingReasoningRef = useRef<string | null>(null);
+  const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
+  const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
+  const [highlightKey, setHighlightKey] = useState(0);
+  const highlightTimerRef = useRef<number | null>(null);
+  const prevTileKeysRef = useRef<Set<string>>(new Set());
 
   // Auto-draw tile at the start of every turn
   useEffect(() => {
@@ -80,6 +88,39 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
       controller.drawTile();
     }
   }, [state.phase, state.pendingTile, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Track move history via direct controller subscription so we never miss a
+  // placement that _advanceTurn() resolves inline (before publish() fires).
+  useEffect(() => {
+    prevTileKeysRef.current = new Set(controller.getState().board.tiles.keys());
+    return controller.subscribe((s) => {
+      if (s.board.tiles.size <= prevTileKeysRef.current.size) return;
+      let newKey: string | undefined;
+      for (const key of s.board.tiles.keys()) {
+        if (!prevTileKeysRef.current.has(key)) { newKey = key; break; }
+      }
+      prevTileKeysRef.current = new Set(s.board.tiles.keys());
+      if (!newKey) return;
+      const placed = s.board.tiles.get(newKey);
+      if (!placed) return;
+      // currentPlayerIndex already advanced in PLACING_TILE; still the placer in PLACING_MEEPLE / GAME_OVER
+      const placerIndex = (s.phase === 'PLACING_MEEPLE' || s.phase === 'GAME_OVER')
+        ? s.currentPlayerIndex
+        : (s.currentPlayerIndex - 1 + s.players.length) % s.players.length;
+      const player = s.players[placerIndex];
+      const reasoning = pendingReasoningRef.current ?? undefined;
+      pendingReasoningRef.current = null;
+      setMoveLog(prev => [...prev, {
+        turn: prev.length + 1,
+        playerName: player.name,
+        playerColor: player.color,
+        prototypeId: placed.prototypeId,
+        coord: placed.coord,
+        rotation: placed.rotation,
+        reasoning,
+      }]);
+    });
+  }, [controller]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-execute AI turns
   useEffect(() => {
@@ -90,11 +131,25 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
 
     aiRunning.current = true;
     const run = async () => {
-      await executeAITurn(controller, currentMode);
+      await executeAITurn(controller, currentMode, (event) => {
+        if (event.type === 'reasoning') {
+          pendingReasoningRef.current = event.text;
+        }
+      });
       aiRunning.current = false;
     };
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleHighlight(coord: { x: number; y: number }) {
+    if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
+    setHighlightedCoord(coord);
+    setHighlightKey(k => k + 1);
+    highlightTimerRef.current = window.setTimeout(() => {
+      setHighlightedCoord(null);
+      highlightTimerRef.current = null;
+    }, 3000);
+  }
 
   return (
     <div className="game-layout">
@@ -117,8 +172,12 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
             controller={controller}
           />
         </div>
+
       </div>
-      <BoardView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} />
+      <BoardView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
+      <div className="game-timeline">
+        <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
+      </div>
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen players={state.players} onRestart={() => { clearLocalGame(); window.location.reload(); }} />
       )}

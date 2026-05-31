@@ -3,10 +3,24 @@ export { computeHeuristicMove } from './heuristic';
 export { computeIntelligentMove } from './intelligent';
 export { computeRandomMove } from './random';
 
+import type { SegmentRef } from '../core/types';
+import type { GameState } from '../core/game/GameState';
 import type { GameController } from '../controller/GameController';
 import type { AIDecision } from './AI';
+import { chooseRandomMeeple } from './random';
+import { chooseHeuristicMeeple } from './heuristic';
 
 export type AIMode = 'random' | 'heuristic' | 'intelligent';
+
+export type AIStatusEvent =
+  | { type: 'start';       model: string }
+  | { type: 'mcp_status';  online: boolean }
+  | { type: 'tool_call';   name: string }
+  | { type: 'tool_result'; name: string; summary: string }
+  | { type: 'reasoning';   text: string; coord: { x: number; y: number }; rotation: number }
+  | { type: 'fallback';    reason: 'no_config' | 'timeout' | 'error' | 'invalid_move' }
+  | { type: 'error';       message: string }
+  | { type: 'done' };
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -15,6 +29,7 @@ function delay(ms: number): Promise<void> {
 export async function executeAITurn(
   controller: GameController,
   mode: AIMode,
+  onStatus?: (event: AIStatusEvent) => void,
 ): Promise<void> {
   const state = controller.getState();
   if (state.phase === 'GAME_OVER') return;
@@ -26,7 +41,7 @@ export async function executeAITurn(
     return;
   }
 
-  // await delay(600);
+  await delay(50);
 
   // Draw tile (no-op if tile already drawn, e.g. restored after draw)
   controller.drawTile();
@@ -41,7 +56,7 @@ export async function executeAITurn(
       decision = (await import('./heuristic')).computeHeuristicMove(afterDraw);
       break;
     case 'intelligent':
-      decision = await (await import('./intelligent')).computeIntelligentMove(afterDraw);
+      decision = await (await import('./intelligent')).computeIntelligentMove(afterDraw, onStatus);
       break;
     case 'random':
     default:
@@ -60,12 +75,38 @@ export async function executeAITurn(
 
   if (afterPlace.phase === 'PLACING_MEEPLE') {
     const targets = controller.getMeepleTargetsForLastTile();
-    if (decision.meepleRef && targets.some(t =>
-      t.tileId === decision.meepleRef!.tileId && t.localId === decision.meepleRef!.localId
-    )) {
-      controller.placeMeeple(decision.meepleRef);
-    } else {
-      controller.skipMeeple();
-    }
+    const ref = chooseMeeple(mode, afterPlace, targets, decision);
+    if (ref && controller.placeMeeple(ref).ok) return;
+    controller.skipMeeple();
   }
+}
+
+/**
+ * Pick the meeple to place on the just-placed tile, per AI mode.
+ *
+ * `targets` are the *real* legal `SegmentRef`s (correct runtime tile id). An AI
+ * decided its meeple from the pending (prototype) tile, where only `localId` is
+ * stable across placement — so the AI's `meepleRef` is matched to a real target
+ * by `localId`, never by tile id.
+ */
+function chooseMeeple(
+  mode: AIMode,
+  state: GameState,
+  targets: SegmentRef[],
+  decision: AIDecision,
+): SegmentRef | null {
+  if (targets.length === 0) return null;
+
+  if (mode === 'random') return chooseRandomMeeple(state, targets);
+
+  // The intelligent (LLM) AI decides the meeple jointly with the tile, so honour
+  // that explicit choice when it maps to a legal target (matched by the stable
+  // localId). The heuristic AI sets no meepleRef — it decides the meeple here,
+  // after the tile is placed. Either way, fall back to the heuristic chooser.
+  if (decision.meepleRef) {
+    const match = targets.find(t => t.localId === decision.meepleRef!.localId);
+    if (match) return match;
+  }
+
+  return chooseHeuristicMeeple(state, targets);
 }

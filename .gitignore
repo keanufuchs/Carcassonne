@@ -18,6 +18,12 @@ release
 .claude/
 _temp/
 *.db
+.env
+.superpowers/
+screenshots/
+bugs/
+*-debug.png
+*-verify.png
 
 # Editor directories and files
 .vscode/*

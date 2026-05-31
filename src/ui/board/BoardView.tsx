@@ -77,9 +77,11 @@ interface Props {
   state: GameState;
   controller: GameController;
   isAiTurn?: boolean;
+  highlightedCoord?: { x: number; y: number } | null;
+  highlightKey?: number;
 }
 
-export function BoardView({ state, controller, isAiTurn = false }: Props) {
+export function BoardView({ state, controller, isAiTurn = false, highlightedCoord, highlightKey }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
   const [boardBouncePhase, setBoardBouncePhase] = useState<'idle' | 'bouncing'>('idle');
@@ -293,6 +295,9 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
           {placedTiles.map(tile => {
             const isLastPlaced = tile.tileId === state.lastPlacedTileId;
             const targets = isLastPlaced ? meepleTargets : [];
+            const isHighlighted = highlightedCoord != null
+              && tile.coord.x === highlightedCoord.x
+              && tile.coord.y === highlightedCoord.y;
             return (
               <div
                 key={tile.tileId}
@@ -305,6 +310,13 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
                   height: TILE_SIZE,
                 }}
               >
+                {isHighlighted && (
+                  <div
+                    key={highlightKey}
+                    className="tile-history-highlight"
+                    style={{ position: 'absolute', inset: -4, borderRadius: 10, zIndex: 10, pointerEvents: 'none' }}
+                  />
+                )}
                 <TileView
                   placed={tile}
                   registry={state.board.registry}

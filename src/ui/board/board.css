@@ -232,6 +232,16 @@
   }
 }
 
+.tile-history-highlight {
+  animation: tile-history-highlight 3s ease forwards;
+}
+
+@keyframes tile-history-highlight {
+  0%   { box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.95), 0 0 18px rgba(99, 179, 237, 0.55); opacity: 1; }
+  70%  { box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.95), 0 0 18px rgba(99, 179, 237, 0.55); opacity: 1; }
+  100% { box-shadow: 0 0 0 2px rgba(99, 179, 237, 0),    0 0 0   rgba(99, 179, 237, 0);    opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .board-scroll::after,
   .meeple-focus-overlay,
