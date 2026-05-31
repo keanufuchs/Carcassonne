@@ -13,7 +13,7 @@ export function EndGameScreen({ players, onRestart }: Props) {
   if (showMap) {
     return (
       <button
-        onClick={() => setShowMap(false)}
+        onClick={onRestart}
         style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 100,
           background: '#1a1a2e', color: '#ffd700',
@@ -22,7 +22,7 @@ export function EndGameScreen({ players, onRestart }: Props) {
           boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
         }}
       >
-        Back to Results
+        Exit
       </button>
     );
   }
