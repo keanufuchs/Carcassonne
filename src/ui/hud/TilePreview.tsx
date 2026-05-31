@@ -18,11 +18,10 @@ interface Props {
   tile: TilePrototype | null;
   rotation: Rotation;
   controller: GameController;
-  canDraw: boolean;
   deckSize: number;
 }
 
-export function TilePreview({ tile, rotation, controller, canDraw, deckSize }: Props) {
+export function TilePreview({ tile, rotation, controller, deckSize }: Props) {
   return (
     <div style={{ padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
       <div style={{ color: '#777', fontSize: 11 }}>Deck: {deckSize} remaining</div>
@@ -42,15 +41,9 @@ export function TilePreview({ tile, rotation, controller, canDraw, deckSize }: P
             <button data-testid="rotate-cw-btn"  onClick={() => controller.rotatePending('CW')}  style={btnStyle} title="Rotate CW">↻</button>
           </div>
         </>
-      ) : canDraw ? (
-        <button
-          data-testid="draw-tile-btn"
-          onClick={() => controller.drawTile()}
-          style={{ background: '#3a5a8a', color: '#eee', border: 'none', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-        >
-          Draw Tile
-        </button>
-      ) : null}
+      ) : (
+        <div style={{ width: 80, height: 80, border: '2px dashed #444', borderRadius: 2, opacity: 0.4 }} />
+      )}
     </div>
   );
 }

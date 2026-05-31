@@ -74,6 +74,13 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   const currentPlayer = state.players[state.currentPlayerIndex];
   const aiRunning = useRef(false);
 
+  // Auto-draw tile at the start of every turn
+  useEffect(() => {
+    if (state.phase === 'PLACING_TILE' && state.pendingTile === null) {
+      controller.drawTile();
+    }
+  }, [state.phase, state.pendingTile, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-execute AI turns
   useEffect(() => {
     if (!aiModes || state.phase === 'GAME_OVER') return;
@@ -100,7 +107,6 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
             tile={state.pendingTile}
             rotation={state.pendingRotation}
             controller={controller}
-            canDraw={state.phase === 'PLACING_TILE' && state.pendingTile === null}
             deckSize={state.deck.remaining.length}
           />
         </div>
