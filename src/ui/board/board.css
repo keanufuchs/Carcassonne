@@ -33,8 +33,7 @@
   opacity: 0;
 }
 
-.board-grid {
-  display: grid;
+.board-canvas {
   position: relative;
   will-change: transform;
 }
@@ -241,7 +240,7 @@
   .placed-tile-shell,
   .meeple-piece,
   .segment-hit-pulse,
-  .board-grid {
+  .board-canvas {
     animation: none !important;
     transition-duration: 1ms !important;
   }

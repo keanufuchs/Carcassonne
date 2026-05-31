@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
@@ -12,11 +12,20 @@ import './board.css';
 const TILE_SIZE = 80;
 const MEEPLE_FOCUS_ANIMATION_MS = 260;
 
+// Fixed coordinate offset: tiles at game coord (x,y) are placed at pixel
+// (x + COORD_OFFSET) * TILE_SIZE so negative game coords stay positive on canvas.
+// 40 tiles in any direction is more than enough for a full Carcassonne game.
+const COORD_OFFSET = 40;
+const CANVAS_SIZE = (COORD_OFFSET * 2 + 1) * TILE_SIZE;
+
+// center of the start tile (0,0) in canvas pixels — constant, never changes
+const CENTER_X = (COORD_OFFSET + 0.5) * TILE_SIZE;
+const CENTER_Y = (COORD_OFFSET + 0.5) * TILE_SIZE;
+
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
 );
 
-// Shared AudioContext singleton — lazily created on first placement to avoid limit exceeded errors
 let sharedAudioContext: AudioContext | null = null;
 
 function getOrCreateAudioContext(): AudioContext | null {
@@ -85,7 +94,7 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
   const meepleFocusTimerRef = useRef<number | null>(null);
   const previousPlacedTileIdRef = useRef<string | null>(null);
   const currentPlayer = state.players[state.currentPlayerIndex];
-  // state.board.tiles is mutated in place; state.version busts the memo cache correctly.
+
   const placedTiles = useMemo(() => [...state.board.tiles.values()], [state.board.tiles, state.version]);
 
   const candidates = useMemo(
@@ -119,19 +128,6 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
     }
     return byTile;
   }, [hoveredFeatureId, state.board.registry, state.version]);
-
-  const allCoords = [...placedTiles.map(t => t.coord), ...candidates];
-
-  // Bounding box — safe defaults for empty board (should not occur in practice)
-  const minX = allCoords.length > 0 ? Math.min(...allCoords.map(c => c.x)) - 1 : -1;
-  const maxX = allCoords.length > 0 ? Math.max(...allCoords.map(c => c.x)) + 1 : 1;
-  const minY = allCoords.length > 0 ? Math.min(...allCoords.map(c => c.y)) - 1 : -1;
-  const maxY = allCoords.length > 0 ? Math.max(...allCoords.map(c => c.y)) + 1 : 1;
-  const cols  = maxX - minX + 1;
-  const rows  = maxY - minY + 1;
-
-  const col = (x: number) => x - minX + 1;
-  const row = (y: number) => y - minY + 1;
 
   const lastPlacedTile = useMemo(
     () => placedTiles.find(tile => tile.tileId === state.lastPlacedTileId) ?? null,
@@ -167,43 +163,24 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
 
   const meepleFocusTarget = lastPlacedTile && meepleTargets.length > 0
     ? {
-        x: (lastPlacedTile.coord.x - minX + 0.5) * TILE_SIZE,
-        y: (lastPlacedTile.coord.y - minY + 0.5) * TILE_SIZE,
+        x: (lastPlacedTile.coord.x + COORD_OFFSET + 0.5) * TILE_SIZE,
+        y: (lastPlacedTile.coord.y + COORD_OFFSET + 0.5) * TILE_SIZE,
         scale: 1.8,
         viewportX: meepleFocusViewportCenter?.x,
         viewportY: meepleFocusViewportCenter?.y,
       }
     : null;
-  // Key animation phase only on focus identity (lastPlacedTileId), not viewport coordinates.
-  // Viewport coords are computed synchronously in the effect below to avoid feedback loops.
+
   const meepleFocusKey = state.lastPlacedTileId && meepleTargets.length > 0
     ? `focus-${state.lastPlacedTileId}`
     : 'idle';
 
-  // Pixel center of start tile (0,0) in the board grid — used for initial centering only
-  const centerX = -minX * TILE_SIZE + TILE_SIZE / 2;
-  const centerY = -minY * TILE_SIZE + TILE_SIZE / 2;
-
-  const { transform, isPanning, onMouseDown, onMouseMove, stopPan, adjustGridOrigin } = useBoardTransform(
+  const { transform, isPanning, onMouseDown, onMouseMove, stopPan } = useBoardTransform(
     containerRef,
-    centerX,
-    centerY,
+    CENTER_X,
+    CENTER_Y,
     meepleFocusTarget,
   );
-
-  // Compensate when the grid origin (minX/minY) shifts due to new tiles or candidates appearing.
-  // useLayoutEffect runs before paint so there is no visual jump.
-  const prevMinXRef = useRef(minX);
-  const prevMinYRef = useRef(minY);
-  useLayoutEffect(() => {
-    const dMinX = minX - prevMinXRef.current;
-    const dMinY = minY - prevMinYRef.current;
-    prevMinXRef.current = minX;
-    prevMinYRef.current = minY;
-    if (dMinX !== 0 || dMinY !== 0) {
-      adjustGridOrigin(dMinX, dMinY, TILE_SIZE);
-    }
-  }, [minX, minY, adjustGridOrigin]);
 
   const hasMeepleFocus = meepleFocusTarget !== null;
 
@@ -278,7 +255,7 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
   const focusTileSize = TILE_SIZE * transform.scale;
   const boardBounceOffset = boardBouncePhase === 'bouncing' ? '-2px' : '0px';
 
-  if (allCoords.length === 0) return <div className="board-scroll" ref={containerRef} />;
+  if (placedTiles.length === 0) return <div className="board-scroll" ref={containerRef} />;
 
   return (
     <div
@@ -301,12 +278,10 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
         }}
       >
         <div
-          className="board-grid"
+          className="board-canvas"
           style={{
-            gridTemplateColumns: `repeat(${cols}, ${TILE_SIZE}px)`,
-            gridTemplateRows: `repeat(${rows}, ${TILE_SIZE}px)`,
-            width: cols * TILE_SIZE,
-            height: rows * TILE_SIZE,
+            width: CANVAS_SIZE,
+            height: CANVAS_SIZE,
             transform: `translate(${transform.offsetX}px, ${transform.offsetY}px) scale(${transform.scale})`,
             transformOrigin: '0 0',
             transition: showMeepleFocus ? 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
@@ -319,7 +294,13 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
               <div
                 key={tile.tileId}
                 data-testid={`placed-tile-${tile.coord.x},${tile.coord.y}`}
-                style={{ gridColumn: col(tile.coord.x), gridRow: row(tile.coord.y), position: 'relative' }}
+                style={{
+                  position: 'absolute',
+                  left: (tile.coord.x + COORD_OFFSET) * TILE_SIZE,
+                  top: (tile.coord.y + COORD_OFFSET) * TILE_SIZE,
+                  width: TILE_SIZE,
+                  height: TILE_SIZE,
+                }}
               >
                 <TileView
                   placed={tile}
@@ -343,11 +324,20 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
             const isHovered = hovered === key;
             const imgSrc = isHovered ? (tileImageMap[state.pendingTile!.id] ?? '') : undefined;
             return (
-              <div key={key} style={{ gridColumn: col(coord.x), gridRow: row(coord.y) }}>
+              <div
+                key={key}
+                style={{
+                  position: 'absolute',
+                  left: (coord.x + COORD_OFFSET) * TILE_SIZE,
+                  top: (coord.y + COORD_OFFSET) * TILE_SIZE,
+                  width: TILE_SIZE,
+                  height: TILE_SIZE,
+                }}
+              >
                 <GhostTile
                   size={TILE_SIZE}
                   legal={preview.legal}
-                  onClick={() => !isAiTurn && preview.legal && controller.placeTile(coord)}
+                  onClick={() => preview.legal && controller.placeTile(coord)}
                   onHover={() => setHovered(key)}
                   onLeave={() => setHovered(null)}
                   imageSrc={imgSrc}
