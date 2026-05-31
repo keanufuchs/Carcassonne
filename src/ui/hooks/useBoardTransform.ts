@@ -10,10 +10,32 @@ export interface BoardTransform {
   offsetY: number;
 }
 
+export interface BoardFocusTarget {
+  x: number;
+  y: number;
+  scale?: number;
+  viewportX?: number;
+  viewportY?: number;
+}
+
+function createTransform(
+  container: HTMLDivElement,
+  scale: number,
+  centerX: number,
+  centerY: number,
+) {
+  return {
+    scale,
+    offsetX: container.clientWidth / 2 - centerX * scale,
+    offsetY: container.clientHeight / 2 - centerY * scale,
+  };
+}
+
 export function useBoardTransform(
   containerRef: RefObject<HTMLDivElement | null>,
   centerX: number,
   centerY: number,
+  focusTarget: BoardFocusTarget | null = null,
 ) {
   const [transform, setTransform] = useState<BoardTransform>({ scale: 1.0, offsetX: 0, offsetY: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -32,13 +54,30 @@ export function useBoardTransform(
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    setTransform(t => ({
-      ...t,
-      offsetX: el.clientWidth / 2 - centerX,
-      offsetY: el.clientHeight / 2 - centerY,
-    }));
+    setTransform(createTransform(el, 1, centerX, centerY));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    if (!focusTarget) {
+      setTransform(createTransform(el, 1, centerX, centerY));
+      stopPan();
+      return;
+    }
+
+    const scale = focusTarget.scale ?? 1.75;
+    const viewportX = focusTarget.viewportX ?? el.clientWidth / 2;
+    const viewportY = focusTarget.viewportY ?? el.clientHeight / 2;
+    setTransform({
+      scale,
+      offsetX: viewportX - focusTarget.x * scale,
+      offsetY: viewportY - focusTarget.y * scale,
+    });
+    stopPan();
+  }, [centerX, centerY, containerRef, focusTarget, stopPan]);
 
   // Non-passive wheel listener (required to call preventDefault)
   useEffect(() => {

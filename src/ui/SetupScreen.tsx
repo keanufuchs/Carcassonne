@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
 
@@ -21,6 +21,34 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid #444', borderRadius: 5,
   padding: '7px 10px', fontSize: 14, outline: 'none',
   width: '100%', boxSizing: 'border-box',
+};
+
+const aiCardStyle: React.CSSProperties = {
+  background: 'linear-gradient(180deg, rgba(58,58,106,0.30) 0%, rgba(26,26,46,0.9) 100%)',
+  border: '1px solid #3a3a6a',
+  borderRadius: 9,
+  padding: '10px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+};
+
+const difficultyBadgeStyle: Record<'Einfach' | 'Normal' | 'Schwer', React.CSSProperties> = {
+  Einfach: {
+    background: 'rgba(74, 222, 128, 0.16)',
+    border: '1px solid rgba(74, 222, 128, 0.45)',
+    color: '#86efac',
+  },
+  Normal: {
+    background: 'rgba(96, 165, 250, 0.16)',
+    border: '1px solid rgba(96, 165, 250, 0.45)',
+    color: '#93c5fd',
+  },
+  Schwer: {
+    background: 'rgba(248, 113, 113, 0.16)',
+    border: '1px solid rgba(248, 113, 113, 0.45)',
+    color: '#fca5a5',
+  },
 };
 
 function PrimaryBtn({ enabled, onClick, children, testId }: { enabled: boolean; onClick: () => void; children: React.ReactNode; testId?: string }) {

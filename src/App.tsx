@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
+import { createRandomAI } from './controller/RandomAI';
+import { createGreedyAI } from './controller/GreedyAI';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -24,6 +26,7 @@ import './ui/styles/game.css';
 // ── Local game persistence ─────────────────────────────────────────────────
 
 const LOCAL_SAVE_KEY = 'carc_local_game';
+const LOCAL_SAVE_AI_KEY = 'carc_local_game_ai';
 
 function saveLocalGame(state: Readonly<import('./core/game/GameState').GameState>): void {
   try { localStorage.setItem(LOCAL_SAVE_KEY, serializeState(state)); } catch { /* quota */ }
@@ -38,6 +41,7 @@ function loadLocalGame(): import('./core/game/GameState').GameState | null {
 
 function clearLocalGame(): void {
   localStorage.removeItem(LOCAL_SAVE_KEY);
+  try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
 }
 
 // ── Network session persistence ────────────────────────────────────────────
@@ -134,15 +138,55 @@ export default function App() {
 
   const [lobbyInfo, setLobbyInfo] = useState<LobbyInfo | null>(null);
 
+  type AIController = { start(): void; stop(): void };
+
   const networkRef = useRef<NetworkController | null>(null);
   const localRef   = useRef<GameController | null>(null);
+  const aiRef = useRef<AIController | null>(null);
+  const aiDifficultyRef = useRef<'Einfach' | 'Normal' | 'Schwer' | null>(null);
 
-  // Restore local game from save
+  // Restore local game from save (controller only)
   if (savedLocal && !localRef.current) {
     localRef.current = createGameController(savedLocal);
     // auto-save on every subsequent change
     localRef.current.subscribe(saveLocalGame);
   }
+
+  // Restore AI controller from persisted meta after mount to avoid starting side-effects during render.
+  useEffect(() => {
+    if (!localRef.current) return;
+    try {
+      const raw = localStorage.getItem(LOCAL_SAVE_AI_KEY);
+      if (!raw) return;
+      const aiMeta = JSON.parse(raw) as { difficulty: 'Einfach' | 'Normal' | 'Schwer'; playerIndex: number } | null;
+      if (!aiMeta) return;
+      const ctrl = localRef.current!;
+      const idx = typeof aiMeta.playerIndex === 'number' ? aiMeta.playerIndex : 1;
+      if (aiMeta.difficulty === 'Einfach') {
+        aiRef.current = createRandomAI(ctrl, idx);
+        aiRef.current.start();
+        aiDifficultyRef.current = 'Einfach';
+      } else if (aiMeta.difficulty === 'Normal') {
+        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 0.6 });
+        aiRef.current.start();
+        aiDifficultyRef.current = 'Normal';
+      } else if (aiMeta.difficulty === 'Schwer') {
+        aiRef.current = createGreedyAI(ctrl, idx, { placeMeepleProbability: 1 });
+        aiRef.current.start();
+        aiDifficultyRef.current = 'Schwer';
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    return () => {
+      if (aiRef.current) {
+        try { aiRef.current.stop(); } catch {}
+        aiRef.current = null;
+      }
+      aiDifficultyRef.current = null;
+    };
+  }, []);
 
   // Reconnect network game from URL + localStorage on mount
   useEffect(() => {
@@ -191,6 +235,8 @@ export default function App() {
 
   function handleStartLocal(players: import('./ui/SetupScreen').PlayerSetup[]): void {
     clearLocalGame();
+    aiRef.current?.stop?.();
+    aiRef.current = null;
     const ctrl = createGameController();
     ctrl.subscribe(saveLocalGame);
     ctrl.startGame(players.map(p => p.name));
