@@ -323,7 +323,7 @@ export function BoardView({ state, controller, isAiTurn = false }: Props) {
             );
           })}
 
-          {state.phase === 'PLACING_TILE' && state.pendingTile && candidates.map(coord => {
+          {state.phase === 'PLACING_TILE' && state.pendingTile && !isAiTurn && candidates.map(coord => {
             const key = `${coord.x},${coord.y}`;
             const preview = controller.previewPlacement(coord, state.pendingRotation);
             const isHovered = hovered === key;
