@@ -13,6 +13,8 @@ import type { AIDecision } from './AI';
 
 export type AIMode = 'random' | 'heuristic' | 'intelligent';
 
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
 export async function executeAITurn(
   controller: GameController,
   mode: AIMode,
@@ -20,8 +22,11 @@ export async function executeAITurn(
   const state = controller.getState();
   if (state.phase === 'GAME_OVER') return;
 
+  await sleep(600);
+
   // Draw tile
   controller.drawTile();
+  await sleep(500);
   const afterDraw = controller.getState();
   if (afterDraw.phase === 'GAME_OVER') return;
   if (!afterDraw.pendingTile) return;
