@@ -33,11 +33,11 @@ export async function executeAITurn(
       decision = (await import('./heuristic')).computeHeuristicMove(afterDraw);
       break;
     case 'intelligent':
-      decision = (await import('./intelligent')).computeIntelligentMove(afterDraw);
+      decision = await (await import('./intelligent')).computeIntelligentMove(afterDraw);
       break;
     case 'random':
     default:
-      decision = (await import('./random')).computeRandomMove(afterDraw);
+      decision = await (await import('./random')).computeRandomMove(afterDraw);
       break;
   }
 
