@@ -31,6 +31,7 @@ export function TilePreview({ tile, rotation, controller, deckSize }: Props) {
             <img
               data-testid="tile-preview-img"
               data-rotation={rotation}
+              draggable={false}
               src={tileImageMap[tile.id] ?? ''}
               alt={tile.id}
               style={{ width: 80, height: 80, transform: `rotate(${rotation}deg)`, display: 'block' }}

@@ -44,6 +44,7 @@ export function TileView({ placed, registry, players, size = 80, targets = [], c
       <img
         src={imgSrc}
         alt={placed.prototypeId}
+        draggable={false}
         style={{ width: '100%', height: '100%', transform: `rotate(${placed.rotation}deg)`, display: 'block' }}
       />
       {meeples.map((m, i) => {
