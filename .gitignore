@@ -10,7 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-api/index.js
+api/*.js
 dist-electron
 release
 *.local

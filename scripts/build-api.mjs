@@ -1,9 +1,11 @@
 import * as esbuild from 'esbuild';
-import { rmSync } from 'node:fs';
+import { readdirSync, rmSync } from 'node:fs';
 
-// Vercel runs api/*.js as serverless handlers. Bundle server + core so Node ESM
-// does not need extensionless imports under /var/task/src.
-rmSync('api/index.js', { force: true });
+// Catch-all api/[...path].js handles /api/games, /api/games/:id/join, etc.
+// (api/index.js only serves /api and causes 405 on subpaths.)
+for (const name of readdirSync('api')) {
+  if (name.endsWith('.js')) rmSync(`api/${name}`, { force: true });
+}
 
 await esbuild.build({
   entryPoints: ['server/vercel.ts'],
@@ -11,7 +13,7 @@ await esbuild.build({
   platform: 'node',
   target: 'node20',
   format: 'esm',
-  outfile: 'api/index.js',
+  outfile: 'api/[...path].js',
   packages: 'external',
   logLevel: 'info',
 });
