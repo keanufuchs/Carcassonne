@@ -18,13 +18,8 @@ const MAX_TOOL_ROUNDS = 6;
 // ── Credentials ────────────────────────────────────────────────────────────
 
 function getConfig(): { apiKey: string; model: string } | null {
-  const env = (typeof import.meta !== 'undefined')
-    ? (import.meta as Record<string, unknown> & { env?: Record<string, string> }).env ?? {}
-    : (typeof process !== 'undefined' ? process.env ?? {} : {});
-
-  const apiKey = env.VITE_OPENROUTER_API_KEY ?? env.OPENROUTER_API_KEY ?? '';
-  const model  = env.VITE_AI_MODEL ?? env.AI_MODEL ?? DEFAULT_MODEL;
-
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY ?? '';
+  const model  = import.meta.env.VITE_AI_MODEL ?? DEFAULT_MODEL;
   return apiKey ? { apiKey, model } : null;
 }
 
