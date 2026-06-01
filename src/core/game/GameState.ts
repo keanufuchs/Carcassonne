@@ -4,6 +4,7 @@ import type { Board } from '../board/Board';
 import type { Deck } from '../deck/Deck';
 
 export interface GameState {
+  gameId: string;
   version: number;
   board: Board;
   deck: Deck;

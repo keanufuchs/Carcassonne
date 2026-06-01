@@ -34,6 +34,7 @@ export function startGame(
   shuffle(deck, rng);
 
   const state: GameState = {
+    gameId: crypto.randomUUID(),
     version: 1,
     board: createEmptyBoard(),
     deck,

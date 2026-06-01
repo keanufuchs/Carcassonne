@@ -12,6 +12,17 @@ interface ScoredMove {
   coord: Coord;
   rotation: Rotation;
   score: number;
+  adjacency: number;
+  ownConnections: number;
+  opponentConnections: number;
+}
+
+export interface HeuristicAnalysis {
+  candidatesEvaluated: number;
+  adjacency: number;
+  ownConnections: number;
+  opponentConnections: number;
+  totalScore: number;
 }
 
 /**
@@ -26,7 +37,7 @@ interface ScoredMove {
  * 2. Avoid helping opponent features
  * 3. Place on high-expansion-potential positions
  */
-export function computeHeuristicMove(state: GameState): AIDecision {
+export function computeHeuristicMove(state: GameState): { decision: AIDecision; analysis: HeuristicAnalysis } {
   const currentPlayer = state.players[state.currentPlayerIndex];
   const candidates = candidatePlacements(state.board);
   const moves: ScoredMove[] = [];
@@ -35,28 +46,34 @@ export function computeHeuristicMove(state: GameState): AIDecision {
     for (const rot of ALL_ROTATIONS) {
       if (!canPlace(state.board, state.pendingTile!, coord, rot)) continue;
 
-      let score = 0;
-      // Bonus for adjacency count (more neighbors = more feature connections)
-      score += countAdjacentTiles(state, coord) * 5;
-      // Bonus for connecting to own features
-      score += estimateOwnFeatureConnections(state, coord, currentPlayer.id) * 15;
-      // Penalty for connecting to opponent features (may help them)
-      score -= estimateOpponentFeatureConnections(state, coord, currentPlayer.id) * 10;
+      const adjacency = countAdjacentTiles(state, coord);
+      const ownConnections = estimateOwnFeatureConnections(state, coord, currentPlayer.id);
+      const opponentConnections = estimateOpponentFeatureConnections(state, coord, currentPlayer.id);
+      const score = adjacency * 5 + ownConnections * 15 - opponentConnections * 10;
 
-      moves.push({ coord, rotation: rot, score });
+      moves.push({ coord, rotation: rot, score, adjacency, ownConnections, opponentConnections });
     }
   }
 
   if (moves.length === 0) {
-    // Fallback: pick first candidate with first rotation
-    return { coord: candidates[0] ?? { x: 0, y: 1 }, rotation: 0 };
+    return {
+      decision: { coord: candidates[0] ?? { x: 0, y: 1 }, rotation: 0 },
+      analysis: { candidatesEvaluated: 0, adjacency: 0, ownConnections: 0, opponentConnections: 0, totalScore: 0 },
+    };
   }
 
-  // Pick the best tile placement. The meeple decision is made separately, after
-  // the tile is placed (see chooseHeuristicMeeple).
   moves.sort((a, b) => b.score - a.score);
   const best = moves[0];
-  return { coord: best.coord, rotation: best.rotation };
+  return {
+    decision: { coord: best.coord, rotation: best.rotation },
+    analysis: {
+      candidatesEvaluated: moves.length,
+      adjacency: best.adjacency,
+      ownConnections: best.ownConnections,
+      opponentConnections: best.opponentConnections,
+      totalScore: best.score,
+    },
+  };
 }
 
 function countAdjacentTiles(state: GameState, coord: Coord): number {

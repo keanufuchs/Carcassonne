@@ -1,5 +1,6 @@
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import type { ToolCallEntry } from './toolCallAccumulator';
+import type { HeuristicAnalysis } from '../../ai/heuristic';
 
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
@@ -14,6 +15,17 @@ export interface MoveRecord {
   rotation: number;
   toolCalls?: ToolCallEntry[];
   reasoning?: string;
+  heuristicAnalysis?: HeuristicAnalysis;
+}
+
+function HeuristicRow({ label, value, positive, dim }: { label: string; value: string; positive: boolean; dim?: boolean }) {
+  const color = dim ? '#4b5563' : positive ? '#4ade80' : '#f87171';
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#6b7280', padding: '1px 0' }}>
+      <span>{label}</span>
+      <span style={{ color }}>{value}</span>
+    </div>
+  );
 }
 
 function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x: number; y: number }) => void }) {
@@ -101,6 +113,26 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
           </div>
           <div style={{ fontSize: 10, color: '#9ca3af', fontStyle: 'italic', lineHeight: 1.5 }}>
             "{m.reasoning}"
+          </div>
+        </div>
+      )}
+
+      {/* Heuristic Analysis */}
+      {m.heuristicAnalysis && (
+        <div style={{ marginTop: 5 }}>
+          <div style={{
+            fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
+            letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
+            paddingTop: 4, marginBottom: 3,
+          }}>
+            Heuristic Analysis
+          </div>
+          <HeuristicRow label="Neighbors" value={`+${m.heuristicAnalysis.adjacency * 5} pts`} positive={m.heuristicAnalysis.adjacency > 0} />
+          <HeuristicRow label="Own features" value={`+${m.heuristicAnalysis.ownConnections * 15} pts`} positive={m.heuristicAnalysis.ownConnections > 0} />
+          <HeuristicRow label="Opponents" value={`−${m.heuristicAnalysis.opponentConnections * 10} pts`} positive={false} dim={m.heuristicAnalysis.opponentConnections === 0} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#9ca3af', fontWeight: 600, borderTop: '1px solid #1f2937', paddingTop: 3, marginTop: 2 }}>
+            <span>Score: {m.heuristicAnalysis.totalScore}</span>
+            <span style={{ color: '#4b5563' }}>{m.heuristicAnalysis.candidatesEvaluated} moves</span>
           </div>
         </div>
       )}

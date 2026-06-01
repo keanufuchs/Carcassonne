@@ -23,6 +23,7 @@ import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
 import { executeAITurn } from './ai';
 import type { AIMode } from './ai';
+import type { HeuristicAnalysis } from './ai/heuristic';
 import { accumulateToolCall } from './ui/hud/toolCallAccumulator';
 import type { ToolCallEntry } from './ui/hud/toolCallAccumulator';
 import './ui/styles/game.css';
@@ -79,6 +80,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   const aiRunning = useRef(false);
   const pendingReasoningRef = useRef<string | null>(null);
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
+  const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
   const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
@@ -113,8 +115,10 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
       const player = s.players[placerIndex];
       const reasoning = pendingReasoningRef.current ?? undefined;
       const toolCalls = pendingToolCallsRef.current.length > 0 ? [...pendingToolCallsRef.current] : undefined;
+      const heuristicAnalysis = pendingHeuristicRef.current ?? undefined;
       pendingReasoningRef.current = null;
       pendingToolCallsRef.current = [];
+      pendingHeuristicRef.current = null;
       setMoveLog(prev => [...prev, {
         turn: prev.length + 1,
         playerName: player.name,
@@ -124,6 +128,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         rotation: placed.rotation,
         toolCalls,
         reasoning,
+        heuristicAnalysis,
       }]);
     });
   }, [controller]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -140,6 +145,9 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
       await executeAITurn(controller, currentMode, (event) => {
         if (event.type === 'reasoning') {
           pendingReasoningRef.current = event.text;
+        }
+        if (event.type === 'heuristic_analysis') {
+          pendingHeuristicRef.current = event.analysis;
         }
         pendingToolCallsRef.current = accumulateToolCall(pendingToolCallsRef.current, event);
       });

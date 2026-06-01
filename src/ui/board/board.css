@@ -55,20 +55,35 @@
   animation: target-pulse 1.6s ease-in-out infinite;
 }
 
-.segment-hit:hover,
-.segment-hit-line:hover {
-  fill: var(--player-color);
-  opacity: 0.5;
-  stroke: gold;
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.35));
+/* The tile is rendered as its real inline SVG; the highlight is applied to the
+   actual <segment-*> element so it matches the drawn shape and is clipped by
+   whatever is painted on top of it (city/road over field). */
+.tile-inline-svg > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.segment-hit:active,
-.segment-hit-line:active {
-  opacity: 0.78;
-  transform-origin: center;
-  transform: scale(0.985);
+.tile-inline-svg [id^='segment-'] {
+  transition: filter 120ms ease;
+}
+
+/* Hovered feature: strong glow on the exact visible shape. */
+.tile-seg--hl {
+  filter: brightness(1.22) saturate(1.35)
+    drop-shadow(0 0 2.5px gold) drop-shadow(0 0 1px rgba(255, 215, 0, 0.9));
+}
+
+/* The marker dot that sits at each placeable feature's centroid is the
+   persistent "you can place here" affordance and the reliable click target.
+   It enlarges while its feature is hovered. */
+.segment-hit-group:hover .segment-hit-fallback {
+  r: 7;
+  opacity: 1;
+}
+
+.segment-hit-group:active .segment-hit-fallback {
+  opacity: 0.8;
 }
 
 .meeple-focus-overlay {
@@ -165,19 +180,48 @@
   }
 }
 
-.segment-hit {
+.segment-hit-group {
   cursor: pointer;
+}
+
+/* The hit shapes are an invisible interaction layer on top of the inline tile:
+   they capture clicks over the feature's whole drawn area and drive hover
+   (which highlights the real SVG shape underneath). pointer-events: all is
+   required so the transparent (unpainted) fills still receive events. */
+.segment-hit {
+  pointer-events: all;
   fill: transparent;
   stroke: none;
-  transition: fill 100ms ease, stroke 100ms ease;
 }
 
 .segment-hit-line {
-  cursor: pointer;
+  pointer-events: all;
   fill: none;
   stroke: transparent;
   stroke-width: 20;
-  transition: stroke 100ms ease;
+  stroke-linecap: round;
+}
+
+/* Persistent marker dot at the feature centroid: the "place here" affordance
+   and a guaranteed click target even for slivers or covered shapes. */
+.segment-hit-fallback {
+  pointer-events: all;
+  fill: var(--player-color);
+  opacity: 0.85;
+  stroke: #fff;
+  stroke-width: 1;
+  paint-order: stroke;
+  transition: r 120ms ease, opacity 120ms ease;
+}
+
+/* When a feature has no usable SVG shape, the centroid fallback becomes the
+   visible affordance so the player can still see and click the target. */
+.segment-hit-fallback--bare {
+  fill: var(--player-color);
+  opacity: 0.55;
+  stroke: gold;
+  stroke-width: 2;
+  animation: target-pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes tile-place-in {

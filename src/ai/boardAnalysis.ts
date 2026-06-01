@@ -15,6 +15,8 @@ import { lookupBySegment } from '../core/feature/segments';
  * Has no LLM/network/env dependencies — pure functions over GameState.
  */
 
+export const MOVE_DISPLAY_CAP = 30;
+
 const SIDES4: readonly EdgeSide[] = ['N', 'E', 'S', 'W'];
 const SLOTS: readonly { pos: SlotPos; idx: 0 | 1 | 2 }[] = [
   { pos: 'L', idx: 0 }, { pos: 'C', idx: 1 }, { pos: 'R', idx: 2 },
@@ -44,6 +46,37 @@ export interface MoveConnection {
   shieldCount: number;
   completed: boolean;
   meeples: string[];
+}
+
+/**
+ * Generates a short, factual one-liner describing what a move actually does,
+ * derived entirely from ground-truth connection data — never from LLM free text.
+ */
+export function generateMoveReasoning(connections: MoveConnection[], playerId: string): string {
+  if (connections.length === 0) return 'Start new feature';
+
+  const own = connections.filter(c => c.meeples.includes(playerId));
+  const opponent = connections.filter(c => c.meeples.length > 0 && !c.meeples.includes(playerId));
+
+  const completing = own.find(c => c.openEdges === 1);
+  if (completing) {
+    const shield = completing.shieldCount > 0 ? ` (${completing.shieldCount} shield)` : '';
+    return `Complete own ${completing.kind}${shield}`;
+  }
+
+  const blocking = opponent.find(c => c.openEdges === 1);
+  if (blocking) return `Block opponent ${blocking.kind} (1 edge left)`;
+
+  if (own.length > 0) {
+    const best = [...own].sort((a, b) =>
+      (b.kind === 'CITY' ? 1 : 0) - (a.kind === 'CITY' ? 1 : 0) ||
+      b.shieldCount - a.shieldCount,
+    )[0];
+    const shield = best.shieldCount > 0 ? ` +${best.shieldCount} shield` : '';
+    return `Extend own ${best.kind} (${best.openEdges} open)${shield}`;
+  }
+
+  return `Join ${connections[0].kind} (${connections[0].openEdges} open)`;
 }
 
 /** Existing CITY/ROAD features that placing the pending tile at (coord, rotation) would join. */
@@ -79,6 +112,10 @@ export function connectionsForMove(state: GameState, coord: Coord, rotation: Rot
 
 // ── Tool views (shared payload shapes) ──────────────────────────────────────
 
+export function applyMoveCap<T>(allMoves: T[]): { moves: T[]; totalMoves: number } {
+  return { moves: allMoves.slice(0, MOVE_DISPLAY_CAP), totalMoves: allMoves.length };
+}
+
 /** `list_legal_moves` payload: every legal move annotated with the features it would join. */
 export function legalMovesView(state: GameState): {
   moves: { coord: { x: number; y: number }; rotation: number; connectsTo: MoveConnection[] }[];
@@ -86,8 +123,9 @@ export function legalMovesView(state: GameState): {
   tileId: string | null;
   hasMonastery?: boolean;
   hasShield?: boolean;
+  boardTileCount: number;
 } {
-  if (!state.pendingTile) return { moves: [], totalMoves: 0, tileId: null };
+  if (!state.pendingTile) return { moves: [], totalMoves: 0, tileId: null, boardTileCount: state.board.tiles.size };
 
   const moves: { coord: { x: number; y: number }; rotation: number; connectsTo: MoveConnection[] }[] = [];
   for (const coord of candidatePlacements(state.board))
@@ -99,12 +137,14 @@ export function legalMovesView(state: GameState): {
           connectsTo: connectionsForMove(state, coord, rot),
         });
 
+  const { moves: cappedMoves, totalMoves } = applyMoveCap(moves);
   return {
-    moves: moves.slice(0, 30), // cap to keep token usage manageable
-    totalMoves: moves.length,
+    moves: cappedMoves,
+    totalMoves,
     tileId: state.pendingTile.id,
     hasMonastery: state.pendingTile.hasMonastery,
     hasShield: state.pendingTile.hasShield,
+    boardTileCount: state.board.tiles.size,
   };
 }
 
@@ -159,6 +199,49 @@ export function boardFeaturesView(state: GameState): {
   });
 
   return { features, boardTileCount: state.board.tiles.size };
+}
+
+export interface MeepleTargetInfo {
+  segmentLocalId: number;
+  kind: string;
+  claimable: boolean;
+  openEdges?: number;
+  shieldCount?: number;
+}
+
+/** `get_meeple_targets` payload: which segments on the pending tile are legally claimable. */
+export function meeplesView(state: GameState, coord: Coord, rotation: Rotation): {
+  meeplesAvailable: number;
+  targets: MeepleTargetInfo[];
+} {
+  const proto = state.pendingTile;
+  const player = state.players[state.currentPlayerIndex];
+  if (!proto) return { meeplesAvailable: player.meeplesAvailable, targets: [] };
+
+  const targets: MeepleTargetInfo[] = proto.segments.map(seg => {
+    let claimable = true;
+    let openEdges: number | undefined;
+    let shieldCount: number | undefined;
+
+    for (const slot of seg.edgeSlots) {
+      const boardSide = rotateSide(slot.side, rotation);
+      const n = stepCoord(coord, boardSide);
+      const neighbor = state.board.tiles.get(`${n.x},${n.y}`);
+      if (!neighbor) continue;
+      const ref = segmentRefAt(neighbor, opposite(boardSide), flipPos(slot.pos));
+      if (!ref) continue;
+      try {
+        const feature = lookupBySegment(state.board.registry, ref);
+        if (feature.meeples.length > 0) claimable = false;
+        openEdges = feature.openEdges;
+        shieldCount = feature.shieldCount;
+      } catch { /* no feature at this slot */ }
+    }
+
+    return { segmentLocalId: seg.localId, kind: seg.kind, claimable, openEdges, shieldCount };
+  });
+
+  return { meeplesAvailable: player.meeplesAvailable, targets };
 }
 
 /** `get_player_status` payload. */

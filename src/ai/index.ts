@@ -1,5 +1,6 @@
 export type { AI, AIDecision } from './AI';
 export { computeHeuristicMove } from './heuristic';
+export type { HeuristicAnalysis } from './heuristic';
 export { computeIntelligentMove } from './intelligent';
 export { computeRandomMove } from './random';
 
@@ -13,13 +14,14 @@ import { chooseHeuristicMeeple } from './heuristic';
 export type AIMode = 'random' | 'heuristic' | 'intelligent';
 
 export type AIStatusEvent =
-  | { type: 'start';       model: string }
-  | { type: 'mcp_status';  online: boolean }
-  | { type: 'tool_call';   name: string }
-  | { type: 'tool_result'; name: string; summary: string }
-  | { type: 'reasoning';   text: string; coord: { x: number; y: number }; rotation: number }
-  | { type: 'fallback';    reason: 'no_config' | 'timeout' | 'error' | 'invalid_move' }
-  | { type: 'error';       message: string }
+  | { type: 'start';              model: string }
+  | { type: 'mcp_status';         online: boolean }
+  | { type: 'tool_call';          name: string }
+  | { type: 'tool_result';        name: string; summary: string }
+  | { type: 'reasoning';          text: string; coord: { x: number; y: number }; rotation: number }
+  | { type: 'heuristic_analysis'; analysis: import('./heuristic').HeuristicAnalysis }
+  | { type: 'fallback';           reason: 'no_config' | 'timeout' | 'error' | 'invalid_move' }
+  | { type: 'error';              message: string }
   | { type: 'done' };
 
 function delay(ms: number): Promise<void> {
@@ -52,9 +54,12 @@ export async function executeAITurn(
 
   let decision: AIDecision;
   switch (mode) {
-    case 'heuristic':
-      decision = (await import('./heuristic')).computeHeuristicMove(afterDraw);
+    case 'heuristic': {
+      const { decision: h, analysis } = (await import('./heuristic')).computeHeuristicMove(afterDraw);
+      decision = h;
+      onStatus?.({ type: 'heuristic_analysis', analysis });
       break;
+    }
     case 'intelligent':
       decision = await (await import('./intelligent')).computeIntelligentMove(afterDraw, onStatus);
       break;
