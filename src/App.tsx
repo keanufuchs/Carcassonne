@@ -76,6 +76,7 @@ function pushUrl(gameId: string): void {
 function GameApp({ controller, aiModes }: { controller: GameController; aiModes?: PlayerAIMode[] }) {
   const state = useGameState();
   const currentPlayer = state.players[state.currentPlayerIndex];
+  const isHumanTurn = !aiModes || aiModes[state.currentPlayerIndex] === 'human';
   const aiRunning = useRef(false);
   const activeAiRunRef = useRef(0);
   const pendingReasoningRef = useRef<string | null>(null);
@@ -94,6 +95,42 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
       controller.drawTile();
     }
   }, [state.phase, state.pendingTile, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keyboard shortcuts (A/D rotate, Esc skip meeple)
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (!isHumanTurn) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.isContentEditable) return;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      const key = event.key.toLowerCase();
+      if (key === 'a') {
+        if (state.phase === 'PLACING_TILE' && state.pendingTile) {
+          controller.rotatePending('CCW');
+          event.preventDefault();
+        }
+        return;
+      }
+      if (key === 'd') {
+        if (state.phase === 'PLACING_TILE' && state.pendingTile) {
+          controller.rotatePending('CW');
+          event.preventDefault();
+        }
+        return;
+      }
+      if (event.key === 'Escape') {
+        if (state.phase === 'PLACING_MEEPLE') {
+          controller.skipMeeple();
+          event.preventDefault();
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [controller, isHumanTurn, state.phase, state.pendingTile]);
 
   // Track move history via direct controller subscription so we never miss a
   // placement that _advanceTurn() resolves inline (before publish() fires).
