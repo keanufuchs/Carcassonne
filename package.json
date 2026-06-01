@@ -23,11 +23,13 @@
     "electron:pack:win": "npm run electron:build && electron-builder --win"
   },
   "dependencies": {
+    "@vercel/blob": "^2.4.0",
     "better-sqlite3": "^11.10.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "serverless-http": "^4.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
@@ -68,13 +70,24 @@
     },
     "mac": {
       "target": [
-        { "target": "dmg", "arch": ["x64", "arm64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.games"
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {

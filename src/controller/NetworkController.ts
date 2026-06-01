@@ -8,8 +8,15 @@ import type { GameController } from './GameController';
 import { createPubSub } from './pubsub';
 import type { Unsubscribe } from './pubsub';
 
-const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
-const WS  = import.meta.env.VITE_WS_URL  ?? 'ws://localhost:3001';
+function apiBase(): string {
+  const env = import.meta.env.VITE_API_URL;
+  if (env) return env;
+  if (typeof window !== 'undefined') return window.location.origin;
+  return 'http://localhost:3001';
+}
+
+const USE_POLLING = !import.meta.env.VITE_WS_URL;
+const WS = import.meta.env.VITE_WS_URL ?? '';
 
 export interface NetworkSession {
   gameId: string;
@@ -34,8 +41,9 @@ async function apiError(res: Response): Promise<never> {
   try {
     const e = await res.json() as { error?: string };
     throw new Error(e.error ?? `HTTP ${res.status}`);
-  } catch {
-    throw new Error(`Server error (HTTP ${res.status}). Is the server running? Use: npm run dev:full`);
+  } catch (err) {
+    if (err instanceof Error && !err.message.includes('HTTP')) throw err;
+    throw new Error(`Server error (HTTP ${res.status})`);
   }
 }
 
@@ -43,12 +51,12 @@ async function apiFetch(url: string, init: RequestInit): Promise<Response> {
   try {
     return await fetch(url, init);
   } catch {
-    throw new Error('Server not reachable. Start with: npm run dev:full');
+    throw new Error('Server not reachable. Check your network connection.');
   }
 }
 
 export async function createGame(playerName: string): Promise<NetworkSession> {
-  const res = await apiFetch(`${API}/api/games`, {
+  const res = await apiFetch(`${apiBase()}/api/games`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ playerName }),
@@ -62,13 +70,101 @@ export async function joinGame(
   playerName: string,
   existingSessionId?: string,
 ): Promise<NetworkSession> {
-  const res = await apiFetch(`${API}/api/games/${gameId}/join`, {
+  const res = await apiFetch(`${apiBase()}/api/games/${gameId}/join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ playerName, sessionId: existingSessionId }),
   });
   if (!res.ok) return apiError(res);
   return res.json() as Promise<NetworkSession>;
+}
+
+// ── Polling transport (Vercel / serverless) ────────────────────────────────
+
+function createPollingTransport(session: NetworkSession, onMessage: (msg: object) => void): {
+  send(msg: object): void;
+  stop(): void;
+} {
+  let lobbyTimer: ReturnType<typeof setInterval> | null = null;
+  let stateTimer: ReturnType<typeof setInterval> | null = null;
+  let stopped = false;
+  let inGame = false;
+
+  async function pollLobby(): Promise<void> {
+    if (stopped || inGame) return;
+    try {
+      const res = await fetch(
+        `${apiBase()}/api/games/${session.gameId}/lobby?sessionId=${session.sessionId}`,
+      );
+      if (res.ok) onMessage({ type: 'lobby', ...(await res.json() as LobbyInfo) });
+    } catch { /* retry on next tick */ }
+  }
+
+  async function pollState(): Promise<void> {
+    if (stopped) return;
+    try {
+      const res = await fetch(
+        `${apiBase()}/api/games/${session.gameId}/state?sessionId=${session.sessionId}`,
+      );
+      if (res.status === 204) return;
+      if (res.ok) {
+        inGame = true;
+        if (lobbyTimer) { clearInterval(lobbyTimer); lobbyTimer = null; }
+        const { state, playerIndex } = await res.json() as { state: string; playerIndex: number };
+        onMessage({ type: 'state', state, playerIndex });
+      }
+    } catch { /* retry on next tick */ }
+  }
+
+  function startStatePolling(): void {
+    if (stateTimer) return;
+    stateTimer = setInterval(() => void pollState(), 500);
+    void pollState();
+  }
+
+  lobbyTimer = setInterval(() => void pollLobby(), 1000);
+  void pollLobby();
+  startStatePolling();
+
+  return {
+    send(msg: object) {
+      void apiFetch(`${apiBase()}/api/games/${session.gameId}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: session.sessionId, ...msg }),
+      }).then(async (res) => {
+        if (!res.ok) return;
+        void pollState();
+      });
+    },
+    stop() {
+      stopped = true;
+      if (lobbyTimer) clearInterval(lobbyTimer);
+      if (stateTimer) clearInterval(stateTimer);
+    },
+  };
+}
+
+// ── WebSocket transport (local dev) ────────────────────────────────────────
+
+function createWebSocketTransport(session: NetworkSession, onMessage: (msg: object) => void): {
+  send(msg: object): void;
+  stop(): void;
+} {
+  const ws = new WebSocket(`${WS}?sessionId=${session.sessionId}`);
+
+  ws.addEventListener('message', (event) => {
+    onMessage(JSON.parse(event.data as string) as object);
+  });
+
+  return {
+    send(msg: object) {
+      const payload = JSON.stringify(msg);
+      if (ws.readyState === WebSocket.OPEN) ws.send(payload);
+      else ws.addEventListener('open', () => ws.send(payload), { once: true });
+    },
+    stop() { ws.close(); },
+  };
 }
 
 // ── Controller factory ─────────────────────────────────────────────────────
@@ -78,16 +174,8 @@ export function createNetworkController(session: NetworkSession): NetworkControl
   const pubsub      = createPubSub<Readonly<GameState>>();
   const lobbyPubsub = createPubSub<LobbyInfo>();
 
-  const ws = new WebSocket(`${WS}?sessionId=${session.sessionId}`);
-
-  function send(msg: object): void {
-    const payload = JSON.stringify(msg);
-    if (ws.readyState === WebSocket.OPEN) ws.send(payload);
-    else ws.addEventListener('open', () => ws.send(payload), { once: true });
-  }
-
-  ws.addEventListener('message', (event) => {
-    const msg = JSON.parse(event.data as string) as {
+  function handleMessage(raw: object): void {
+    const msg = raw as {
       type: string;
       state?: string;
       gameId?: string;
@@ -104,7 +192,15 @@ export function createNetworkController(session: NetworkSession): NetworkControl
         isHost: msg.isHost!,
       });
     }
-  });
+  }
+
+  const transport = USE_POLLING
+    ? createPollingTransport(session, handleMessage)
+    : createWebSocketTransport(session, handleMessage);
+
+  function send(msg: object): void {
+    transport.send(msg);
+  }
 
   function requireState(): GameState {
     if (!state) throw new Error('State not yet received');
@@ -150,5 +246,4 @@ export function createNetworkController(session: NetworkSession): NetworkControl
   return controller;
 }
 
-// Re-export for convenience
 export type { SegmentRef, Coord };
