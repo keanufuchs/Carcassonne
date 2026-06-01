@@ -7,12 +7,9 @@ function makeTile(id: string): TilePrototype {
   return {
     id,
     segments: [],
-    file: `${id}.svg`,
     edges: { N: ['FIELD', 'FIELD', 'FIELD'], S: ['FIELD', 'FIELD', 'FIELD'], E: ['FIELD', 'FIELD', 'FIELD'], W: ['FIELD', 'FIELD', 'FIELD'] },
     hasMonastery: false,
     hasShield: false,
-    farmSegments: [],
-    connectCitySegments: [],
   };
 }
 

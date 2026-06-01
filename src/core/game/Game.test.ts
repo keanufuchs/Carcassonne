@@ -86,7 +86,7 @@ describe('Game flow', () => {
       const state = freshGame();
       const r = rotatePending(state, 'CW');
       expect(r.ok).toBe(false);
-      expect(r.error).toBe('NO_PENDING_TILE');
+      if (!r.ok) expect(r.error).toBe('NO_PENDING_TILE');
     });
   });
 
@@ -112,7 +112,7 @@ describe('Game flow', () => {
       drawTile(state);
       const r = placeTile(state, { x: 0, y: 0 });
       expect(r.ok).toBe(false);
-      expect(r.error).toBe('CELL_OCCUPIED');
+      if (!r.ok) expect(r.error).toBe('CELL_OCCUPIED');
     });
 
     it('errs without drawn tile', () => {

@@ -11,7 +11,7 @@ const TOOL_LABELS: Record<string, string> = {
   get_player_status:  'Read player status',
 };
 
-function summarizeToolResult(name: string, summary: string) {
+function summarizeToolResult(_name: string, summary: string) {
   return summary ? `— ${summary}` : '';
 }
 
