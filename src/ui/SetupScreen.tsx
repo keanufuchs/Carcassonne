@@ -2,6 +2,15 @@ import { useRef, useState } from 'react';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
 
+const AI_DEFAULT_NAMES: Record<AIMode, string> = {
+  human: '',
+  random: 'Random AI',
+  heuristic: 'Heuristic AI',
+  intelligent: 'Reasoning AI',
+};
+
+function aiDefaultName(mode: AIMode) { return AI_DEFAULT_NAMES[mode]; }
+
 export interface PlayerSetup {
   name: string;
   aiMode: AIMode;
@@ -78,7 +87,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [joinName, setJoinName]     = useState('');
   const [localPlayers, setLocalPlayers] = useState<PlayerSetup[]>([
     { name: 'Player 1', aiMode: 'human' },
-    { name: 'Player 2', aiMode: 'random' },
+    { name: 'Random AI', aiMode: 'random' },
   ]);
 
   function switchTab(t: Tab) { setTab(t); setError(''); }
@@ -162,7 +171,11 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                   value={p.aiMode}
                   onChange={e => {
                     const n = [...localPlayers];
-                    n[i] = { ...n[i], aiMode: e.target.value as AIMode };
+                    const newMode = e.target.value as AIMode;
+                    const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
+                    const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
+                      : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
+                    n[i] = { ...n[i], aiMode: newMode, name };
                     setLocalPlayers(n);
                   }}
                   style={{
@@ -175,7 +188,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                   <option value="human">👤 Human</option>
                   <option value="random">🎲 Random AI</option>
                   <option value="heuristic">🧠 Heuristic AI</option>
-                  <option value="intelligent">🤖 Claude AI</option>
+                  <option value="intelligent">🤖 Reasoning AI</option>
                 </select>
                 {localPlayers.length > 2 && (
                   <button onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}
@@ -184,7 +197,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
               </div>
             ))}
             {localPlayers.length < 5 && (
-              <button onClick={() => setLocalPlayers([...localPlayers, { name: `Player ${localPlayers.length + 1}`, aiMode: 'random' }])}
+              <button onClick={() => setLocalPlayers([...localPlayers, { name: 'Random AI', aiMode: 'random' }])}
                 style={{ background: 'transparent', color: '#6a8ab8', border: '1px dashed #4a6a9a', borderRadius: 5, padding: '7px', cursor: 'pointer', fontSize: 13 }}>
                 + Add Player
               </button>

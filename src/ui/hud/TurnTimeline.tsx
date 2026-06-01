@@ -1,4 +1,5 @@
 import tileDistribution from '../../core/deck/tileDistribution.json';
+import type { ToolCallEntry } from './toolCallAccumulator';
 
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
@@ -11,6 +12,7 @@ export interface MoveRecord {
   prototypeId: string;
   coord: { x: number; y: number };
   rotation: number;
+  toolCalls?: ToolCallEntry[];
   reasoning?: string;
 }
 
@@ -68,10 +70,38 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
         </div>
       </div>
 
+      {/* AI Analysis */}
+      {m.toolCalls && m.toolCalls.length > 0 && (
+        <div style={{ marginTop: 5 }}>
+          <div style={{
+            fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
+            letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
+            paddingTop: 4, marginBottom: 3,
+          }}>
+            AI Analysis
+          </div>
+          {m.toolCalls.map((tc, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#6b7280' }}>
+              <span>{tc.name}</span>
+              <span style={{ color: '#4b5563' }}>{tc.summary}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Reasoning */}
       {m.reasoning && (
-        <div style={{ marginTop: 5, fontSize: 10, color: '#9ca3af', fontStyle: 'italic', lineHeight: 1.5 }}>
-          "{m.reasoning}"
+        <div style={{ marginTop: 5 }}>
+          <div style={{
+            fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
+            letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
+            paddingTop: 4, marginBottom: 3,
+          }}>
+            Reasoning
+          </div>
+          <div style={{ fontSize: 10, color: '#9ca3af', fontStyle: 'italic', lineHeight: 1.5 }}>
+            "{m.reasoning}"
+          </div>
         </div>
       )}
     </div>

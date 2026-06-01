@@ -23,6 +23,8 @@ import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
 import { executeAITurn } from './ai';
 import type { AIMode } from './ai';
+import { accumulateToolCall } from './ui/hud/toolCallAccumulator';
+import type { ToolCallEntry } from './ui/hud/toolCallAccumulator';
 import './ui/styles/game.css';
 
 // ── Local game persistence ─────────────────────────────────────────────────
@@ -76,6 +78,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   const currentPlayer = state.players[state.currentPlayerIndex];
   const aiRunning = useRef(false);
   const pendingReasoningRef = useRef<string | null>(null);
+  const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
   const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
@@ -109,7 +112,9 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         : (s.currentPlayerIndex - 1 + s.players.length) % s.players.length;
       const player = s.players[placerIndex];
       const reasoning = pendingReasoningRef.current ?? undefined;
+      const toolCalls = pendingToolCallsRef.current.length > 0 ? [...pendingToolCallsRef.current] : undefined;
       pendingReasoningRef.current = null;
+      pendingToolCallsRef.current = [];
       setMoveLog(prev => [...prev, {
         turn: prev.length + 1,
         playerName: player.name,
@@ -117,6 +122,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         prototypeId: placed.prototypeId,
         coord: placed.coord,
         rotation: placed.rotation,
+        toolCalls,
         reasoning,
       }]);
     });
@@ -135,6 +141,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         if (event.type === 'reasoning') {
           pendingReasoningRef.current = event.text;
         }
+        pendingToolCallsRef.current = accumulateToolCall(pendingToolCallsRef.current, event);
       });
       aiRunning.current = false;
     };
