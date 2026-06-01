@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
-import { createRandomAI } from './controller/RandomAI';
-import { createGreedyAI } from './controller/GreedyAI';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -22,7 +20,8 @@ import { SetupScreen } from './ui/SetupScreen';
 import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
 import { executeAITurn } from './ai';
-import type { AIMode } from './ai';
+import type { AIMode as RuntimeAIMode } from './ai';
+import type { AIMode as PlayerAIMode } from './ui/SetupScreen';
 import type { HeuristicAnalysis } from './ai/heuristic';
 import { accumulateToolCall } from './ui/hud/toolCallAccumulator';
 import type { ToolCallEntry } from './ui/hud/toolCallAccumulator';
@@ -74,11 +73,13 @@ function pushUrl(gameId: string): void {
 
 // ── Game view ──────────────────────────────────────────────────────────────
 
-function GameApp({ controller, aiModes }: { controller: GameController; aiModes?: AIMode[] }) {
+function GameApp({ controller, aiModes }: { controller: GameController; aiModes?: PlayerAIMode[] }) {
   const state = useGameState();
   const currentPlayer = state.players[state.currentPlayerIndex];
   const aiRunning = useRef(false);
+  const activeAiRunRef = useRef(0);
   const pendingReasoningRef = useRef<string | null>(null);
+  const pendingReasoningUnavailableRef = useRef<MoveRecord['reasoningUnavailableReason'] | null>(null);
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
   const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
   const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
@@ -113,25 +114,45 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         ? s.currentPlayerIndex
         : (s.currentPlayerIndex - 1 + s.players.length) % s.players.length;
       const player = s.players[placerIndex];
+      const aiMode = aiModes?.[placerIndex];
       const reasoning = pendingReasoningRef.current ?? undefined;
+      const reasoningUnavailableReason = aiMode === 'intelligent' && !reasoning
+        ? pendingReasoningUnavailableRef.current ?? 'missing'
+        : undefined;
       const toolCalls = pendingToolCallsRef.current.length > 0 ? [...pendingToolCallsRef.current] : undefined;
       const heuristicAnalysis = pendingHeuristicRef.current ?? undefined;
       pendingReasoningRef.current = null;
+      pendingReasoningUnavailableRef.current = null;
       pendingToolCallsRef.current = [];
       pendingHeuristicRef.current = null;
-      setMoveLog(prev => [...prev, {
-        turn: prev.length + 1,
-        playerName: player.name,
-        playerColor: player.color,
-        prototypeId: placed.prototypeId,
-        coord: placed.coord,
-        rotation: placed.rotation,
-        toolCalls,
-        reasoning,
-        heuristicAnalysis,
-      }]);
+      setMoveLog(prev => {
+        const turn = prev.length + 1;
+        if (aiMode === 'intelligent' && !reasoning) {
+          console.warn('[MoveHistory] Missing reasoning for Reasoning AI move', {
+            turn,
+            playerName: player.name,
+            coord: placed.coord,
+            rotation: placed.rotation,
+            prototypeId: placed.prototypeId,
+            reason: reasoningUnavailableReason,
+          });
+        }
+        return [...prev, {
+          turn,
+          playerName: player.name,
+          playerColor: player.color,
+          prototypeId: placed.prototypeId,
+          coord: placed.coord,
+          rotation: placed.rotation,
+          aiMode,
+          toolCalls,
+          reasoning,
+          reasoningUnavailableReason,
+          heuristicAnalysis,
+        }];
+      });
     });
-  }, [controller]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [controller, aiModes]);
 
   // Auto-execute AI turns
   useEffect(() => {
@@ -141,17 +162,30 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
     if (aiRunning.current) return;
 
     aiRunning.current = true;
+    const runId = activeAiRunRef.current + 1;
+    activeAiRunRef.current = runId;
     const run = async () => {
-      await executeAITurn(controller, currentMode, (event) => {
-        if (event.type === 'reasoning') {
-          pendingReasoningRef.current = event.text;
+      try {
+        await executeAITurn(controller, currentMode as RuntimeAIMode, (event) => {
+          if (activeAiRunRef.current !== runId) return;
+          if (event.type === 'reasoning') {
+            pendingReasoningRef.current = event.text;
+            pendingReasoningUnavailableRef.current = null;
+          }
+          if (event.type === 'fallback') {
+            pendingReasoningUnavailableRef.current = event.reason;
+          }
+          if (event.type === 'heuristic_analysis') {
+            pendingHeuristicRef.current = event.analysis;
+          }
+          pendingToolCallsRef.current = accumulateToolCall(pendingToolCallsRef.current, event);
+        });
+      } finally {
+        if (activeAiRunRef.current === runId) {
+          activeAiRunRef.current = 0;
         }
-        if (event.type === 'heuristic_analysis') {
-          pendingHeuristicRef.current = event.analysis;
-        }
-        pendingToolCallsRef.current = accumulateToolCall(pendingToolCallsRef.current, event);
-      });
-      aiRunning.current = false;
+        aiRunning.current = false;
+      }
     };
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -223,7 +257,6 @@ export default function App() {
   const networkRef = useRef<NetworkController | null>(null);
   const localRef   = useRef<GameController | null>(null);
   const aiRef = useRef<AIController | null>(null);
-  const aiDifficultyRef = useRef<'Einfach' | 'Normal' | 'Schwer' | null>(null);
 
   // Restore local game from save (controller only)
   if (savedLocal && !localRef.current) {
@@ -302,7 +335,7 @@ export default function App() {
     setMode('game');
   }
 
-  const [aiModes, setAiModes] = useState<AIMode[] | undefined>();
+  const [aiModes, setAiModes] = useState<PlayerAIMode[] | undefined>();
 
   function handleStartNetworkGame(): void {
     networkRef.current?.startGame([]);

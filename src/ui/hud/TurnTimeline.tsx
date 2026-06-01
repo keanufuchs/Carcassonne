@@ -13,9 +13,27 @@ export interface MoveRecord {
   prototypeId: string;
   coord: { x: number; y: number };
   rotation: number;
+  aiMode?: 'human' | 'random' | 'heuristic' | 'intelligent';
   toolCalls?: ToolCallEntry[];
   reasoning?: string;
+  reasoningUnavailableReason?: 'no_config' | 'timeout' | 'error' | 'invalid_move' | 'missing';
   heuristicAnalysis?: HeuristicAnalysis;
+}
+
+function formatMissingReasoning(reason?: MoveRecord['reasoningUnavailableReason']): string {
+  switch (reason) {
+    case 'no_config':
+      return 'Reasoning unavailable: no API key was configured, so this move used heuristic fallback.';
+    case 'timeout':
+      return 'Reasoning unavailable: the reasoning request timed out, so this move used heuristic fallback.';
+    case 'error':
+      return 'Reasoning unavailable: the reasoning request failed, so this move used heuristic fallback.';
+    case 'invalid_move':
+      return 'Reasoning unavailable: the reasoning response did not contain a valid move, so this move used heuristic fallback.';
+    case 'missing':
+    default:
+      return 'Reasoning unavailable for this Reasoning AI move.';
+  }
 }
 
 function HeuristicRow({ label, value, positive, dim }: { label: string; value: string; positive: boolean; dim?: boolean }) {
@@ -29,6 +47,8 @@ function HeuristicRow({ label, value, positive, dim }: { label: string; value: s
 }
 
 function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x: number; y: number }) => void }) {
+  const isReasoningAiMove = m.aiMode === 'intelligent' || !!m.reasoning || !!m.reasoningUnavailableReason;
+  const reasoningText = m.reasoning?.trim();
 
   return (
     <div
@@ -102,17 +122,22 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
       )}
 
       {/* Reasoning */}
-      {m.reasoning && (
+      {isReasoningAiMove && (
         <div style={{ marginTop: 5 }}>
           <div style={{
             fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
             letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
             paddingTop: 4, marginBottom: 3,
           }}>
-            Reasoning
+            Reasoning:
           </div>
-          <div style={{ fontSize: 10, color: '#9ca3af', fontStyle: 'italic', lineHeight: 1.5 }}>
-            "{m.reasoning}"
+          <div style={{
+            fontSize: 10,
+            color: reasoningText ? '#9ca3af' : '#6b7280',
+            fontStyle: 'italic',
+            lineHeight: 1.5,
+          }}>
+            {reasoningText ? `"${reasoningText}"` : formatMissingReasoning(m.reasoningUnavailableReason)}
           </div>
         </div>
       )}
