@@ -8,14 +8,13 @@ import type { GameController } from './GameController';
 import { createPubSub } from './pubsub';
 import type { Unsubscribe } from './pubsub';
 
+/** Dev: VITE_API_URL (Vite proxy). Prod: same-origin relative URLs (ignores mis-set localhost). */
 function apiBase(): string {
-  const env = import.meta.env.VITE_API_URL;
-  if (env) return env;
-  if (typeof window !== 'undefined') return window.location.origin;
-  return 'http://localhost:3001';
+  if (import.meta.env.PROD) return '';
+  return import.meta.env.VITE_API_URL || 'http://localhost:5173';
 }
 
-const USE_POLLING = !import.meta.env.VITE_WS_URL;
+const USE_POLLING = import.meta.env.PROD || !import.meta.env.VITE_WS_URL;
 const WS = import.meta.env.VITE_WS_URL ?? '';
 
 export interface NetworkSession {
