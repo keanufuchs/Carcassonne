@@ -37,13 +37,19 @@ export interface NetworkController extends GameController {
 // ── HTTP helpers ───────────────────────────────────────────────────────────
 
 async function apiError(res: Response): Promise<never> {
-  try {
-    const e = await res.json() as { error?: string };
-    throw new Error(e.error ?? `HTTP ${res.status}`);
-  } catch (err) {
-    if (err instanceof Error && !err.message.includes('HTTP')) throw err;
-    throw new Error(`Server error (HTTP ${res.status})`);
+  const body = await res.text();
+  if (body) {
+    try {
+      const e = JSON.parse(body) as { error?: string };
+      throw new Error(e.error ?? `HTTP ${res.status}`);
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        throw new Error(body.length > 200 ? `${body.slice(0, 200)}…` : body);
+      }
+      throw err;
+    }
   }
+  throw new Error(`Server error (HTTP ${res.status})`);
 }
 
 async function apiFetch(url: string, init: RequestInit): Promise<Response> {
