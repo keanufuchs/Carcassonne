@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+api/*.js
 dist-electron
 release
 *.local
@@ -18,6 +19,12 @@ release
 .claude/
 _temp/
 *.db
+.env
+.superpowers/
+screenshots/
+bugs/
+*-debug.png
+*-verify.png
 
 # Editor directories and files
 .vscode/*

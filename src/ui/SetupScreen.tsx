@@ -1,10 +1,26 @@
 import { useState } from 'react';
 
+export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
+
+const AI_DEFAULT_NAMES: Record<AIMode, string> = {
+  human: '',
+  random: 'Random AI',
+  heuristic: 'Heuristic AI',
+  intelligent: 'Reasoning AI',
+};
+
+function aiDefaultName(mode: AIMode) { return AI_DEFAULT_NAMES[mode]; }
+
+export interface PlayerSetup {
+  name: string;
+  aiMode: AIMode;
+}
+
 interface Props {
   initialGameId?: string;
   onCreateGame: (playerName: string) => Promise<void>;
   onJoinGame: (gameId: string, playerName: string) => Promise<void>;
-  onStartLocal: (names: string[]) => void;
+  onStartLocal: (players: PlayerSetup[]) => void;
 }
 
 type Tab = 'create' | 'join' | 'local';
@@ -41,7 +57,10 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [createName, setCreateName] = useState('');
   const [joinCode, setJoinCode]     = useState(initialGameId ?? '');
   const [joinName, setJoinName]     = useState('');
-  const [localNames, setLocalNames] = useState(['Player 1', 'Player 2']);
+  const [localPlayers, setLocalPlayers] = useState<PlayerSetup[]>([
+    { name: 'Player 1', aiMode: 'human' },
+    { name: 'Random AI', aiMode: 'random' },
+  ]);
 
   function switchTab(t: Tab) { setTab(t); setError(''); }
 
@@ -111,24 +130,51 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
 
         {tab === 'local' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Players ({localNames.length}/5)</label>
-            {localNames.map((name, i) => (
-              <div key={i} style={{ display: 'flex', gap: 6 }}>
-                <input style={inputStyle} value={name} placeholder={`Player ${i + 1}`}
-                  onChange={e => { const n = [...localNames]; n[i] = e.target.value; setLocalNames(n); }} />
-                {localNames.length > 2 && (
-                  <button onClick={() => setLocalNames(localNames.filter((_, idx) => idx !== i))}
+            <label style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Players ({localPlayers.length}/5)</label>
+            {localPlayers.map((p, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input style={{ ...inputStyle, flex: 2 }} value={p.name} placeholder={`Player ${i + 1}`}
+                  onChange={e => {
+                    const n = [...localPlayers];
+                    n[i] = { ...n[i], name: e.target.value };
+                    setLocalPlayers(n);
+                  }} />
+                <select
+                  value={p.aiMode}
+                  onChange={e => {
+                    const n = [...localPlayers];
+                    const newMode = e.target.value as AIMode;
+                    const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
+                    const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
+                      : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
+                    n[i] = { ...n[i], aiMode: newMode, name };
+                    setLocalPlayers(n);
+                  }}
+                  style={{
+                    background: '#252540', color: '#ffd700',
+                    border: '1px solid #444', borderRadius: 5,
+                    padding: '6px 8px', fontSize: 12, flex: 1.5,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="human">👤 Human</option>
+                  <option value="random">🎲 Random AI</option>
+                  <option value="heuristic">🧠 Heuristic AI</option>
+                  <option value="intelligent">🤖 Reasoning AI</option>
+                </select>
+                {localPlayers.length > 2 && (
+                  <button onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}
                     style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 5, cursor: 'pointer', padding: '0 10px', fontSize: 16 }}>✕</button>
                 )}
               </div>
             ))}
-            {localNames.length < 5 && (
-              <button onClick={() => setLocalNames([...localNames, `Player ${localNames.length + 1}`])}
+            {localPlayers.length < 5 && (
+              <button onClick={() => setLocalPlayers([...localPlayers, { name: 'Random AI', aiMode: 'random' }])}
                 style={{ background: 'transparent', color: '#6a8ab8', border: '1px dashed #4a6a9a', borderRadius: 5, padding: '7px', cursor: 'pointer', fontSize: 13 }}>
                 + Add Player
               </button>
             )}
-            <PrimaryBtn enabled={localNames.every(n => n.trim())} testId="start-game-btn" onClick={() => onStartLocal(localNames.map(n => n.trim()).filter(Boolean))}>
+            <PrimaryBtn enabled={localPlayers.every(p => p.name.trim())} testId="start-game-btn" onClick={() => onStartLocal(localPlayers)}>
               Start Local Game
             </PrimaryBtn>
           </div>

@@ -10,10 +10,32 @@ export interface BoardTransform {
   offsetY: number;
 }
 
+export interface BoardFocusTarget {
+  x: number;
+  y: number;
+  scale?: number;
+  viewportX?: number;
+  viewportY?: number;
+}
+
+function createTransform(
+  container: HTMLDivElement,
+  scale: number,
+  centerX: number,
+  centerY: number,
+) {
+  return {
+    scale,
+    offsetX: container.clientWidth / 2 - centerX * scale,
+    offsetY: container.clientHeight / 2 - centerY * scale,
+  };
+}
+
 export function useBoardTransform(
   containerRef: RefObject<HTMLDivElement | null>,
   centerX: number,
   centerY: number,
+  focusTarget: BoardFocusTarget | null = null,
 ) {
   const [transform, setTransform] = useState<BoardTransform>({ scale: 1.0, offsetX: 0, offsetY: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -28,17 +50,50 @@ export function useBoardTransform(
     setIsPanning(false);
   }, []);
 
+  const prevFocusRef = useRef<BoardFocusTarget | null>(null);
+
   // Center start tile (0,0) in viewport after mount
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    setTransform(t => ({
-      ...t,
-      offsetX: el.clientWidth / 2 - centerX,
-      offsetY: el.clientHeight / 2 - centerY,
-    }));
+    setTransform(createTransform(el, 1, centerX, centerY));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle focus-in / focus-out transitions only — never re-center on boundary changes
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const prev = prevFocusRef.current;
+    prevFocusRef.current = focusTarget;
+
+    if (focusTarget) {
+      const scale = focusTarget.scale ?? 1.75;
+      const viewportX = focusTarget.viewportX ?? el.clientWidth / 2;
+      const viewportY = focusTarget.viewportY ?? el.clientHeight / 2;
+      setTransform({
+        scale,
+        offsetX: viewportX - focusTarget.x * scale,
+        offsetY: viewportY - focusTarget.y * scale,
+      });
+      stopPan();
+    } else if (prev !== null) {
+      // Exiting focus: zoom back out to scale 1 while keeping the previously
+      // focused tile anchored under the same viewport point. The offset was
+      // computed for the zoomed scale, so simply restoring scale=1 without
+      // recomputing the offset would leave the whole board off-screen.
+      const viewportX = prev.viewportX ?? el.clientWidth / 2;
+      const viewportY = prev.viewportY ?? el.clientHeight / 2;
+      setTransform({
+        scale: 1,
+        offsetX: viewportX - prev.x,
+        offsetY: viewportY - prev.y,
+      });
+      stopPan();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusTarget]);
 
   // Non-passive wheel listener (required to call preventDefault)
   useEffect(() => {

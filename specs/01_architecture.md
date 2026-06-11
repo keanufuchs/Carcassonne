@@ -20,10 +20,11 @@ Four layers, strictly stacked. Each layer may import only from layers below it.
 
 | Layer | May import from | Must NOT import from |
 |---|---|---|
-| `core/` | nothing app-specific (only stdlib) | `controller/`, `ui/`, `electron/`, React, DOM |
+| `core/` | nothing app-specific (only stdlib) | `controller/`, `ui/`, `electron/`, `ai/`, React, DOM |
 | `controller/` | `core/` | `ui/`, `electron/` |
 | `ui/` | `controller/`, `core/` types only | `electron/` directly |
 | `electron/` | nothing in `src/` at runtime | — |
+| `ai/` | `core/` types only | `controller/`, `ui/` |
 
 Enforcement: TypeScript path aliases + an ESLint `import/no-restricted-paths` rule.
 
@@ -64,6 +65,18 @@ src/
   controller/
     GameController.ts          ← wraps Game; commands + subscription
     pubsub.ts                  ← tiny in-process pub/sub
+  ai/
+    types.ts                   ← AI interface (AI, AIMove)
+    random.ts                  ← RandomAI (MH-05) – zufallsbasierter Gegner
+    intelligent.ts             ← IntelligentAI (EW-02) – Claude API Reasoning Model
+    mcp-server/
+      index.ts                 ← MCP-Server-Definition (Tools: get_game_state, get_legal_moves, execute_move)
+    heuristic.ts               ← Fallback-Heuristik bei API-Ausfall
+  multiplayer/
+    server.ts                  ← WebSocket-Server (EW-01)
+    client.ts                  ← WebSocket-Client
+    protocol.ts                ← Nachrichtenformat, Synchronisation
+    session.ts                 ← Session-Persistenz (save/load)
   ui/
     App.tsx
     board/
@@ -76,9 +89,11 @@ src/
       TilePreview.tsx          ← drawn tile + rotate buttons
       Controls.tsx             ← skip-meeple, end-turn buttons
       EndGameScreen.tsx
+      NetworkLobby.tsx         ← Multiplayer-Lobby (EW-01)
     hooks/
       useGameState.ts          ← subscribes to controller, returns snapshot
       useController.ts         ← provides controller from React context
+      useBoardTransform.ts     ← zoom/pan state hook (MH-08)
     styles/
       perspective.css
       tiles.css
@@ -86,6 +101,7 @@ src/
 
 tests/
   core/                        ← mirrors src/core; Vitest
+  e2e/                         ← Playwright E2E tests
 
 vite.config.ts
 tsconfig.json
@@ -103,6 +119,8 @@ electron-builder.yml
 - **core/scoring** — pure functions: `(feature) → points`, `(field, allCities) → points`, plus majority resolution.
 - **core/game** — top-level aggregate. Owns `GameState`, advances the turn FSM, emits events.
 - **controller** — adapts core to UI: synchronous commands return `Result`, exposes `getState`/`subscribe`/`previewPlacement`.
+- **ai** — KI-Gegner: RandomAI (MH-05) für E2E-Tests, IntelligentAI (EW-02) via Claude API mit Heuristik-Fallback.
+- **multiplayer** — Netzwerk-Multiplayer (EW-01): WebSocket-Server/Client, Spielsynchronisation, Session-Persistenz.
 - **ui** — pure presentation: takes the latest `GameState` snapshot, dispatches commands. No game logic.
 - **electron** — boots a `BrowserWindow` pointing at the Vite-built UI. No IPC required for MVP.
 
@@ -115,8 +133,11 @@ electron-builder.yml
 | Framework (UI) | React 18 + functional components + hooks |
 | Styling | Plain CSS (no preprocessor); `transform` / `perspective` / `box-shadow` for 2.5D |
 | Desktop wrapper | Electron + electron-builder |
-| Testing | Vitest (unit + integration), React Testing Library (smoke) |
+| Testing | Vitest (unit + integration), Playwright (E2E), React Testing Library (smoke) |
 | Lint | ESLint with `import/no-restricted-paths` |
+| Multiplayer | WebSocket (ws library), Session-Persistenz via JSON |
+| AI | Anthropic SDK (Claude API), MCP Server Protocol, Heuristik-Fallback |
+| CI | GitHub Actions (lint + test on push to develop) |
 
 ## 1.5 State flow at a glance
 

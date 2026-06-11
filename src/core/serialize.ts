@@ -33,6 +33,7 @@ interface SerializedTile {
 }
 
 export interface SerializedState {
+  gameId: string;
   version: number;
   currentPlayerIndex: number;
   phase: string;
@@ -70,6 +71,7 @@ function getProto(id: string): TilePrototype {
 
 export function serializeState(state: GameState): string {
   const s: SerializedState = {
+    gameId: state.gameId,
     version: state.version,
     currentPlayerIndex: state.currentPlayerIndex,
     phase: state.phase,
@@ -164,6 +166,7 @@ export function deserializeState(json: string): GameState {
   };
 
   return {
+    gameId: d.gameId,
     version: d.version,
     board,
     deck,

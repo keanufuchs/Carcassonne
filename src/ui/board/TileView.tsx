@@ -3,9 +3,9 @@ import type { FeatureRegistry } from '../../core/feature/segments';
 import type { Player } from '../../core/types';
 import type { SegmentRef } from '../../core/types';
 import { segmentPosition } from './segmentPosition';
-import { useTileSvgPaths } from './useTileSvgPaths';
+import { useTileSvgPaths, useInlineTileSvg } from './useTileSvgPaths';
 import { SegmentHitZone } from './SegmentHitZone';
-import { FeatureHighlightZone } from './FeatureHighlightZone';
+import { InlineTile } from './InlineTile';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import { MeepleIcon } from './MeepleIcon';
 
@@ -29,6 +29,17 @@ interface Props {
 export function TileView({ placed, registry, players, size = 80, targets = [], currentPlayerColor, onPlace, featureHighlightIds = [], targetFeatureIds, onHoverFeature }: Props) {
   const imgSrc = tileImageMap[placed.prototypeId] ?? '';
   const shapes = useTileSvgPaths(imgSrc);
+  const markup = useInlineTileSvg(imgSrc);
+
+  // Unrotated centroid per segment, used as the fallback meeple hit area.
+  // Rotation is applied by the SegmentHitZone <svg> container, so centers must
+  // stay unrotated (rotation = 0) here to avoid being rotated twice.
+  const segmentCenters = new Map<number, { x: number; y: number }>();
+  for (const seg of placed.segmentInstances) {
+    segmentCenters.set(seg.ref.localId, segmentPosition(seg.kind, seg.edgeSlots, 0));
+  }
+
+  const targetLocalIds = targets.map(t => t.localId);
 
   const meeples = placed.segmentInstances.flatMap((seg: SegmentInstance) => {
     const key = `${seg.ref.tileId}#${seg.ref.localId}`;
@@ -40,18 +51,31 @@ export function TileView({ placed, registry, players, size = 80, targets = [], c
   });
 
   return (
-    <div style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
-      <img
-        src={imgSrc}
-        alt={placed.prototypeId}
-        style={{ width: '100%', height: '100%', transform: `rotate(${placed.rotation}deg)`, display: 'block' }}
-      />
+    <div className="placed-tile-shell" style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
+      {markup ? (
+        <InlineTile
+          markup={markup}
+          rotation={placed.rotation}
+          size={size}
+          targetLocalIds={targetLocalIds}
+          highlightLocalIds={featureHighlightIds}
+          altText={placed.prototypeId}
+        />
+      ) : (
+        <img
+          src={imgSrc}
+          alt={placed.prototypeId}
+          draggable={false}
+          style={{ width: '100%', height: '100%', transform: `rotate(${placed.rotation}deg)`, display: 'block' }}
+        />
+      )}
       {meeples.map((m, i) => {
         const player = players.find(p => p.id === m.playerId);
         const pos = segmentPosition(m.seg.kind, m.seg.edgeSlots, placed.rotation);
         return (
           <div
             key={i}
+            className="meeple-piece"
             title={`${player?.name ?? 'Meeple'} on ${m.seg.kind}`}
             style={{
               position: 'absolute',
@@ -66,15 +90,6 @@ export function TileView({ placed, registry, players, size = 80, targets = [], c
           </div>
         );
       })}
-      {shapes && featureHighlightIds.length > 0 && currentPlayerColor && (
-        <FeatureHighlightZone
-          shapes={shapes}
-          highlightLocalIds={featureHighlightIds}
-          rotation={placed.rotation}
-          tileSize={size}
-          playerColor={currentPlayerColor}
-        />
-      )}
       {targets.length > 0 && shapes && onPlace && currentPlayerColor && (
         <SegmentHitZone
           shapes={shapes}
@@ -83,6 +98,7 @@ export function TileView({ placed, registry, players, size = 80, targets = [], c
           tileSize={size}
           playerColor={currentPlayerColor}
           onPlace={onPlace}
+          centers={segmentCenters}
           targetFeatureIds={targetFeatureIds}
           onHoverFeature={onHoverFeature}
         />

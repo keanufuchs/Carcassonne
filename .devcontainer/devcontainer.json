@@ -1,0 +1,22 @@
+{
+    "name": "Claude Code + CCR",
+  
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+  
+    "remoteEnv": {
+      "OPENROUTER_API_KEY": "${localEnv:OPENROUTER_API_KEY}"
+    },
+  
+    "postCreateCommand": "/bin/bash .devcontainer/setup.sh",
+  
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "anthropic.claude-code",
+          "ms-vscode.vscode-typescript-next"
+        ]
+      }
+    }
+  }

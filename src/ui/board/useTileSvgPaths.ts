@@ -9,6 +9,37 @@ export interface SegmentShape {
 }
 
 const svgCache = new Map<string, SegmentShape[]>();
+const markupCache = new Map<string, string>();
+
+/**
+ * Fetches the raw SVG markup of a tile (cached) so it can be rendered inline.
+ * Rendering the real SVG — instead of an `<img>` plus a separate overlay — lets
+ * us highlight individual `segment-*` elements in place, with the original
+ * paint order intact (see tileHighlight.ts).
+ */
+export function useInlineTileSvg(srcPath: string): string | null {
+  const [markup, setMarkup] = useState<string | null>(() => markupCache.get(srcPath) ?? null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !srcPath) return;
+    const cached = markupCache.get(srcPath);
+    if (cached !== undefined) {
+      setMarkup(cached);
+      return;
+    }
+    let cancelled = false;
+    fetch(srcPath)
+      .then(r => r.text())
+      .then(svg => {
+        markupCache.set(srcPath, svg);
+        if (!cancelled) setMarkup(svg);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [srcPath]);
+
+  return markup;
+}
 
 export function useTileSvgPaths(srcPath: string): SegmentShape[] | null {
   const [shapes, setShapes] = useState<SegmentShape[] | null>(

@@ -26,7 +26,10 @@ export function PlayerPanel({ players, currentPlayerIndex }: Props) {
             {p.name}
           </span>
           <span style={{ color: '#ffd700', fontWeight: 700, fontSize: 14 }}>{p.score}</span>
-          <span style={{ color: '#777', fontSize: 11 }} title="Meeples available">×{p.meeplesAvailable}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 2 }} title="Meeples available">
+            <MeepleIcon color={p.color} size={12} opacity={0.7} />
+            <span style={{ color: '#aaa', fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>{p.meeplesAvailable}</span>
+          </span>
         </div>
       ))}
     </div>

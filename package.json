@@ -1,14 +1,17 @@
 {
   "name": "carcassonne",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "server": "tsx server/index.ts",
-    "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
-    "build": "tsc -b && vite build",
+    "mcp": "tsx server/mcp-ai.ts",
+    "predev:full": "fuser -k 3001/tcp 3002/tcp 2>/dev/null || true",
+    "dev:full": "concurrently \"npm run dev\" \"npm run server\" \"npm run mcp\"",
+    "build": "tsc -b && vite build && npm run build:api",
+    "build:api": "node scripts/build-api.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run --config vitest.config.ts",
@@ -21,16 +24,18 @@
     "electron:pack:win": "npm run electron:build && electron-builder --win"
   },
   "dependencies": {
+    "@vercel/blob": "^2.4.0",
     "better-sqlite3": "^11.10.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "serverless-http": "^4.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -43,6 +48,7 @@
     "concurrently": "^9.2.1",
     "electron": "^41.5.1",
     "electron-builder": "^26.8.1",
+    "esbuild": "^0.25.12",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -66,13 +72,24 @@
     },
     "mac": {
       "target": [
-        { "target": "dmg", "arch": ["x64", "arm64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.games"
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
