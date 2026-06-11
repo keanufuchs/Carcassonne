@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { TilePrototype } from '../core/types/tile';
 import type { TileRegions, Vec2 } from './svgRegions';
-import { PALETTE, BASE_COLOR, TILE_SIZE } from './palette';
+import { PALETTE, BASE_COLOR, TILE_SIZE, BEVEL } from './palette';
 
 /**
  * Iteration 1 — procedural 3D generation (feasibility):
@@ -24,7 +24,14 @@ function toShape2D([sx, sy]: Vec2): Vec2 {
 }
 
 function makeMaterial(color: string): THREE.MeshStandardMaterial {
-  return new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0 });
+  return new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0, flatShading: false });
+}
+
+/** Marks a mesh as both casting and receiving shadows. */
+function withShadows(mesh: THREE.Mesh): THREE.Mesh {
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 /** Extrudes a closed 2D polygon (shape-space points) upward by `height`. */
@@ -34,9 +41,19 @@ function extrudePolygon(shapePoints: Vec2[], height: number, color: string): THR
   for (let i = 1; i < shapePoints.length; i++) shape.lineTo(shapePoints[i][0], shapePoints[i][1]);
   shape.closePath();
 
-  const geometry = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false });
+  // A small bevel softens the edges; thickness is clamped so thin zones (e.g.
+  // fields) don't degenerate.
+  const bevelThickness = Math.min(BEVEL.size, height * 0.45);
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: height - bevelThickness,
+    bevelEnabled: true,
+    bevelThickness,
+    bevelSize: BEVEL.size,
+    bevelSegments: BEVEL.segments,
+    bevelOffset: 0,
+  });
   geometry.rotateX(-Math.PI / 2); // shape XY plane → world XZ, extrude depth → world +Y
-  return new THREE.Mesh(geometry, makeMaterial(color));
+  return withShadows(new THREE.Mesh(geometry, makeMaterial(color)));
 }
 
 /** Builds a flat ribbon polygon from a centreline by offsetting ±width/2. */
@@ -65,7 +82,9 @@ function roadRibbon(centerlineShape: Vec2[], width: number): Vec2[] {
 function basePlate(): THREE.Mesh {
   const geometry = new THREE.BoxGeometry(TILE_SIZE, 0.04, TILE_SIZE);
   geometry.translate(0, -0.02, 0);
-  return new THREE.Mesh(geometry, makeMaterial(BASE_COLOR));
+  const mesh = new THREE.Mesh(geometry, makeMaterial(BASE_COLOR));
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 /**
@@ -101,7 +120,7 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
     const style = PALETTE.MONASTERY;
     const footprint = (marker.radius / 100) * 1.4;
     const geometry = new THREE.BoxGeometry(footprint, style.height, footprint);
-    const mesh = new THREE.Mesh(geometry, makeMaterial(style.color));
+    const mesh = withShadows(new THREE.Mesh(geometry, makeMaterial(style.color)));
     const [wx, wz] = [marker.pos[0] / 100 - TILE_SIZE / 2, marker.pos[1] / 100 - TILE_SIZE / 2];
     mesh.position.set(wx, style.height / 2, wz);
     mesh.name = `segment-MONASTERY-${marker.localId}`;

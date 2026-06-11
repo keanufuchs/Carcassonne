@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid } from '@react-three/drei';
+import { OrbitControls, Grid, SoftShadows } from '@react-three/drei';
 import type { TilePrototype } from '../../src/core/types/tile';
 import { parseTileRegions, type TileRegions } from '../../src/three/svgRegions';
 import { generateTile } from '../../src/three/generateTile';
@@ -40,15 +40,47 @@ export function Tile3DPanel({ prototype, svgPath }: Props) {
 
   return (
     <div className="panel">
-      <h2>3D-Modell <span className="muted">(prozedural, Iteration 1)</span></h2>
+      <h2>3D-Modell <span className="muted">(prozedural, Iteration 2)</span></h2>
       <div className="canvas-wrap">
-        <Canvas shadows camera={{ position: [1.1, 1.2, 1.1], fov: 45 }}>
-          <color attach="background" args={['#1e2430']} />
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[2, 4, 2]} intensity={1.1} castShadow />
-          <Grid args={[4, 4]} cellSize={0.25} sectionSize={1} infiniteGrid fadeDistance={6} />
+        <Canvas shadows camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}>
+          <color attach="background" args={['#aebfcf']} />
+          <fog attach="fog" args={['#aebfcf', 4, 9]} />
+          <SoftShadows size={26} samples={16} focus={0.6} />
+          <hemisphereLight args={['#dce8ff', '#5a7042', 0.55]} />
+          <ambientLight intensity={0.2} />
+          <directionalLight
+            position={[2.5, 4, 2]}
+            intensity={1.5}
+            castShadow
+            shadow-mapSize={[2048, 2048]}
+            shadow-bias={-0.0002}
+            shadow-camera-left={-1}
+            shadow-camera-right={1}
+            shadow-camera-top={1}
+            shadow-camera-bottom={-1}
+            shadow-camera-near={0.1}
+            shadow-camera-far={12}
+          />
+          <Grid
+            args={[6, 6]}
+            cellSize={0.25}
+            sectionSize={1}
+            cellColor="#93a6b8"
+            sectionColor="#7e93a8"
+            infiniteGrid
+            fadeDistance={7}
+            fadeStrength={2}
+          />
           {regions && <TileMesh prototype={prototype} regions={regions} />}
-          <OrbitControls makeDefault target={[0, 0, 0]} />
+          <OrbitControls
+            makeDefault
+            target={[0, 0, 0]}
+            enableDamping
+            dampingFactor={0.08}
+            minDistance={0.8}
+            maxDistance={4}
+            maxPolarAngle={Math.PI / 2.05}
+          />
         </Canvas>
       </div>
     </div>

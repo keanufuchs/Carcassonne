@@ -6,8 +6,8 @@ export const TILE_SIZE = 1;
 /** Default road stroke width in SVG units (viewBox is 0..100). */
 export const ROAD_DEFAULT_WIDTH = 10;
 
-/** Ground/base plate colour (slightly darker than fields). */
-export const BASE_COLOR = '#5a8a4a';
+/** Ground/base plate colour (a touch darker than the fields). */
+export const BASE_COLOR = '#6b9a55';
 
 export interface KindStyle {
   /** Fill colour of the extruded zone. */
@@ -17,13 +17,17 @@ export interface KindStyle {
 }
 
 /**
- * Iteration-1 styling: each segment kind is rendered as a flat-extruded,
- * coloured zone. Heights are deliberately small so the tile reads as a relief
- * map that can be visually compared against the original PNG/SVG.
+ * Iteration-2 styling: a softer, warmer "Townscaper-adjacent" palette with a
+ * little more relief between kinds. Each segment is still a flat-extruded
+ * coloured zone (procedural detail arrives in iteration 3); the materials and
+ * lighting (see Tile3DPanel) now carry the look.
  */
 export const PALETTE: Record<SegmentKind, KindStyle> = {
-  FIELD: { color: '#7fbf6a', height: 0.02 },
-  ROAD: { color: '#e8e2d0', height: 0.05 },
-  CITY: { color: '#c9b07a', height: 0.18 },
-  MONASTERY: { color: '#d6d6d6', height: 0.22 },
+  FIELD: { color: '#8cc06b', height: 0.03 },
+  ROAD: { color: '#efe7d3', height: 0.06 },
+  CITY: { color: '#d9c191', height: 0.20 },
+  MONASTERY: { color: '#e6e1d6', height: 0.26 },
 };
+
+/** Subtle bevel applied to extruded zones for softer, catch-the-light edges. */
+export const BEVEL = { size: 0.006, segments: 2 };
