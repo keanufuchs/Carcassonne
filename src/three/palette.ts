@@ -6,6 +6,21 @@ export const TILE_SIZE = 1;
 /** Default road stroke width in SVG units (viewBox is 0..100). */
 export const ROAD_DEFAULT_WIDTH = 10;
 
+/**
+ * Organic variance for the topology-derived layout (`layoutRegions.ts`).
+ * Variance values are the maximum perpendicular sway as a fraction of the tile
+ * edge (0.15 → 15 SVG units). Setting both to 0 reproduces the exact
+ * straight-line/perfect-arc shapes. Deterministic per tile prototype.
+ */
+export const VARIANCE = {
+  /** Max perpendicular road sway. */
+  roadVariance: 0.15,
+  /** Max perpendicular sway of interior city boundaries. */
+  cityVariance: 0.10,
+  /** Chaikin smoothing passes applied to displaced city boundary chains. */
+  smoothingIterations: 1,
+};
+
 /** Ground/base plate colour (a touch darker than the fields). */
 export const BASE_COLOR = '#6b9a55';
 

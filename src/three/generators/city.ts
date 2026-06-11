@@ -7,6 +7,9 @@ import {
 
 const WALL_EPS = 0.012; // outward probe distance for the "city on both sides?" test
 const WALL_STEP = 0.045; // sampling resolution along each edge
+const TOWER_SPACING = 0.24; // distance between watchtowers along a wall stretch
+const TOWER_END_INSET = 0.015; // pulls the end towers slightly off the stretch tips
+const MERLON_SPACING = 0.034; // crenellation rhythm along the wall top
 
 function lerp(a: World2, b: World2, t: number): World2 {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
@@ -48,10 +51,66 @@ function edgeWallRuns(a: World2, b: World2, p: World2[], all: World2[][]): [Worl
   return runs;
 }
 
-/** A defensive wall along the city's true outer boundary only. */
-function cityWalls(poly: World2[], allCityPolys: World2[][], baseTop: number): THREE.Object3D[] {
+type WallSeg = [World2, World2];
+
+/** Groups ordered wall segments into contiguous stretches (incl. wrap-around). */
+function chainStretches(segs: WallSeg[]): WallSeg[][] {
+  const eps = 1e-3;
+  const joins = (a: World2, b: World2) => Math.hypot(a[0] - b[0], a[1] - b[1]) < eps;
+  const stretches: WallSeg[][] = [];
+  let current: WallSeg[] = [];
+  for (const seg of segs) {
+    if (current.length > 0 && !joins(current[current.length - 1][1], seg[0])) {
+      stretches.push(current);
+      current = [];
+    }
+    current.push(seg);
+  }
+  if (current.length > 0) stretches.push(current);
+  if (stretches.length > 1) {
+    const first = stretches[0];
+    const last = stretches[stretches.length - 1];
+    if (joins(last[last.length - 1][1], first[0][0])) {
+      stretches[0] = [...last, ...first];
+      stretches.pop();
+    }
+  }
+  return stretches;
+}
+
+/** Point and local direction at a distance along a stretch of wall segments. */
+function pointAlong(segs: WallSeg[], dist: number): { p: World2; angle: number } {
+  let walked = 0;
+  for (let i = 0; i < segs.length; i++) {
+    const [a, b] = segs[i];
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (walked + len >= dist || i === segs.length - 1) {
+      const t = len > 0 ? Math.min(1, Math.max(0, (dist - walked) / len)) : 0;
+      return { p: lerp(a, b, t), angle: -Math.atan2(b[1] - a[1], b[0] - a[0]) };
+    }
+    walked += len;
+  }
+  const [a, b] = segs[segs.length - 1];
+  return { p: b, angle: -Math.atan2(b[1] - a[1], b[0] - a[0]) };
+}
+
+const stretchLength = (segs: WallSeg[]) =>
+  segs.reduce((sum, [a, b]) => sum + Math.hypot(b[0] - a[0], b[1] - a[1]), 0);
+
+/**
+ * A defensive wall along the city's true outer boundary only, structured with
+ * watchtowers (stretch ends + regular intervals) and a crenellation rhythm of
+ * merlons along the top.
+ */
+function cityWalls(
+  poly: World2[],
+  allCityPolys: World2[][],
+  baseTop: number,
+  rng: () => number,
+): THREE.Object3D[] {
   const mat = standard(DETAIL.wall);
   const walls: THREE.Object3D[] = [];
+  const segs: WallSeg[] = [];
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i];
     const b = poly[(i + 1) % poly.length];
@@ -60,6 +119,7 @@ function cityWalls(poly: World2[], allCityPolys: World2[][], baseTop: number): T
       const dz = pB[1] - pA[1];
       const len = Math.hypot(dx, dz);
       if (len < 2e-3) continue;
+      segs.push([pA, pB]);
       const geo = roundedBox(len + DETAIL.wallThickness, DETAIL.wallHeight, DETAIL.wallThickness, 0.25);
       const mesh = shadowMesh(geo, mat);
       mesh.position.set((pA[0] + pB[0]) / 2, baseTop + DETAIL.wallHeight / 2, (pA[1] + pB[1]) / 2);
@@ -67,7 +127,42 @@ function cityWalls(poly: World2[], allCityPolys: World2[][], baseTop: number): T
       walls.push(mesh);
     }
   }
-  return walls;
+
+  const towerBodies: Instance[] = [];
+  const towerRoofs: Instance[] = [];
+  const merlons: Instance[] = [];
+  for (const stretch of chainStretches(segs)) {
+    const length = stretchLength(stretch);
+    const towerDists =
+      length < 2 * TOWER_END_INSET + 0.03
+        ? [length / 2]
+        : [TOWER_END_INSET, length - TOWER_END_INSET];
+    for (let d = TOWER_SPACING; d < length - TOWER_SPACING / 2; d += TOWER_SPACING) {
+      towerDists.push(d);
+    }
+    for (const d of towerDists) {
+      const { p } = pointAlong(stretch, d);
+      const r = 0.02;
+      const h = DETAIL.wallHeight * (1.35 + rng() * 0.2);
+      towerBodies.push({ pos: [p[0], baseTop + h / 2, p[1]], scale: [r, h, r] });
+      towerRoofs.push({ pos: [p[0], baseTop + h + 0.022, p[1]], scale: [0.028, 0.044, 0.028] });
+    }
+    for (let d = MERLON_SPACING / 2; d < length; d += MERLON_SPACING) {
+      if (towerDists.some((t) => Math.abs(t - d) < 0.04)) continue;
+      const { p, angle } = pointAlong(stretch, d);
+      merlons.push({
+        pos: [p[0], baseTop + DETAIL.wallHeight + 0.0055, p[1]],
+        scale: [0.014, 0.011, DETAIL.wallThickness * 0.85],
+        rotationY: angle,
+      });
+    }
+  }
+  return [
+    ...walls,
+    instanced(new THREE.CylinderGeometry(1, 1, 1, 8), standard(DETAIL.wall), towerBodies),
+    instanced(new THREE.ConeGeometry(1, 1, 8), standard(DETAIL.roof[2]), towerRoofs),
+    instanced(unitRoundedBox(0.2), standard(DETAIL.wall), merlons),
+  ].filter((m): m is THREE.Object3D => m !== null);
 }
 
 /** Packed houses as two instanced meshes (rounded bodies + pyramid roofs). */
@@ -118,7 +213,7 @@ export function generateCity(poly: World2[], rng: () => number, allCityPolys: Wo
   const baseTop = DETAIL.cityBaseHeight;
   return [
     extrudeWorldPolygon(poly, baseTop, standard(DETAIL.cityBase)),
-    ...cityWalls(poly, allCityPolys, baseTop),
+    ...cityWalls(poly, allCityPolys, baseTop, rng),
     ...cityHouses(poly, rng, baseTop),
   ];
 }

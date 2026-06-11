@@ -3,8 +3,24 @@ import type { EdgeSide, SlotPos, TilePrototype } from '../core/types/tile';
 import type { Vec2 } from './svgRegions';
 import { BASE_GAME_DISTRIBUTION } from '../core/deck/baseGameTiles';
 import { CITY_CAP_DEPTH, layoutRegions, slotMidpoint } from './layoutRegions';
+import { VARIANCE } from './palette';
+
+const ROAD_SWAY = VARIANCE.roadVariance * 100;
+const CITY_SWAY = VARIANCE.cityVariance * 100;
 
 const PROTOS: TilePrototype[] = BASE_GAME_DISTRIBUTION.map((e) => e.prototype);
+
+// layoutRegions is deterministic (verified in its own test below), so the
+// other tests share one memoized result per prototype to keep the suite fast.
+const layoutCache = new Map<string, ReturnType<typeof layoutRegions>>();
+function layout(proto: TilePrototype): ReturnType<typeof layoutRegions> {
+  let regions = layoutCache.get(proto.id);
+  if (!regions) {
+    regions = layoutRegions(proto);
+    layoutCache.set(proto.id, regions);
+  }
+  return regions;
+}
 
 // ── Independent geometry helpers (deliberately not shared with the impl) ────
 
@@ -79,7 +95,7 @@ describe('slotMidpoint', () => {
 describe('layoutRegions — cities', () => {
   it('covers every CITY edge slot with a city polygon of the same localId', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       for (const seg of proto.segments) {
         if (seg.kind !== 'CITY') continue;
         for (const slot of seg.edgeSlots) {
@@ -95,7 +111,7 @@ describe('layoutRegions — cities', () => {
 
   it('emits valid in-bounds polygons', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       for (const r of regions.polygons) {
         expect(r.points.length, `${proto.id} ${r.kind}-${r.localId} vertex count`).toBeGreaterThanOrEqual(3);
         expect(polygonArea(r.points), `${proto.id} ${r.kind}-${r.localId} area`).toBeGreaterThan(0);
@@ -109,40 +125,46 @@ describe('layoutRegions — cities', () => {
     }
   });
 
-  it('TILE-D: single-edge city is a cap triangle on the north edge', () => {
+  it('TILE-D: single-edge city is a curved cap hugging the north edge', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-D')!;
-    const cities = layoutRegions(proto).polygons.filter((r) => r.kind === 'CITY');
+    const cities = layout(proto).polygons.filter((r) => r.kind === 'CITY');
     expect(cities).toHaveLength(1);
     const pts = cities[0].points;
-    expect(pts).toHaveLength(3);
+    expect(pts.length).toBeGreaterThanOrEqual(4);
     expect(pts.some((p) => near(p, [0, 0]))).toBe(true);
     expect(pts.some((p) => near(p, [100, 0]))).toBe(true);
-    expect(pts.some((p) => near(p, [50, CITY_CAP_DEPTH]))).toBe(true);
+    const depth = Math.max(...pts.map((p) => p[1]));
+    expect(depth).toBeGreaterThan(CITY_CAP_DEPTH / 2);
+    expect(depth).toBeLessThanOrEqual(CITY_CAP_DEPTH + CITY_SWAY + 1e-6);
   });
 
-  it('TILE-F: opposite-edge city is a band hexagon pinched on N and S', () => {
+  it('TILE-F: opposite-edge city is a band pinched on N and S', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-F')!;
-    const cities = layoutRegions(proto).polygons.filter((r) => r.kind === 'CITY');
+    const cities = layout(proto).polygons.filter((r) => r.kind === 'CITY');
     expect(cities).toHaveLength(1);
     const pts = cities[0].points;
-    expect(pts).toHaveLength(6);
-    expect(pts.some((p) => near(p, [50, CITY_CAP_DEPTH]))).toBe(true);
-    expect(pts.some((p) => near(p, [50, 100 - CITY_CAP_DEPTH]))).toBe(true);
+    // All four tile corners stay mathematically exact (city edges on the border).
+    for (const corner of [[0, 0], [100, 0], [100, 100], [0, 100]] as Vec2[]) {
+      expect(pts.some((p) => near(p, corner)), `corner ${corner}`).toBe(true);
+    }
+    const area = polygonArea(pts);
+    expect(area).toBeGreaterThan(10000 - 2 * (CITY_CAP_DEPTH + CITY_SWAY) * 50 - 500);
+    expect(area).toBeLessThan(10000 - 2 * (CITY_CAP_DEPTH - CITY_SWAY) * 50 * 0.3);
   });
 
-  it('TILE-S: three-edge city is two overlapping half-square triangles sharing the localId', () => {
+  it('TILE-S: three-edge city is two overlapping parts sharing the localId', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-S')!;
-    const cities = layoutRegions(proto).polygons.filter((r) => r.kind === 'CITY');
+    const cities = layout(proto).polygons.filter((r) => r.kind === 'CITY');
     expect(cities).toHaveLength(2);
     expect(cities[0].localId).toBe(cities[1].localId);
-    for (const c of cities) expect(c.points).toHaveLength(3);
+    for (const c of cities) expect(c.points.length).toBeGreaterThanOrEqual(3);
     // Together they must cover the N edge centre deep into the tile.
     expect(cities.some((c) => pointInPolygon([50, 30], c.points))).toBe(true);
   });
 
   it('TILE-C: four-edge city is the full square', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-C')!;
-    const cities = layoutRegions(proto).polygons.filter((r) => r.kind === 'CITY');
+    const cities = layout(proto).polygons.filter((r) => r.kind === 'CITY');
     expect(cities).toHaveLength(1);
     expect(polygonArea(cities[0].points)).toBeCloseTo(10000, 3);
   });
@@ -153,7 +175,7 @@ describe('layoutRegions — cities', () => {
 describe('layoutRegions — roads', () => {
   it('anchors a centerline endpoint exactly at every ROAD edge slot', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       for (const seg of proto.segments) {
         if (seg.kind !== 'ROAD') continue;
         for (const slot of seg.edgeSlots) {
@@ -171,7 +193,7 @@ describe('layoutRegions — roads', () => {
 
   it('uses the default road width and stays in bounds', () => {
     for (const proto of PROTOS) {
-      for (const road of layoutRegions(proto).roads) {
+      for (const road of layout(proto).roads) {
         expect(road.width).toBe(10);
         expect(road.centerline.length).toBeGreaterThanOrEqual(2);
         let length = 0;
@@ -194,7 +216,7 @@ describe('layoutRegions — roads', () => {
 
   it('keeps every road point out of city polygons', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       const cities = regions.polygons.filter((r) => r.kind === 'CITY');
       for (const road of regions.roads) {
         for (const p of road.centerline) {
@@ -212,7 +234,7 @@ describe('layoutRegions — roads', () => {
   it('trims dead-end roads back from city walls with clearance', () => {
     for (const proto of PROTOS) {
       if (proto.hasMonastery) continue;
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       const cities = regions.polygons.filter((r) => r.kind === 'CITY');
       if (cities.length === 0) continue;
       for (const seg of proto.segments) {
@@ -235,22 +257,53 @@ describe('layoutRegions — roads', () => {
     }
   });
 
-  it('TILE-V: curved road is a quarter arc of radius 50 around the SW corner', () => {
+  it('TILE-V: curved road follows a quarter arc (radius 50 ± sway) around the SW corner', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-V')!;
-    const roads = layoutRegions(proto).roads;
+    const roads = layout(proto).roads;
     expect(roads).toHaveLength(1);
     const line = roads[0].centerline;
     expect(line.length).toBeGreaterThanOrEqual(8);
     expect(near(line[0], [0, 50]) || near(line[line.length - 1], [0, 50])).toBe(true);
     expect(near(line[0], [50, 100]) || near(line[line.length - 1], [50, 100])).toBe(true);
     for (const [x, y] of line) {
-      expect(Math.hypot(x - 0, y - 100)).toBeCloseTo(50, 6);
+      const r = Math.hypot(x - 0, y - 100);
+      expect(r).toBeGreaterThanOrEqual(50 - ROAD_SWAY - 1e-6);
+      expect(r).toBeLessThanOrEqual(50 + ROAD_SWAY + 1e-6);
+    }
+  });
+
+  it('TILE-U: straight road sways off the ideal line, bounded by the configured variance', () => {
+    const proto = PROTOS.find((p) => p.id === 'TILE-U')!;
+    const roads = layout(proto).roads;
+    expect(roads).toHaveLength(1);
+    const deviation = Math.max(...roads[0].centerline.map(([x]) => Math.abs(x - 50)));
+    expect(deviation).toBeGreaterThan(0.3);
+    expect(deviation).toBeLessThanOrEqual(ROAD_SWAY + 1e-6);
+  });
+
+  it('every road leaves the tile border perpendicular (seamless neighbour joins)', () => {
+    for (const proto of PROTOS) {
+      for (const road of layout(proto).roads) {
+        const line = road.centerline;
+        for (const [endIdx, nextIdx] of [[0, 1], [line.length - 1, line.length - 2]] as const) {
+          const [ex, ey] = line[endIdx];
+          const onBorder = ex === 0 || ex === 100 || ey === 0 || ey === 100;
+          if (!onBorder) continue;
+          const inward: Vec2 = ey === 0 ? [0, 1] : ey === 100 ? [0, -1] : ex === 0 ? [1, 0] : [-1, 0];
+          const [dx, dy] = [line[nextIdx][0] - ex, line[nextIdx][1] - ey];
+          const len = Math.hypot(dx, dy) || 1;
+          const cos = (dx * inward[0] + dy * inward[1]) / len;
+          expect(cos, `${proto.id} road ${road.localId} border entry angle`).toBeGreaterThanOrEqual(
+            Math.cos((6 * Math.PI) / 180),
+          );
+        }
+      }
     }
   });
 
   it('TILE-W: three dead-end roads all meet at the tile centre', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-W')!;
-    const roads = layoutRegions(proto).roads;
+    const roads = layout(proto).roads;
     expect(roads).toHaveLength(3);
     for (const road of roads) {
       expect(road.centerline.some((p) => near(p, [50, 50]))).toBe(true);
@@ -263,7 +316,7 @@ describe('layoutRegions — roads', () => {
 describe('layoutRegions — monasteries', () => {
   it('places a centre marker for every MONASTERY segment', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       const monasterySegs = proto.segments.filter((s) => s.kind === 'MONASTERY');
       expect(regions.markers, proto.id).toHaveLength(monasterySegs.length);
       for (const seg of monasterySegs) {
@@ -281,7 +334,7 @@ describe('layoutRegions — monasteries', () => {
 describe('layoutRegions — fields', () => {
   it('covers every FIELD edge slot with a field polygon of the same localId', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       for (const seg of proto.segments) {
         if (seg.kind !== 'FIELD') continue;
         for (const slot of seg.edgeSlots) {
@@ -300,7 +353,7 @@ describe('layoutRegions — fields', () => {
 
   it('matches the owning segment along a sweep of every tile edge', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       for (const side of ['N', 'E', 'S', 'W'] as EdgeSide[]) {
         for (let i = 0; i < 12; i++) {
           const t = (i + 0.5) / 12;
@@ -346,7 +399,7 @@ describe('layoutRegions — fields', () => {
 
   it('keeps field polygons clear of road centerlines', () => {
     for (const proto of PROTOS) {
-      const regions = layoutRegions(proto);
+      const regions = layout(proto);
       const fields = regions.polygons.filter((r) => r.kind === 'FIELD');
       for (const road of regions.roads) {
         for (let i = 1; i < road.centerline.length; i++) {
@@ -368,14 +421,14 @@ describe('layoutRegions — fields', () => {
 
   it('TILE-S: the single field segment yields two disconnected components', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-S')!;
-    const fields = layoutRegions(proto).polygons.filter((r) => r.kind === 'FIELD');
+    const fields = layout(proto).polygons.filter((r) => r.kind === 'FIELD');
     expect(fields).toHaveLength(2);
     expect(fields[0].localId).toBe(fields[1].localId);
   });
 
   it('TILE-B: monastery tile has one large field covering nearly the whole tile', () => {
     const proto = PROTOS.find((p) => p.id === 'TILE-B')!;
-    const fields = layoutRegions(proto).polygons.filter((r) => r.kind === 'FIELD');
+    const fields = layout(proto).polygons.filter((r) => r.kind === 'FIELD');
     expect(fields).toHaveLength(1);
     expect(polygonArea(fields[0].points)).toBeGreaterThan(9000);
   });
@@ -386,6 +439,8 @@ describe('layoutRegions — fields', () => {
 describe('layoutRegions — determinism', () => {
   it('produces identical output across invocations', () => {
     for (const proto of PROTOS) {
+      // Deliberately fresh invocations — the memoized `layout` would compare
+      // an object with itself.
       expect(layoutRegions(proto)).toEqual(layoutRegions(proto));
     }
   });
