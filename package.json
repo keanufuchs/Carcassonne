@@ -6,6 +6,9 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
+    "dev:lab": "vite --config tile-lab/vite.lab.config.ts",
+    "build:lab": "vite build --config tile-lab/vite.lab.config.ts",
+    "typecheck:lab": "tsc -p tsconfig.lab.json --noEmit",
     "server": "tsx server/index.ts",
     "mcp": "tsx server/mcp-ai.ts",
     "predev:full": "fuser -k 3001/tcp 3002/tcp 2>/dev/null || true",
@@ -24,6 +27,8 @@
     "electron:pack:win": "npm run electron:build && electron-builder --win"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@vercel/blob": "^2.4.0",
     "better-sqlite3": "^11.10.0",
     "cors": "^2.8.6",
@@ -31,6 +36,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "serverless-http": "^4.0.0",
+    "three": "^0.184.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
@@ -42,6 +48,7 @@
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.184.1",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/ui": "^1.6.1",
