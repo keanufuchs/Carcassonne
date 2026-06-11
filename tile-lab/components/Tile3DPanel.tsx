@@ -40,7 +40,7 @@ export function Tile3DPanel({ prototype, svgPath }: Props) {
 
   return (
     <div className="panel">
-      <h2>3D-Modell <span className="muted">(prozedural, Iteration 2)</span></h2>
+      <h2>3D-Modell <span className="muted">(prozedural, Iteration 3)</span></h2>
       <div className="canvas-wrap">
         <Canvas shadows camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}>
           <color attach="background" args={['#aebfcf']} />

@@ -31,3 +31,23 @@ export const PALETTE: Record<SegmentKind, KindStyle> = {
 
 /** Subtle bevel applied to extruded zones for softer, catch-the-light edges. */
 export const BEVEL = { size: 0.006, segments: 2 };
+
+/**
+ * Iteration-3 detail palette for the procedural content generators
+ * (`src/three/generators/*`). Arrays are sampled deterministically per tile.
+ */
+export const DETAIL = {
+  /** Stone plaza the city sits on (the city zone is lowered to host buildings). */
+  cityBase: '#cdb583',
+  cityBaseHeight: 0.05,
+  wall: '#bdb5a6',
+  wallHeight: 0.11,
+  wallThickness: 0.028,
+  houseWalls: ['#e7d6b8', '#dcc59a', '#cdae84', '#e0c9a6'],
+  roof: ['#b15a3c', '#a85138', '#9c4a32', '#c06848'],
+  treeTrunk: '#7a5a3a',
+  treeFoliage: ['#5f9e4a', '#6cae54', '#558d42', '#74b65c'],
+  roadCurb: '#cfc6b0',
+  monasteryWall: '#e9e3d6',
+  monasteryRoof: '#9c4a32',
+} as const;
