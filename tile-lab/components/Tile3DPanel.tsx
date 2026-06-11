@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, SoftShadows, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Grid, ContactShadows } from '@react-three/drei';
 import type { TilePrototype } from '../../src/core/types/tile';
 import { parseTileRegions, type TileRegions } from '../../src/three/svgRegions';
 import { generateTile } from '../../src/three/generateTile';
@@ -45,7 +45,6 @@ export function Tile3DPanel({ prototype, svgPath }: Props) {
         <Canvas shadows camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}>
           <color attach="background" args={['#aebfcf']} />
           <fog attach="fog" args={['#aebfcf', 4, 9]} />
-          <SoftShadows size={26} samples={16} focus={0.6} />
           <hemisphereLight args={['#dce8ff', '#5a7042', 0.55]} />
           <ambientLight intensity={0.2} />
           <directionalLight

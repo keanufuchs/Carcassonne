@@ -55,6 +55,18 @@ export function polygonBounds(poly: World2[]): Bounds {
   return { minX, minZ, maxX, maxZ };
 }
 
+/**
+ * True if an edge lies entirely on the tile perimeter (x=±0.5 or z=±0.5).
+ * Such edges are open connections to a neighbouring tile — no city wall there.
+ */
+export function onTileBoundary(a: World2, b: World2): boolean {
+  const eps = 1e-3;
+  const h = TILE_SIZE / 2;
+  const sameX = Math.abs(a[0] - b[0]) < eps && Math.abs(Math.abs(a[0]) - h) < eps;
+  const sameZ = Math.abs(a[1] - b[1]) < eps && Math.abs(Math.abs(a[1]) - h) < eps;
+  return sameX || sameZ;
+}
+
 export function pointInPolygon([x, z]: World2, poly: World2[]): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
