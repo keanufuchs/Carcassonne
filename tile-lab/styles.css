@@ -36,10 +36,10 @@ body {
 .selector button img { border-radius: 4px; display: block; }
 .selector button span { font-size: 12px; font-weight: 600; }
 
-/* 2×2 comparison grid */
+/* 3×2 comparison grid */
 .grid {
   flex: 1; min-height: 0; display: grid;
-  grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr;
   gap: 12px; padding: 14px;
 }
 .panel {

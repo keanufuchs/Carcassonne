@@ -3,11 +3,15 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, ContactShadows } from '@react-three/drei';
 import type { TilePrototype } from '../../src/core/types/tile';
 import { parseTileRegions, type TileRegions } from '../../src/three/svgRegions';
+import { layoutRegions } from '../../src/three/layoutRegions';
 import { generateTile } from '../../src/three/generateTile';
 
 interface Props {
   prototype: TilePrototype;
-  svgPath: string;
+  /** Region source: parse this SVG when given, otherwise derive from the TS topology. */
+  svgPath?: string;
+  title: string;
+  subtitle?: string;
 }
 
 function TileMesh({ prototype, regions }: { prototype: TilePrototype; regions: TileRegions }) {
@@ -23,24 +27,31 @@ function TileMesh({ prototype, regions }: { prototype: TilePrototype; regions: T
   return <primitive object={group} />;
 }
 
-export function Tile3DPanel({ prototype, svgPath }: Props) {
-  const [regions, setRegions] = useState<TileRegions | null>(null);
+export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
+  const [svgRegions, setSvgRegions] = useState<TileRegions | null>(null);
 
   useEffect(() => {
+    if (!svgPath) return;
     let cancelled = false;
-    setRegions(null);
+    setSvgRegions(null);
     fetch(svgPath)
       .then((r) => r.text())
       .then((markup) => {
-        if (!cancelled) setRegions(parseTileRegions(markup));
+        if (!cancelled) setSvgRegions(parseTileRegions(markup));
       })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [svgPath]);
 
+  const derivedRegions = useMemo(
+    () => (svgPath ? null : layoutRegions(prototype)),
+    [svgPath, prototype],
+  );
+  const regions = svgPath ? svgRegions : derivedRegions;
+
   return (
     <div className="panel">
-      <h2>3D-Modell <span className="muted">(prozedural, Iteration 4)</span></h2>
+      <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
       <div className="canvas-wrap">
         <Canvas shadows camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}>
           <color attach="background" args={['#aebfcf']} />

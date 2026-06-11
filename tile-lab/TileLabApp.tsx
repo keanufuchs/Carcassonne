@@ -19,7 +19,17 @@ export function TileLabApp() {
           <InfoPanel tile={selected} />
           <PngPanel tile={selected} />
           <SvgPanel tile={selected} />
-          <Tile3DPanel prototype={selected.prototype} svgPath={selected.svgPath} />
+          <Tile3DPanel
+            prototype={selected.prototype}
+            svgPath={selected.svgPath}
+            title="3D-Modell (SVG-Regionen)"
+            subtitle="Referenz"
+          />
+          <Tile3DPanel
+            prototype={selected.prototype}
+            title="3D-Modell (TS-Topologie)"
+            subtitle="ohne SVG"
+          />
         </main>
       </div>
     </div>
