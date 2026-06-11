@@ -1,6 +1,6 @@
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { DETAIL } from '../palette';
-import { type World2, standard, shadowMesh, pyramidRoof } from './util';
+import { type World2, standard, shadowMesh, roundedBox, pyramidRoof } from './util';
 
 /** A cloister building (main hall + roof) with a small bell tower. */
 export function generateMonastery([x, z]: World2): THREE.Object3D[] {
@@ -9,7 +9,7 @@ export function generateMonastery([x, z]: World2): THREE.Object3D[] {
   // Main hall
   const w = 0.2;
   const bodyH = 0.16;
-  const body = shadowMesh(new THREE.BoxGeometry(w, bodyH, w), standard(DETAIL.monasteryWall));
+  const body = shadowMesh(roundedBox(w, bodyH, w, 0.12), standard(DETAIL.monasteryWall));
   body.position.set(x, bodyH / 2, z);
   out.push(body);
 
@@ -23,7 +23,7 @@ export function generateMonastery([x, z]: World2): THREE.Object3D[] {
   const towerH = 0.22;
   const tx = x - w * 0.28;
   const tz = z - w * 0.28;
-  const tower = shadowMesh(new THREE.BoxGeometry(tw, towerH, tw), standard(DETAIL.monasteryWall));
+  const tower = shadowMesh(roundedBox(tw, towerH, tw, 0.2), standard(DETAIL.monasteryWall));
   tower.position.set(tx, towerH / 2, tz);
   out.push(tower);
 

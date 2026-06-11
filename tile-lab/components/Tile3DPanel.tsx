@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, SoftShadows } from '@react-three/drei';
+import { OrbitControls, Grid, SoftShadows, ContactShadows } from '@react-three/drei';
 import type { TilePrototype } from '../../src/core/types/tile';
 import { parseTileRegions, type TileRegions } from '../../src/three/svgRegions';
 import { generateTile } from '../../src/three/generateTile';
@@ -40,7 +40,7 @@ export function Tile3DPanel({ prototype, svgPath }: Props) {
 
   return (
     <div className="panel">
-      <h2>3D-Modell <span className="muted">(prozedural, Iteration 3)</span></h2>
+      <h2>3D-Modell <span className="muted">(prozedural, Iteration 4)</span></h2>
       <div className="canvas-wrap">
         <Canvas shadows camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}>
           <color attach="background" args={['#aebfcf']} />
@@ -72,6 +72,14 @@ export function Tile3DPanel({ prototype, svgPath }: Props) {
             fadeStrength={2}
           />
           {regions && <TileMesh prototype={prototype} regions={regions} />}
+          <ContactShadows
+            position={[0, 0.001, 0]}
+            scale={2.2}
+            resolution={1024}
+            blur={2.4}
+            opacity={0.5}
+            far={1.2}
+          />
           <OrbitControls
             makeDefault
             target={[0, 0, 0]}

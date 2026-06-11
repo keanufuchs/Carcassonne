@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three-stdlib';
 import type { Vec2 } from '../svgRegions';
 import { TILE_SIZE, BEVEL } from '../palette';
 
@@ -162,4 +163,81 @@ export function pyramidRoof(width: number, height: number, color: string): THREE
   const geometry = new THREE.ConeGeometry(radius, height, 4);
   geometry.rotateY(Math.PI / 4); // align flat faces with the body
   return shadowMesh(geometry, standard(color));
+}
+
+// ── Iteration 4: rounded geometry + instancing ──────────────────────────────
+
+/** A soft, Townscaper-style rounded box. */
+export function roundedBox(w: number, h: number, d: number, radiusFactor = 0.16): THREE.BufferGeometry {
+  const radius = Math.min(w, h, d) * radiusFactor;
+  return new RoundedBoxGeometry(w, h, d, 2, radius);
+}
+
+/** A unit (1×1×1) rounded box for use as instanced geometry (scaled per instance). */
+export function unitRoundedBox(radiusFactor = 0.16): THREE.BufferGeometry {
+  return new RoundedBoxGeometry(1, 1, 1, 2, radiusFactor);
+}
+
+/** A unit 4-sided pyramid (radius/height = 1), pre-aligned to a square base. */
+export function unitPyramid(): THREE.BufferGeometry {
+  const geometry = new THREE.ConeGeometry(0.72, 1, 4);
+  geometry.rotateY(Math.PI / 4);
+  return geometry;
+}
+
+export interface Instance {
+  pos: [number, number, number];
+  scale: [number, number, number];
+  rotationY?: number;
+  color?: string | number;
+}
+
+/**
+ * Builds a single `InstancedMesh` from per-instance transforms (and optional
+ * per-instance colour) — one draw call for many houses/trees. Returns null for
+ * an empty set. The base material colour is forced to white when instance
+ * colours are supplied so they aren't double-tinted.
+ */
+export function instanced(
+  geometry: THREE.BufferGeometry,
+  material: THREE.MeshStandardMaterial,
+  instances: Instance[],
+): THREE.InstancedMesh | null {
+  if (instances.length === 0) return null;
+  const hasColor = instances.some((i) => i.color !== undefined);
+  if (hasColor) material.color.set('#ffffff');
+
+  const mesh = new THREE.InstancedMesh(geometry, material, instances.length);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+
+  const matrix = new THREE.Matrix4();
+  const quat = new THREE.Quaternion();
+  const euler = new THREE.Euler();
+  const pos = new THREE.Vector3();
+  const scale = new THREE.Vector3();
+  const color = new THREE.Color();
+
+  instances.forEach((inst, i) => {
+    euler.set(0, inst.rotationY ?? 0, 0);
+    quat.setFromEuler(euler);
+    pos.set(inst.pos[0], inst.pos[1], inst.pos[2]);
+    scale.set(inst.scale[0], inst.scale[1], inst.scale[2]);
+    mesh.setMatrixAt(i, matrix.compose(pos, quat, scale));
+    if (hasColor) mesh.setColorAt(i, color.set(inst.color ?? '#ffffff'));
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  return mesh;
+}
+
+/** Average of a polygon's vertices (used for placing city banners/shields). */
+export function centroid(poly: World2[]): World2 {
+  let x = 0;
+  let z = 0;
+  for (const [px, pz] of poly) {
+    x += px;
+    z += pz;
+  }
+  return [x / poly.length, z / poly.length];
 }

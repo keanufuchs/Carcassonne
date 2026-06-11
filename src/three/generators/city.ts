@@ -1,13 +1,12 @@
 import * as THREE from 'three';
 import { DETAIL } from '../palette';
 import {
-  type World2, standard, shadowMesh, pyramidRoof, extrudeWorldPolygon,
-  scatterInside, pick, range,
+  type World2, type Instance, standard, shadowMesh, roundedBox, unitRoundedBox, unitPyramid,
+  extrudeWorldPolygon, scatterInside, pick, range, centroid, instanced,
 } from './util';
 
-/** A defensive wall built from a box along each polygon edge. */
+/** A defensive wall built from a rounded box along each polygon edge. */
 function cityWalls(poly: World2[], baseTop: number): THREE.Object3D[] {
-  const mat = standard(DETAIL.wall);
   const walls: THREE.Object3D[] = [];
   for (let i = 0; i < poly.length; i++) {
     const a = poly[i];
@@ -16,8 +15,8 @@ function cityWalls(poly: World2[], baseTop: number): THREE.Object3D[] {
     const dz = b[1] - a[1];
     const len = Math.hypot(dx, dz);
     if (len < 1e-4) continue;
-    const geo = new THREE.BoxGeometry(len + DETAIL.wallThickness, DETAIL.wallHeight, DETAIL.wallThickness);
-    const mesh = shadowMesh(geo, mat);
+    const geo = roundedBox(len + DETAIL.wallThickness, DETAIL.wallHeight, DETAIL.wallThickness, 0.25);
+    const mesh = shadowMesh(geo, standard(DETAIL.wall));
     mesh.position.set((a[0] + b[0]) / 2, baseTop + DETAIL.wallHeight / 2, (a[1] + b[1]) / 2);
     mesh.rotation.y = -Math.atan2(dz, dx);
     walls.push(mesh);
@@ -25,9 +24,10 @@ function cityWalls(poly: World2[], baseTop: number): THREE.Object3D[] {
   return walls;
 }
 
-/** Packed houses (body + pyramid roof) scattered inside the city, within walls. */
+/** Packed houses as two instanced meshes (rounded bodies + pyramid roofs). */
 function cityHouses(poly: World2[], rng: () => number, baseTop: number): THREE.Object3D[] {
-  const houses: THREE.Object3D[] = [];
+  const bodies: Instance[] = [];
+  const roofs: Instance[] = [];
   const spots = scatterInside(poly, rng, {
     step: 0.13,
     margin: DETAIL.wallThickness + 0.035,
@@ -38,28 +38,38 @@ function cityHouses(poly: World2[], rng: () => number, baseTop: number): THREE.O
     const d = range(rng, 0.06, 0.1);
     const h = range(rng, 0.1, 0.24);
     const rot = Math.floor(rng() * 4) * (Math.PI / 2);
-
-    const body = shadowMesh(new THREE.BoxGeometry(w, h, d), standard(pick(rng, DETAIL.houseWalls)));
-    body.position.set(x, baseTop + h / 2, z);
-    body.rotation.y = rot;
-    houses.push(body);
-
     const span = Math.max(w, d);
     const roofH = span * 0.55;
-    const roof = pyramidRoof(span, roofH, pick(rng, DETAIL.roof));
-    roof.position.set(x, baseTop + h + roofH / 2, z);
-    roof.rotation.y = rot;
-    houses.push(roof);
+
+    bodies.push({ pos: [x, baseTop + h / 2, z], scale: [w, h, d], rotationY: rot, color: pick(rng, DETAIL.houseWalls) });
+    roofs.push({ pos: [x, baseTop + h + roofH / 2, z], scale: [span, roofH, span], rotationY: rot, color: pick(rng, DETAIL.roof) });
   }
-  return houses;
+  return [
+    instanced(unitRoundedBox(0.18), standard('#ffffff'), bodies),
+    instanced(unitPyramid(), standard('#ffffff'), roofs),
+  ].filter((m): m is THREE.InstancedMesh => m !== null);
 }
 
-/** A walled city sitting on a stone plaza, packed with little houses. */
-export function generateCity(poly: World2[], rng: () => number): THREE.Object3D[] {
+/** A heraldic banner (pole + shield) marking a shielded city. */
+function cityBanner(poly: World2[], baseTop: number): THREE.Object3D[] {
+  const [cx, cz] = centroid(poly);
+  const poleH = 0.34;
+  const pole = shadowMesh(new THREE.CylinderGeometry(0.006, 0.006, poleH, 6), standard('#6a543a'));
+  pole.position.set(cx, baseTop + poleH / 2, cz);
+  const shield = shadowMesh(roundedBox(0.06, 0.075, 0.014, 0.3), standard('#3b6fb0'));
+  shield.position.set(cx, baseTop + poleH - 0.025, cz);
+  const emblem = shadowMesh(roundedBox(0.03, 0.03, 0.02, 0.35), standard('#eef0f4'));
+  emblem.position.set(cx, baseTop + poleH - 0.025, cz);
+  return [pole, shield, emblem];
+}
+
+/** A walled city on a stone plaza, packed with houses (+ banner if shielded). */
+export function generateCity(poly: World2[], rng: () => number, shielded: boolean): THREE.Object3D[] {
   const baseTop = DETAIL.cityBaseHeight;
   return [
     extrudeWorldPolygon(poly, baseTop, standard(DETAIL.cityBase)),
     ...cityWalls(poly, baseTop),
     ...cityHouses(poly, rng, baseTop),
+    ...(shielded ? cityBanner(poly, baseTop) : []),
   ];
 }

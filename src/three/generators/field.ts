@@ -1,40 +1,40 @@
 import * as THREE from 'three';
 import { PALETTE, DETAIL } from '../palette';
 import {
-  type World2, standard, shadowMesh, extrudeWorldPolygon, scatterInside, pick, range,
+  type World2, type Instance, standard, extrudeWorldPolygon, scatterInside, pick, range, instanced,
 } from './util';
 
-/** A low-poly tree (trunk + icosahedron foliage). */
-function tree(x: number, z: number, top: number, rng: () => number): THREE.Object3D[] {
-  const trunkH = range(rng, 0.03, 0.05);
-  const trunk = shadowMesh(
-    new THREE.CylinderGeometry(0.006, 0.009, trunkH, 5),
-    standard(DETAIL.treeTrunk),
-  );
-  trunk.position.set(x, top + trunkH / 2, z);
-
-  const r = range(rng, 0.028, 0.045);
-  const foliage = shadowMesh(new THREE.IcosahedronGeometry(r, 0), standard(pick(rng, DETAIL.treeFoliage)));
-  foliage.position.set(x, top + trunkH + r * 0.7, z);
-  return [trunk, foliage];
-}
-
-/** A small bush (single rounded blob). */
-function bush(x: number, z: number, top: number, rng: () => number): THREE.Object3D {
-  const r = range(rng, 0.018, 0.03);
-  const mesh = shadowMesh(new THREE.IcosahedronGeometry(r, 0), standard(pick(rng, DETAIL.treeFoliage)));
-  mesh.position.set(x, top + r * 0.75, z);
-  return mesh;
-}
-
-/** A grass field scattered with trees and bushes. */
+/**
+ * A grass field scattered with trees and bushes. Foliage and trunks are each
+ * batched into a single instanced mesh (one draw call per family).
+ */
 export function generateField(poly: World2[], rng: () => number): THREE.Object3D[] {
   const top = PALETTE.FIELD.height;
-  const out: THREE.Object3D[] = [extrudeWorldPolygon(poly, top, standard(PALETTE.FIELD.color))];
+  const trunks: Instance[] = [];
+  const foliage: Instance[] = [];
+
   const spots = scatterInside(poly, rng, { step: 0.16, margin: 0.03, probability: 0.45 });
   for (const [x, z] of spots) {
-    if (rng() < 0.35) out.push(bush(x, z, top, rng));
-    else out.push(...tree(x, z, top, rng));
+    const color = pick(rng, DETAIL.treeFoliage);
+    if (rng() < 0.35) {
+      // bush — foliage blob only
+      const r = range(rng, 0.018, 0.03);
+      foliage.push({ pos: [x, top + r * 0.75, z], scale: [r, r, r], color });
+      continue;
+    }
+    const trunkH = range(rng, 0.03, 0.05);
+    const tr = range(rng, 0.007, 0.009);
+    trunks.push({ pos: [x, top + trunkH / 2, z], scale: [tr, trunkH, tr] });
+    const r = range(rng, 0.028, 0.045);
+    foliage.push({ pos: [x, top + trunkH + r * 0.7, z], scale: [r, r, r], color });
   }
-  return out;
+
+  const trunkGeo = new THREE.CylinderGeometry(1, 1.15, 1, 5);
+  const foliageGeo = new THREE.IcosahedronGeometry(1, 0);
+  const out: (THREE.Object3D | null)[] = [
+    extrudeWorldPolygon(poly, top, standard(PALETTE.FIELD.color)),
+    instanced(trunkGeo, standard(DETAIL.treeTrunk), trunks),
+    instanced(foliageGeo, standard('#ffffff'), foliage),
+  ];
+  return out.filter((m): m is THREE.Object3D => m !== null);
 }

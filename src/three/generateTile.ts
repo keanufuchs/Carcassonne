@@ -34,7 +34,13 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
   for (const region of regions.polygons) {
     const rng = makeRng(`${proto.id}:${region.kind}:${region.localId}`);
     const poly = region.points.map(svgToWorld);
-    const objects = region.kind === 'CITY' ? generateCity(poly, rng) : generateField(poly, rng);
+    let objects: THREE.Object3D[];
+    if (region.kind === 'CITY') {
+      const shielded = proto.segments.find((s) => s.localId === region.localId)?.isShielded === true;
+      objects = generateCity(poly, rng, shielded);
+    } else {
+      objects = generateField(poly, rng);
+    }
     group.add(...objects);
   }
 
