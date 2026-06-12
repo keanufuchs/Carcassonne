@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, ContactShadows } from '@react-three/drei';
-import type { TilePrototype } from '../../src/core/types/tile';
+import type { Rotation, TilePrototype } from '../../src/core/types/tile';
 import { parseTileRegions, type TileRegions } from '../../src/three/svgRegions';
 import { layoutRegions } from '../../src/three/layoutRegions';
 import { generateTile } from '../../src/three/generateTile';
+import { CompassMarkers } from './CompassMarkers';
 
 interface Props {
   prototype: TilePrototype;
@@ -15,21 +16,40 @@ interface Props {
   subtitle?: string;
 }
 
-function TileMesh({ prototype, regions }: { prototype: TilePrototype; regions: TileRegions }) {
-  const group = useMemo(() => generateTile(prototype, regions), [prototype, regions]);
+function TileScene({
+  prototype,
+  regions,
+  rotation,
+}: {
+  prototype: TilePrototype;
+  regions: TileRegions;
+  rotation: Rotation;
+}) {
+  const tileGroup = useMemo(() => generateTile(prototype, regions), [prototype, regions]);
   // Dispose generated geometry when it is replaced or unmounted.
   useEffect(() => () => {
-    group.traverse((obj) => {
+    tileGroup.traverse((obj) => {
       const mesh = obj as { geometry?: { dispose(): void }; material?: { dispose(): void } };
       mesh.geometry?.dispose();
       mesh.material?.dispose();
     });
-  }, [group]);
-  return <primitive object={group} />;
+  }, [tileGroup]);
+
+  const rotationY = (rotation * Math.PI) / 180;
+
+  return (
+    <group rotation={[0, rotationY, 0]}>
+      <primitive object={tileGroup} />
+      <CompassMarkers />
+    </group>
+  );
 }
+
+const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
   const [svgRegions, setSvgRegions] = useState<TileRegions | null>(null);
+  const [rotation, setRotation] = useState<Rotation>(0);
 
   useEffect(() => {
     if (!svgPath) return;
@@ -52,7 +72,21 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
 
   return (
     <div className="panel">
-      <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
+      <div className="panel-head">
+        <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
+        <div className="rotation-controls" role="group" aria-label="Tile rotation">
+          {ROTATIONS.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={rotation === r ? 'active' : undefined}
+              onClick={() => setRotation(r)}
+            >
+              {r}°
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="canvas-wrap">
         <Canvas
           shadows
@@ -87,7 +121,7 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
             fadeDistance={7}
             fadeStrength={2}
           />
-          {regions && <TileMesh prototype={prototype} regions={regions} />}
+          {regions && <TileScene prototype={prototype} regions={regions} rotation={rotation} />}
           <ContactShadows
             position={[0, 0.001, 0]}
             scale={2.2}

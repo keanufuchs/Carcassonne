@@ -46,7 +46,18 @@ body {
   display: flex; flex-direction: column; min-height: 0;
   background: #1b2230; border: 1px solid #2a3344; border-radius: 12px; padding: 12px;
 }
-.panel h2 { font-size: 14px; margin: 0 0 10px; }
+.panel h2 { font-size: 14px; margin: 0; }
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 10px; flex-wrap: wrap;
+}
+.rotation-controls { display: flex; gap: 4px; }
+.rotation-controls button {
+  padding: 3px 8px; border: 1px solid #3a4659; border-radius: 6px;
+  background: #11151d; color: #c5cad6; font-size: 11px; cursor: pointer;
+}
+.rotation-controls button:hover { border-color: #5b8def; }
+.rotation-controls button.active { border-color: #5b8def; background: #243047; color: #e6e9ef; }
 
 .asset-wrap, .canvas-wrap {
   flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
