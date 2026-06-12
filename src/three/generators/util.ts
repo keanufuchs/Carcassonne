@@ -134,6 +134,15 @@ export function standard(color: string | number): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({ color, roughness: 0.9, metalness: 0 });
 }
 
+/**
+ * Flat-shaded matte material — faceted low-poly look for foliage, rocks and
+ * haystacks (the Townscaper-style hand-faceted greenery). Smooth `standard()`
+ * stays for architecture.
+ */
+export function standardFlat(color: string | number): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({ color, roughness: 0.95, metalness: 0, flatShading: true });
+}
+
 export function shadowMesh(geometry: THREE.BufferGeometry, material: THREE.Material): THREE.Mesh {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
@@ -195,6 +204,53 @@ export function unitPyramid(): THREE.BufferGeometry {
   const geometry = new THREE.ConeGeometry(0.72, 1, 4);
   geometry.rotateY(Math.PI / 4);
   return geometry;
+}
+
+/**
+ * A unit gabled (pitched) roof: a triangular prism centred on the origin,
+ * ridge running along local +Z, slopes facing ±X, gable ends at ±Z. Scale by
+ * [w, height, d] like the other unit roofs. The classic "house" silhouette.
+ */
+export function unitGableRoof(): THREE.BufferGeometry {
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.5, 0);
+  shape.lineTo(0.5, 0);
+  shape.lineTo(0, 1);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
+  geometry.translate(0, -0.5, -0.5); // centre on origin (y and z in [-0.5, 0.5])
+  return geometry;
+}
+
+/**
+ * A unit clipped / hipped frustum roof — a 4-sided pyramid with the apex sliced
+ * off, giving a flat-topped pavilion silhouette distinct from the sharp hip.
+ */
+export function unitClipRoof(): THREE.BufferGeometry {
+  const geometry = new THREE.CylinderGeometry(0.34, 0.72, 1, 4);
+  geometry.rotateY(Math.PI / 4);
+  return geometry;
+}
+
+/**
+ * Deterministically nudges a colour in HSL space (symmetric ±delta per channel)
+ * to break up instance repetition without new geometry. Returns a hex string.
+ */
+export function jitterColor(
+  rng: () => number,
+  hex: string,
+  delta: { h: number; s: number; l: number },
+): string {
+  const color = new THREE.Color(hex);
+  const hsl = { h: 0, s: 0, l: 0 };
+  color.getHSL(hsl);
+  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+  color.setHSL(
+    (hsl.h + (rng() - 0.5) * delta.h + 1) % 1,
+    clamp01(hsl.s + (rng() - 0.5) * delta.s),
+    clamp01(hsl.l + (rng() - 0.5) * delta.l),
+  );
+  return `#${color.getHexString()}`;
 }
 
 export interface Instance {

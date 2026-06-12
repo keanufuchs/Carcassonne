@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { DETAIL } from '../palette';
+import { DETAIL, TOWN } from '../palette';
 import {
   type World2, type Instance, standard, shadowMesh, roundedBox, unitRoundedBox, unitPyramid,
-  extrudeWorldPolygon, scatterInside, pick, range, instanced, onTileBoundary, pointInPolygon,
+  unitGableRoof, unitClipRoof, jitterColor, pyramidRoof,
+  extrudeWorldPolygon, scatterInside, distToPolygonEdge, pick, range, instanced, onTileBoundary, pointInPolygon,
 } from './util';
 
 const WALL_EPS = 0.012; // outward probe distance for the "city on both sides?" test
@@ -108,6 +109,7 @@ function cityWalls(
   baseTop: number,
   rng: () => number,
 ): THREE.Object3D[] {
+  const tw = TOWN.tower;
   const mat = standard(DETAIL.wall);
   const walls: THREE.Object3D[] = [];
   const segs: WallSeg[] = [];
@@ -119,6 +121,9 @@ function cityWalls(
       const dz = pB[1] - pA[1];
       const len = Math.hypot(dx, dz);
       if (len < 2e-3) continue;
+      // Drop corner-hugging stubs (both ends at the perimeter) — smoothing
+      // artefacts where the city chamfers a tile corner; they read as orphans.
+      if (nearTilePerimeter(pA, tw.borderMargin) && nearTilePerimeter(pB, tw.borderMargin)) continue;
       segs.push([pA, pB]);
       const geo = roundedBox(len + DETAIL.wallThickness, DETAIL.wallHeight, DETAIL.wallThickness, 0.25);
       const mesh = shadowMesh(geo, mat);
@@ -129,24 +134,42 @@ function cityWalls(
   }
 
   const towerBodies: Instance[] = [];
-  const towerRoofs: Instance[] = [];
+  const towerSpires: Instance[] = [];
+  const finials: Instance[] = [];
+  const flags: Instance[] = [];
   const merlons: Instance[] = [];
   for (const stretch of chainStretches(segs)) {
     const length = stretchLength(stretch);
+    // A wall end that meets the tile border is a merge seam: set its tower back
+    // by borderMargin (so the body never crosses the seam). Interior corners get
+    // a tower hugging the tip.
+    const startInset = onTilePerimeter(pointAlong(stretch, 0).p) ? tw.borderMargin : TOWER_END_INSET;
+    const endInset = onTilePerimeter(pointAlong(stretch, length).p) ? tw.borderMargin : TOWER_END_INSET;
     const towerDists =
-      length < 2 * TOWER_END_INSET + 0.03
+      length < startInset + endInset + 0.03
         ? [length / 2]
-        : [TOWER_END_INSET, length - TOWER_END_INSET];
+        : [startInset, length - endInset];
     for (let d = TOWER_SPACING; d < length - TOWER_SPACING / 2; d += TOWER_SPACING) {
       towerDists.push(d);
     }
     for (const d of towerDists) {
       const { p } = pointAlong(stretch, d);
-      const r = 0.02;
-      const h = DETAIL.wallHeight * (1.35 + rng() * 0.2);
+      // Never let a tower body cross the tile border (would overlap a neighbour).
+      if (nearTilePerimeter(p, tw.borderMargin - 0.005)) continue;
+      const r = tw.baseRadius * (0.85 + rng() * 0.4);
+      const h = DETAIL.wallHeight * (1.3 + rng() * 0.5);
+      const spireH = tw.spireHeight * (0.85 + rng() * 0.4);
       towerBodies.push({ pos: [p[0], baseTop + h / 2, p[1]], scale: [r, h, r] });
-      towerRoofs.push({ pos: [p[0], baseTop + h + 0.022, p[1]], scale: [0.028, 0.044, 0.028] });
+      towerSpires.push({ pos: [p[0], baseTop + h + spireH / 2, p[1]], scale: [r * 1.15, spireH, r * 1.15] });
+      finials.push({ pos: [p[0], baseTop + h + spireH + tw.finial / 2, p[1]], scale: [tw.finial, tw.finial, tw.finial] });
+      if (rng() < tw.bannerProbability) {
+        flags.push({
+          pos: [p[0], baseTop + h + spireH * 0.7, p[1] + r * 1.4],
+          scale: [0.004, 0.02, 0.03], color: pick(rng, TOWN.accents),
+        });
+      }
     }
+    // Crenellations run the full wall (incl. to the seam) so ends look finished.
     for (let d = MERLON_SPACING / 2; d < length; d += MERLON_SPACING) {
       if (towerDists.some((t) => Math.abs(t - d) < 0.04)) continue;
       const { p, angle } = pointAlong(stretch, d);
@@ -157,18 +180,70 @@ function cityWalls(
       });
     }
   }
+  // Tapered tower body: top radius is a fraction of the (unit) base radius.
+  const taper = tw.topRadius / tw.baseRadius;
   return [
     ...walls,
-    instanced(new THREE.CylinderGeometry(1, 1, 1, 8), standard(DETAIL.wall), towerBodies),
-    instanced(new THREE.ConeGeometry(1, 1, 8), standard(DETAIL.roof[2]), towerRoofs),
+    instanced(new THREE.CylinderGeometry(taper, 1, 1, 8), standard(DETAIL.wall), towerBodies),
+    instanced(new THREE.ConeGeometry(1, 1, 8), standard(DETAIL.roof[2]), towerSpires),
+    instanced(new THREE.SphereGeometry(0.5, 6, 5), standard(DETAIL.roof[1]), finials),
+    instanced(unitRoundedBox(0.2), standard('#ffffff'), flags),
     instanced(unitRoundedBox(0.2), standard(DETAIL.wall), merlons),
   ].filter((m): m is THREE.Object3D => m !== null);
 }
 
-/** Packed houses as two instanced meshes (rounded bodies + pyramid roofs). */
+/** Barrels and crates tucked into the open ring between the wall and the houses. */
+function cityProps(poly: World2[], rng: () => number, baseTop: number): THREE.Object3D[] {
+  const barrels: Instance[] = [];
+  const crates: Instance[] = [];
+  const ringInner = DETAIL.wallThickness + 0.035; // = the house placement margin
+  const spots = scatterInside(poly, rng, {
+    step: 0.1, margin: DETAIL.wallThickness + 0.008, probability: TOWN.props.ringProbability,
+  });
+  for (const [x, z] of spots) {
+    if (distToPolygonEdge([x, z], poly) > ringInner) continue; // keep to the wall ring
+    if (rng() < 0.5) {
+      const r = range(rng, 0.012, 0.018);
+      const h = range(rng, 0.02, 0.032);
+      barrels.push({ pos: [x, baseTop + h / 2, z], scale: [r, h, r], color: TOWN.props.barrel });
+    } else {
+      const s = range(rng, 0.02, 0.03);
+      crates.push({ pos: [x, baseTop + s / 2, z], scale: [s, s, s], rotationY: rng() * Math.PI, color: TOWN.props.crate });
+    }
+  }
+  return [
+    instanced(new THREE.CylinderGeometry(1, 1, 1, 8), standard('#ffffff'), barrels),
+    instanced(unitRoundedBox(0.15), standard('#ffffff'), crates),
+  ].filter((m): m is THREE.InstancedMesh => m !== null);
+}
+
+type RoofKind = 'gable' | 'hip' | 'clip';
+
+/** Weighted, deterministic roof-archetype pick from the central config. */
+function pickRoofKind(rng: () => number): RoofKind {
+  const { gable, hip, clip } = TOWN.roof.weights;
+  const r = rng() * (gable + hip + clip);
+  if (r < gable) return 'gable';
+  if (r < gable + hip) return 'hip';
+  return 'clip';
+}
+
+/**
+ * Packed houses with varied roofs (gable / hip / clip), eaves, ridge caps,
+ * chimneys, a foundation lip and slight handmade asymmetry. Each family is one
+ * instanced mesh; per-instance colours are HSL-jittered to avoid repetition.
+ */
 function cityHouses(poly: World2[], rng: () => number, baseTop: number): THREE.Object3D[] {
   const bodies: Instance[] = [];
-  const roofs: Instance[] = [];
+  const foundations: Instance[] = [];
+  const eaves: Instance[] = [];
+  const ridges: Instance[] = [];
+  const chimneys: Instance[] = [];
+  const doors: Instance[] = [];
+  const windows: Instance[] = [];
+  const roofsByKind: Record<RoofKind, Instance[]> = { gable: [], hip: [], clip: [] };
+  const { foundation, roof: roofCfg, chimney, house, colorJitter, facade } = TOWN;
+
   const spots = scatterInside(poly, rng, {
     step: 0.13,
     margin: DETAIL.wallThickness + 0.035,
@@ -178,16 +253,78 @@ function cityHouses(poly: World2[], rng: () => number, baseTop: number): THREE.O
     const w = range(rng, 0.06, 0.1);
     const d = range(rng, 0.06, 0.1);
     const h = range(rng, 0.1, 0.24);
-    const rot = Math.floor(rng() * 4) * (Math.PI / 2);
+    const rot = Math.floor(rng() * 4) * (Math.PI / 2) + (rng() - 0.5) * house.yawJitter;
     const span = Math.max(w, d);
-    const roofH = span * 0.55;
+    const kind = pickRoofKind(rng);
+    const roofH = span * (kind === 'gable' ? 0.5 : kind === 'hip' ? 0.55 : 0.42);
+    const wallColor = jitterColor(rng, pick(rng, DETAIL.houseWalls), colorJitter);
+    const roofColor = jitterColor(rng, pick(rng, DETAIL.roof), colorJitter);
 
-    bodies.push({ pos: [x, baseTop + h / 2, z], scale: [w, h, d], rotationY: rot, color: pick(rng, DETAIL.houseWalls) });
-    roofs.push({ pos: [x, baseTop + h + roofH / 2, z], scale: [span, roofH, span], rotationY: rot, color: pick(rng, DETAIL.roof) });
+    foundations.push({
+      pos: [x, baseTop + foundation.height / 2, z],
+      scale: [w + foundation.overhang * 2, foundation.height, d + foundation.overhang * 2],
+      rotationY: rot, color: foundation.color,
+    });
+    bodies.push({ pos: [x, baseTop + h / 2, z], scale: [w, h, d], rotationY: rot, color: wallColor });
+
+    const eaveOv = roofCfg.eaveOverhang;
+    eaves.push({
+      pos: [x, baseTop + h, z],
+      scale: [w + eaveOv * 2, roofCfg.eaveThickness, d + eaveOv * 2],
+      rotationY: rot, color: roofColor,
+    });
+    roofsByKind[kind].push({
+      pos: [x, baseTop + h + roofH / 2, z],
+      scale: [w + eaveOv, roofH, d + eaveOv], rotationY: rot, color: roofColor,
+    });
+    if (kind === 'gable') {
+      ridges.push({
+        pos: [x, baseTop + h + roofH - roofCfg.ridgeSize * 0.4, z],
+        scale: [roofCfg.ridgeSize, roofCfg.ridgeSize, d + eaveOv], rotationY: rot, color: roofColor,
+      });
+    }
+    if (rng() < chimney.probability) {
+      const ox = (rng() < 0.5 ? 0.28 : -0.28) * w;
+      const oz = (rng() < 0.5 ? 0.28 : -0.28) * d;
+      const cx = x + ox * Math.cos(rot) - oz * Math.sin(rot);
+      const cz = z + ox * Math.sin(rot) + oz * Math.cos(rot);
+      chimneys.push({
+        pos: [cx, baseTop + h + chimney.height / 2, cz],
+        scale: [chimney.size, chimney.height, chimney.size], color: chimney.color,
+      });
+    }
+
+    // Facade: a coloured door + symmetric windows on the front (+Z local) face.
+    const fwd: World2 = [Math.sin(rot), Math.cos(rot)];
+    const rightV: World2 = [Math.cos(rot), -Math.sin(rot)];
+    const faceX = x + fwd[0] * (d / 2);
+    const faceZ = z + fwd[1] * (d / 2);
+    doors.push({
+      pos: [faceX, baseTop + facade.door.h / 2, faceZ],
+      scale: [facade.door.w, facade.door.h, facade.door.depth],
+      rotationY: rot, color: pick(rng, TOWN.accents),
+    });
+    if (h > 0.13 && rng() < facade.windowProbability) {
+      for (const s of [-1, 1]) {
+        windows.push({
+          pos: [faceX + rightV[0] * w * 0.26 * s, baseTop + h * 0.62, faceZ + rightV[1] * w * 0.26 * s],
+          scale: [facade.window.w, facade.window.h, facade.window.depth],
+          rotationY: rot, color: facade.window.color,
+        });
+      }
+    }
   }
   return [
+    instanced(unitRoundedBox(0.12), standard('#ffffff'), foundations),
     instanced(unitRoundedBox(0.18), standard('#ffffff'), bodies),
-    instanced(unitPyramid(), standard('#ffffff'), roofs),
+    instanced(unitRoundedBox(0.08), standard('#ffffff'), eaves),
+    instanced(unitGableRoof(), standard('#ffffff'), roofsByKind.gable),
+    instanced(unitPyramid(), standard('#ffffff'), roofsByKind.hip),
+    instanced(unitClipRoof(), standard('#ffffff'), roofsByKind.clip),
+    instanced(unitRoundedBox(0.2), standard('#ffffff'), ridges),
+    instanced(unitRoundedBox(0.2), standard('#ffffff'), chimneys),
+    instanced(unitRoundedBox(0.12), standard('#ffffff'), doors),
+    instanced(unitRoundedBox(0.12), standard('#ffffff'), windows),
   ].filter((m): m is THREE.InstancedMesh => m !== null);
 }
 
@@ -215,5 +352,93 @@ export function generateCity(poly: World2[], rng: () => number, allCityPolys: Wo
     extrudeWorldPolygon(poly, baseTop, standard(DETAIL.cityBase)),
     ...cityWalls(poly, allCityPolys, baseTop, rng),
     ...cityHouses(poly, rng, baseTop),
+    ...cityProps(poly, rng, baseTop),
   ];
+}
+
+/** Nearest point on a polygon's boundary to `p`, plus that edge's unit direction. */
+function nearestBoundary(p: World2, poly: World2[]): { point: World2; dir: World2; dist: number } {
+  let best = { point: poly[0], dir: [1, 0] as World2, dist: Infinity };
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[j];
+    const b = poly[i];
+    const dx = b[0] - a[0];
+    const dz = b[1] - a[1];
+    const lenSq = dx * dx + dz * dz || 1;
+    const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / lenSq));
+    const cx = a[0] + t * dx;
+    const cz = a[1] + t * dz;
+    const dist = Math.hypot(p[0] - cx, p[1] - cz);
+    if (dist < best.dist) {
+      const len = Math.hypot(dx, dz) || 1;
+      best = { point: [cx, cz], dir: [dx / len, dz / len], dist };
+    }
+  }
+  return best;
+}
+
+/** True if a point lies within `margin` of the tile perimeter (x=±0.5 or z=±0.5). */
+function nearTilePerimeter([x, z]: World2, margin: number): boolean {
+  return Math.abs(Math.abs(x) - 0.5) < margin || Math.abs(Math.abs(z) - 0.5) < margin;
+}
+
+/** True if a point lies on the tile perimeter (where no wall — hence no gate — exists). */
+function onTilePerimeter(p: World2): boolean {
+  return nearTilePerimeter(p, 0.012);
+}
+
+/** A gatehouse straddling the road at `point`, aligned to wall direction `dir`. */
+function gatehouse([px, pz]: World2, dir: World2, baseTop: number): THREE.Object3D[] {
+  const g = TOWN.gate;
+  const angle = -Math.atan2(dir[1], dir[0]); // maps local +X onto the wall direction
+  const wallMat = standard(DETAIL.wall);
+  const out: THREE.Object3D[] = [];
+  const half = g.width / 2 + g.postWidth / 2;
+  for (const s of [-1, 1]) {
+    const post = shadowMesh(roundedBox(g.postWidth, g.height, g.depth, 0.18), wallMat);
+    post.position.set(px + dir[0] * half * s, baseTop + g.height / 2, pz + dir[1] * half * s);
+    post.rotation.y = angle;
+    out.push(post);
+  }
+  const lintel = shadowMesh(roundedBox(g.width + g.postWidth * 2, g.height * 0.2, g.depth, 0.18), wallMat);
+  lintel.position.set(px, baseTop + g.height - g.height * 0.1, pz);
+  lintel.rotation.y = angle;
+  out.push(lintel);
+
+  const roof = pyramidRoof(g.width + g.postWidth * 2, g.roofHeight, DETAIL.roof[2]);
+  roof.position.set(px, baseTop + g.height + g.roofHeight / 2, pz);
+  roof.rotation.y = angle;
+  out.push(roof);
+  return out;
+}
+
+/**
+ * Places a gatehouse wherever a road end approaches a city wall (within
+ * `gate.reach`). Gates are skipped on the tile perimeter (open neighbour seams,
+ * no wall) and de-duplicated so converging roads share one gate.
+ */
+export function generateGates(
+  cityPolys: World2[][],
+  roads: World2[][],
+  baseTop: number,
+): THREE.Object3D[] {
+  const out: THREE.Object3D[] = [];
+  const placed: World2[] = [];
+  for (const road of roads) {
+    if (road.length < 2) continue;
+    for (const end of [road[0], road[road.length - 1]]) {
+      let best: { point: World2; dir: World2; dist: number } | null = null;
+      for (const poly of cityPolys) {
+        const nb = nearestBoundary(end, poly);
+        if (nb.dist < TOWN.gate.reach && !onTilePerimeter(nb.point) && (!best || nb.dist < best.dist)) {
+          best = nb;
+        }
+      }
+      if (best && !placed.some((p) => Math.hypot(p[0] - best!.point[0], p[1] - best!.point[1]) < 0.06)) {
+        placed.push(best.point);
+        out.push(...gatehouse(best.point, best.dir, baseTop));
+      }
+    }
+  }
+  return out;
 }

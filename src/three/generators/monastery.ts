@@ -1,8 +1,18 @@
 import type * as THREE from 'three';
-import { DETAIL } from '../palette';
+import { DETAIL, TOWN } from '../palette';
 import { type World2, standard, shadowMesh, roundedBox, pyramidRoof } from './util';
 
-/** A cloister building (main hall + roof) with a small bell tower. */
+/** A small Latin cross (vertical + transom) for a roof apex. */
+function cross(x: number, y: number, z: number): THREE.Object3D[] {
+  const mat = standard('#caa94a');
+  const up = shadowMesh(roundedBox(0.006, 0.04, 0.006, 0.2), mat);
+  up.position.set(x, y + 0.02, z);
+  const arm = shadowMesh(roundedBox(0.022, 0.006, 0.006, 0.2), mat);
+  arm.position.set(x, y + 0.026, z);
+  return [up, arm];
+}
+
+/** A cloister building (main hall + roof) with a bell tower, door, windows and a cross. */
 export function generateMonastery([x, z]: World2): THREE.Object3D[] {
   const out: THREE.Object3D[] = [];
 
@@ -18,6 +28,16 @@ export function generateMonastery([x, z]: World2): THREE.Object3D[] {
   roof.position.set(x, bodyH + roofH / 2, z);
   out.push(roof);
 
+  // Arched door + flanking windows on the south face (+z).
+  const door = shadowMesh(roundedBox(0.03, 0.05, 0.012, 0.4), standard('#6a543a'));
+  door.position.set(x, 0.025, z + w / 2);
+  out.push(door);
+  for (const s of [-1, 1]) {
+    const win = shadowMesh(roundedBox(0.02, 0.024, 0.012, 0.3), standard(TOWN.facade.window.color));
+    win.position.set(x + 0.06 * s, bodyH * 0.6, z + w / 2);
+    out.push(win);
+  }
+
   // Bell tower at one corner
   const tw = 0.06;
   const towerH = 0.22;
@@ -31,6 +51,9 @@ export function generateMonastery([x, z]: World2): THREE.Object3D[] {
   const towerRoof = pyramidRoof(tw, towerRoofH, DETAIL.monasteryRoof);
   towerRoof.position.set(tx, towerH + towerRoofH / 2, tz);
   out.push(towerRoof);
+
+  out.push(...cross(tx, towerH + towerRoofH, tz));
+  out.push(...cross(x, bodyH + roofH, z));
 
   return out;
 }

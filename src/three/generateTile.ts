@@ -3,7 +3,7 @@ import type { TilePrototype } from '../core/types/tile';
 import type { TileRegions } from './svgRegions';
 import { BASE_COLOR, TILE_SIZE, DETAIL } from './palette';
 import { makeRng, svgToWorld, standard, centroid, type World2 } from './generators/util';
-import { generateCity, cityBanner } from './generators/city';
+import { generateCity, cityBanner, generateGates } from './generators/city';
 import { generateField } from './generators/field';
 import { generateRoad } from './generators/road';
 import { generateMonastery } from './generators/monastery';
@@ -63,9 +63,13 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
   addShieldBanners(group, proto, regions);
 
   // ROAD → ribbon + curb along the centreline.
-  for (const road of regions.roads) {
-    group.add(...generateRoad(road.centerline.map(svgToWorld), road.width / 100));
+  const roadCenterlines: World2[][] = regions.roads.map((road) => road.centerline.map(svgToWorld));
+  for (let i = 0; i < regions.roads.length; i++) {
+    group.add(...generateRoad(roadCenterlines[i], regions.roads[i].width / 100));
   }
+
+  // GATEHOUSE → where a road meets a city wall, straddling the boundary.
+  group.add(...generateGates(cityPolys, roadCenterlines, DETAIL.cityBaseHeight));
 
   // MONASTERY → cloister building at the marker point.
   for (const marker of regions.markers) {

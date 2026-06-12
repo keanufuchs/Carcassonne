@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, ContactShadows } from '@react-three/drei';
 import type { TilePrototype } from '../../src/core/types/tile';
@@ -53,14 +54,19 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
     <div className="panel">
       <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
       <div className="canvas-wrap">
-        <Canvas shadows camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}>
-          <color attach="background" args={['#aebfcf']} />
-          <fog attach="fog" args={['#aebfcf', 4, 9]} />
-          <hemisphereLight args={['#dce8ff', '#5a7042', 0.55]} />
-          <ambientLight intensity={0.2} />
+        <Canvas
+          shadows
+          camera={{ position: [1.3, 1.25, 1.3], fov: 40 }}
+          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
+        >
+          <color attach="background" args={['#b6c4d0']} />
+          <fog attach="fog" args={['#b6c4d0', 4, 9]} />
+          <hemisphereLight args={['#e4ecff', '#6a7a4a', 0.6]} />
+          <ambientLight intensity={0.18} />
           <directionalLight
             position={[2.5, 4, 2]}
-            intensity={1.5}
+            color="#fff2da"
+            intensity={1.7}
             castShadow
             shadow-mapSize={[2048, 2048]}
             shadow-bias={-0.0002}

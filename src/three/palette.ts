@@ -48,6 +48,64 @@ export const PALETTE: Record<SegmentKind, KindStyle> = {
 export const BEVEL = { size: 0.006, segments: 2 };
 
 /**
+ * Townscaper-inspired detailing config (2026-06-12). All tunables for the
+ * richer procedural content live here — generators must not hard-wire magic
+ * numbers. Sampled deterministically per tile via the seeded RNG.
+ * See docs/superpowers/specs/2026-06-12-townscaper-tile-detailing-design.md.
+ */
+export const TOWN = {
+  /** Roof archetype mix and trim. Weights are relative (normalised at use). */
+  roof: {
+    weights: { gable: 0.5, hip: 0.3, clip: 0.2 },
+    /** Eave slab overhang beyond the body footprint, per side. */
+    eaveOverhang: 0.012,
+    eaveThickness: 0.012,
+    /** Ridge cap cross-section on gabled roofs. */
+    ridgeSize: 0.013,
+  },
+  /** Per-instance colour variation (HSL deltas, applied symmetrically ±). */
+  colorJitter: { h: 0.02, s: 0.08, l: 0.07 },
+  /** Window/door facade detail. */
+  facade: {
+    windowProbability: 0.75,
+    window: { w: 0.016, h: 0.02, depth: 0.01, color: '#3b4658' },
+    door: { w: 0.018, h: 0.032, depth: 0.01 },
+  },
+  chimney: { probability: 0.4, size: 0.014, height: 0.05, color: '#9c8c79' },
+  foundation: { overhang: 0.01, height: 0.014, color: '#b9aa90' },
+  /** Small handmade asymmetry on house yaw (radians, applied ±). */
+  house: { yawJitter: 0.16 },
+  tower: {
+    baseRadius: 0.027,
+    topRadius: 0.018,
+    spireHeight: 0.07,
+    finial: 0.011,
+    bannerProbability: 0.4,
+    /**
+     * Setback of border-reaching wall ends: a tower caps the wall this far from
+     * the tile edge — close enough to read as fortified, but its body never
+     * crosses the seam, so adjacent tiles' towers don't overlap. Also the radius
+     * within which corner-hugging wall stubs are culled.
+     */
+    borderMargin: 0.05,
+  },
+  /** Gatehouse where a road meets a city wall. `reach` = max road-to-wall gap. */
+  gate: { width: 0.11, postWidth: 0.03, depth: 0.05, height: 0.2, roofHeight: 0.05, reach: 0.17 },
+  vegetation: {
+    /** Share of trees that are conifers (vs round broadleaf). */
+    coniferWeight: 0.35,
+    rockProbability: 0.16,
+    rock: '#9b9488',
+    haystackProbability: 0.08,
+    haystack: '#d8b85a',
+  },
+  /** Barrels/crates tucked into the ring between the city wall and the houses. */
+  props: { barrel: '#8a6a44', crate: '#9a7b4f', ringProbability: 0.22 },
+  /** Curated soft accents (doors, shutters, banners, flags). */
+  accents: ['#6b8fb0', '#7faa6b', '#c0894f', '#b0584a', '#8a6fa0', '#d4ad4a'],
+} as const;
+
+/**
  * Iteration-3 detail palette for the procedural content generators
  * (`src/three/generators/*`). Arrays are sampled deterministically per tile.
  */
