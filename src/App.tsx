@@ -9,7 +9,7 @@ import {
   createNetworkController,
 } from './controller/NetworkController';
 import type { NetworkController, NetworkSession, LobbyInfo } from './controller/NetworkController';
-import { BoardView } from './ui/board/BoardView';
+import { Board3DView } from './ui/board/Board3DView';
 import { PlayerPanel } from './ui/hud/PlayerPanel';
 import { TilePreview } from './ui/hud/TilePreview';
 import { Controls } from './ui/hud/Controls';
@@ -84,9 +84,6 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
   const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
   const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
-  const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
-  const [highlightKey, setHighlightKey] = useState(0);
-  const highlightTimerRef = useRef<number | null>(null);
   const prevTileKeysRef = useRef<Set<string>>(new Set());
 
   // Auto-draw tile at the start of every turn
@@ -227,16 +224,6 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleHighlight(coord: { x: number; y: number }) {
-    if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
-    setHighlightedCoord(coord);
-    setHighlightKey(k => k + 1);
-    highlightTimerRef.current = window.setTimeout(() => {
-      setHighlightedCoord(null);
-      highlightTimerRef.current = null;
-    }, 3000);
-  }
-
   return (
     <div className="game-layout">
       <div className="game-sidebar">
@@ -260,9 +247,9 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         </div>
 
       </div>
-      <BoardView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
+      <Board3DView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} />
       <div className="game-timeline">
-        <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
+        <TurnTimeline moves={moveLog} />
       </div>
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen players={state.players} onRestart={() => { clearLocalGame(); window.location.reload(); }} />
