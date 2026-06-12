@@ -24,22 +24,10 @@ export function roadRibbon(centerline: World2[], width: number): World2[] {
   return [...left, ...right.reverse()];
 }
 
-/** Marks the paved surface mesh so ownership tinting targets it (not the curb). */
-export const ROAD_SURFACE_TAG = 'roadSurface' as const;
-/**
- * Carries the road's segment localId on the surface mesh for claim tinting.
- * Deliberately NOT the shared SEGMENT_MESH_TAG: roads are hover-highlighted via
- * their shell overlay, so tagging them for the mesh-emissive highlight would let
- * its save/restore clobber the claim tint.
- */
-export const ROAD_LOCAL_ID = 'roadLocalId' as const;
-
 /** A paved road ribbon on a slightly wider, lower stone curb. */
-export function generateRoad(centerline: World2[], width: number, localId: number): THREE.Object3D[] {
+export function generateRoad(centerline: World2[], width: number): THREE.Object3D[] {
   if (centerline.length < 2) return [];
   const curb = extrudeWorldPolygon(roadRibbon(centerline, width * 1.7), 0.025, standard(DETAIL.roadCurb));
   const surface = extrudeWorldPolygon(roadRibbon(centerline, width), PALETTE.ROAD.height, standard(PALETTE.ROAD.color));
-  surface.userData[ROAD_SURFACE_TAG] = true;
-  surface.userData[ROAD_LOCAL_ID] = localId;
   return [curb, surface];
 }

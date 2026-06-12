@@ -145,8 +145,35 @@ export const BANNER = {
     staveRadius: 0.005,
     emblemFraction: 0.5,
   },
-  /** Road claim: blend the road surface this far toward the player colour. */
-  roadTintFactor: 0.65,
+  /**
+   * Road ownership lantern. A small wayside lantern stands beside every road by
+   * default (neutral, no banner); claiming the road hangs a player-coloured
+   * pennant on its post — the road material itself is never recoloured.
+   */
+  lantern: {
+    /** Weathered timber post the lantern sits on. */
+    postHeight: 0.2,
+    postRadius: 0.006,
+    /** Warm glowing housing on top. */
+    bodySize: 0.03,
+    glow: '#ffd98a',
+    glowIntensity: 0.85,
+    /** Dark iron frame: housing rim + little roof cap. */
+    frame: '#4f4233',
+    capHeight: 0.02,
+    /** How far the lantern stands from the road centreline (world units). */
+    offset: 0.06,
+    /** Player pennant attached to the post when the road is claimed. */
+    banner: {
+      width: 0.058,
+      height: 0.044,
+      thickness: 0.005,
+      /** Meeple emblem height as a fraction of the pennant height. */
+      emblemFraction: 0.62,
+      /** Pennant top position on the post, as a fraction of postHeight. */
+      mountFraction: 0.95,
+    },
+  },
 } as const;
 
 /**

@@ -3,22 +3,20 @@ import { PLAYER_COLORS } from '../core/types';
 import type { ClaimMap, FeatureClaim } from './claims';
 import type { TileRegions } from './svgRegions';
 import { svgToWorld, type World2 } from './generators/util';
-import { cityAnchor, fieldAnchor, playerGonfalon, playerShield } from './generators/banner';
+import { cityAnchor, fieldAnchor, playerGonfalon, playerShield, roadLantern, roadLanternAnchor } from './generators/banner';
 import { MONASTERY_APEX_Y } from './generators/monastery';
-import { ROAD_SURFACE_TAG, ROAD_LOCAL_ID } from './generators/road';
 import { BANNER, DETAIL, PALETTE } from './palette';
 
 /**
- * Turns a tile's ownership claims into world-integrated banner markers and road
- * tints, decoupled from the procedural tile so the tile is never rebuilt on a
- * claim change. Cities/fields get a gonfalon, monasteries a roof shield, roads a
- * surface tint (no marker).
+ * Turns a tile's ownership claims into world-integrated markers, decoupled from
+ * the procedural tile so the tile is never rebuilt on a claim change. Cities and
+ * fields get a gonfalon, monasteries a roof shield. Every road carries a wayside
+ * lantern (neutral by default); claiming a road hangs a player pennant on it —
+ * the road material is never recoloured.
  * See docs/superpowers/specs/2026-06-12-banner-ownership-visualization-design.md.
  */
 
 const playerColor = (i: number): string => PLAYER_COLORS[((i % PLAYER_COLORS.length) + PLAYER_COLORS.length) % PLAYER_COLORS.length];
-
-const ROAD_TINT_KEY = '_roadBaseColor';
 
 /** All city polygon parts (world space) sharing a localId. */
 function cityParts(regions: TileRegions, localId: number): World2[][] {
@@ -47,10 +45,28 @@ function markerFor(regions: TileRegions, claim: FeatureClaim): THREE.Group | nul
     if (!marker) return null;
     return playerShield(svgToWorld(marker.pos), MONASTERY_APEX_Y, color);
   }
-  return null; // ROAD → handled by applyRoadClaimTints
+  return null; // ROAD → handled by buildRoadLanterns
 }
 
-/** A group of ownership markers for the current claims (excludes roads). */
+/**
+ * One wayside lantern per road run. Neutral when the road is unclaimed; a
+ * player pennant is hung on it when claimed (looked up by the road's localId).
+ */
+function buildRoadLanterns(group: THREE.Group, regions: TileRegions, claims: ClaimMap): void {
+  for (const road of regions.roads) {
+    const anchor = roadLanternAnchor(road.centerline.map(svgToWorld));
+    const claim = claims.get(road.localId);
+    const color = claim && claim.kind === 'ROAD' ? playerColor(claim.playerIndex) : null;
+    const lantern = roadLantern(anchor, color);
+    lantern.name = `road-lantern-${road.localId}`;
+    group.add(lantern);
+  }
+}
+
+/**
+ * The ownership marker layer for the current claims: gonfalon/shield markers for
+ * claimed cities, fields and monasteries, plus a lantern beside every road.
+ */
 export function buildClaimMarkers(regions: TileRegions, claims: ClaimMap): THREE.Group {
   const group = new THREE.Group();
   group.name = 'claim-markers';
@@ -60,31 +76,6 @@ export function buildClaimMarkers(regions: TileRegions, claims: ClaimMap): THREE
     marker.name = `claim-marker-${claim.kind}-${claim.localId}`;
     group.add(marker);
   }
+  buildRoadLanterns(group, regions, claims);
   return group;
-}
-
-/** Blends the road's base colour toward the player colour by the configured factor. */
-function tintedRoadColor(base: THREE.Color, playerHex: string): THREE.Color {
-  return base.clone().lerp(new THREE.Color(playerHex), BANNER.roadTintFactor);
-}
-
-/**
- * Applies (or restores) road-surface tints for the current claims. Tints only
- * tagged surface meshes; the curb stays neutral. Saves the original colour on
- * first tint so a later un-claim restores it exactly.
- */
-export function applyRoadClaimTints(tileGroup: THREE.Object3D, claims: ClaimMap): void {
-  tileGroup.traverse((obj) => {
-    if (!(obj instanceof THREE.Mesh) || obj.userData[ROAD_SURFACE_TAG] !== true) return;
-    const localId = obj.userData[ROAD_LOCAL_ID] as number | undefined;
-    const material = obj.material;
-    if (localId === undefined || !(material instanceof THREE.MeshStandardMaterial)) return;
-
-    if (material.userData[ROAD_TINT_KEY] === undefined) {
-      material.userData[ROAD_TINT_KEY] = material.color.getHex();
-    }
-    const base = new THREE.Color(material.userData[ROAD_TINT_KEY] as number);
-    const claim = claims.get(localId);
-    material.color.copy(claim && claim.kind === 'ROAD' ? tintedRoadColor(base, playerColor(claim.playerIndex)) : base);
-  });
 }

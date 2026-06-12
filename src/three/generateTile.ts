@@ -63,12 +63,12 @@ export function generateTile(proto: TilePrototype, regions: TileRegions, seed: s
 
   addShieldBanners(group, proto, regions);
 
-  // ROAD → ribbon + curb along the centreline. The surface mesh carries its
-  // localId (ROAD_LOCAL_ID) so claim tinting can find it; roads are not tagged
-  // for mesh-emissive highlighting (they use shell overlays instead).
+  // ROAD → ribbon + curb along the centreline. Ownership is shown by a wayside
+  // lantern in the claim-marker layer (see claimMarkers.ts), so the road mesh
+  // carries no claim tag and is never recoloured.
   const roadCenterlines: World2[][] = regions.roads.map((road) => road.centerline.map(svgToWorld));
   for (let i = 0; i < regions.roads.length; i++) {
-    group.add(...generateRoad(roadCenterlines[i], regions.roads[i].width / 100, regions.roads[i].localId));
+    group.add(...generateRoad(roadCenterlines[i], regions.roads[i].width / 100));
   }
 
   // GATEHOUSE → where a road meets a city wall, straddling the boundary.

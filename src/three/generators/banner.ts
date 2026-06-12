@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BANNER } from '../palette';
 import {
-  type World2, standard, shadowMesh, roundedBox, centroid,
+  type World2, standard, shadowMesh, roundedBox, centroid, pyramidRoof,
   polygonBounds, pointInPolygon, distToPolygonEdge,
 } from './util';
 
@@ -46,6 +46,25 @@ export function fieldAnchor(poly: World2[], obstacles: World2[] = []): World2 {
     }
   }
   return best;
+}
+
+/**
+ * Road lantern anchor: a point beside the road's centreline midpoint, offset
+ * perpendicular toward the tile centre so the lantern stands clear of the paving
+ * and never lands off-tile on a border road. Centreline is in world space.
+ */
+export function roadLanternAnchor(centerline: World2[]): World2 {
+  const n = centerline.length;
+  const i = Math.floor(n / 2);
+  const a = centerline[Math.max(0, i - 1)];
+  const b = centerline[Math.min(n - 1, i + 1)];
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  let px = -(b[1] - a[1]) / len; // perpendicular to the local direction
+  let pz = (b[0] - a[0]) / len;
+  const [mx, mz] = centerline[i];
+  // Flip to the side that points toward the tile centre (origin).
+  if (px * -mx + pz * -mz < 0) { px = -px; pz = -pz; }
+  return [mx + px * BANNER.lantern.offset, mz + pz * BANNER.lantern.offset];
 }
 
 // ── Meeple emblem ────────────────────────────────────────────────────────────
@@ -159,5 +178,76 @@ export function playerShield([cx, cz]: World2, baseTop: number, color: string): 
   group.add(emblem);
 
   group.position.set(cx, baseTop, cz);
+  return group;
+}
+
+/** A small player pennant on a short crossarm, hung from the lantern post. */
+function lanternPennant(color: string): THREE.Group {
+  const L = BANNER.lantern;
+  const b = L.banner;
+  const group = new THREE.Group();
+  const topY = L.postHeight * b.mountFraction;
+  const clothX = L.postRadius + b.width / 2;
+
+  const arm = shadowMesh(
+    new THREE.CylinderGeometry(L.postRadius * 0.6, L.postRadius * 0.6, clothX + b.width / 2, 5),
+    standard(BANNER.pole),
+  );
+  arm.rotation.z = Math.PI / 2;
+  arm.position.set((clothX + b.width / 2) / 2, topY, 0);
+  group.add(arm);
+
+  const cloth = new THREE.Mesh(roundedBox(b.width, b.height, b.thickness, 0.12), standard(color));
+  cloth.castShadow = true;
+  cloth.position.set(clothX, topY - b.height / 2, b.thickness / 2);
+  group.add(cloth);
+
+  const emblem = meepleEmblem(b.height * b.emblemFraction);
+  emblem.position.set(clothX, topY - b.height / 2, b.thickness + 0.001);
+  group.add(emblem);
+
+  return group;
+}
+
+/**
+ * A wayside lantern that marks a road's ownership. The post + glowing housing
+ * are always present (neutral when `color` is null); a non-null player colour
+ * hangs a pennant on the post. Built around the origin, positioned by the
+ * caller via the returned group's transform.
+ */
+export function roadLantern([cx, cz]: World2, color: string | null): THREE.Group {
+  const L = BANNER.lantern;
+  const group = new THREE.Group();
+
+  const post = shadowMesh(
+    new THREE.CylinderGeometry(L.postRadius, L.postRadius * 1.3, L.postHeight, 6),
+    standard(BANNER.pole),
+  );
+  post.position.y = L.postHeight / 2;
+  group.add(post);
+
+  // Glowing housing — emissive so it reads as a lit lantern under the warm key light.
+  const housingY = L.postHeight + L.bodySize / 2;
+  const glow = new THREE.Mesh(
+    roundedBox(L.bodySize, L.bodySize * 1.15, L.bodySize, 0.18),
+    new THREE.MeshStandardMaterial({
+      color: L.glow,
+      emissive: new THREE.Color(L.glow),
+      emissiveIntensity: L.glowIntensity,
+      roughness: 0.5,
+      metalness: 0,
+    }),
+  );
+  glow.position.y = housingY;
+  group.add(glow);
+
+  // Iron cap roof + finial.
+  const cap = pyramidRoof(L.bodySize * 1.25, L.capHeight, L.frame);
+  cap.position.y = L.postHeight + L.bodySize * 1.15 + L.capHeight / 2;
+  group.add(cap);
+
+  if (color) group.add(lanternPennant(color));
+
+  group.position.set(cx, 0, cz);
   return group;
 }

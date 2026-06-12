@@ -8,7 +8,7 @@ import { generateTile } from '../../src/three/generateTile';
 import { disableTileContentRaycast } from '../../src/three/regionHighlight';
 import { RegionInteractionLayer } from '../../src/three/RegionInteractionLayer';
 import { nextClaims, type ClaimMap } from '../../src/three/claims';
-import { buildClaimMarkers, applyRoadClaimTints } from '../../src/three/claimMarkers';
+import { buildClaimMarkers } from '../../src/three/claimMarkers';
 import { CompassMarkers } from './CompassMarkers';
 import { TileLabCanvas } from './TileLabCanvas';
 
@@ -42,11 +42,6 @@ function ClaimScene({
   }, [prototype, regions, seed]);
 
   const markers = useMemo(() => buildClaimMarkers(regions, claims), [regions, claims]);
-
-  // Road tints live on the tile's own materials → re-apply whenever claims change.
-  useEffect(() => {
-    applyRoadClaimTints(tileGroup, claims);
-  }, [tileGroup, claims]);
 
   // Dispose the procedural tile when it is replaced or unmounted.
   useEffect(() => () => disposeGroup(tileGroup), [tileGroup]);
