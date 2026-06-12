@@ -6,6 +6,8 @@ import type { Rotation, TilePrototype } from '../../src/core/types/tile';
 import { parseTileRegions, type TileRegions } from '../../src/three/svgRegions';
 import { layoutRegions } from '../../src/three/layoutRegions';
 import { generateTile } from '../../src/three/generateTile';
+import { disableTileContentRaycast } from '../../src/three/regionHighlight';
+import { RegionInteractionLayer } from '../../src/three/RegionInteractionLayer';
 import { CompassMarkers } from './CompassMarkers';
 
 interface Props {
@@ -25,7 +27,17 @@ function TileScene({
   regions: TileRegions;
   rotation: Rotation;
 }) {
-  const tileGroup = useMemo(() => generateTile(prototype, regions), [prototype, regions]);
+  const [hoveredLocalId, setHoveredLocalId] = useState<number | null>(null);
+  const tileGroup = useMemo(() => {
+    const group = generateTile(prototype, regions);
+    disableTileContentRaycast(group);
+    return group;
+  }, [prototype, regions]);
+
+  useEffect(() => {
+    setHoveredLocalId(null);
+  }, [prototype.id, regions, rotation]);
+
   // Dispose generated geometry when it is replaced or unmounted.
   useEffect(() => () => {
     tileGroup.traverse((obj) => {
@@ -40,6 +52,12 @@ function TileScene({
   return (
     <group rotation={[0, rotationY, 0]}>
       <primitive object={tileGroup} />
+      <RegionInteractionLayer
+        tileGroup={tileGroup}
+        regions={regions}
+        hoveredLocalId={hoveredLocalId}
+        onHoverLocalId={setHoveredLocalId}
+      />
       <CompassMarkers />
     </group>
   );
@@ -74,7 +92,9 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
     <div className="panel">
       <div className="panel-head">
         <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
-        <div className="rotation-controls" role="group" aria-label="Tile rotation">
+        <div className="panel-head-actions">
+          <span className="muted lab-hint">Hover regions to highlight</span>
+          <div className="rotation-controls" role="group" aria-label="Tile rotation">
           {ROTATIONS.map((r) => (
             <button
               key={r}
@@ -85,6 +105,7 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
               {r}°
             </button>
           ))}
+          </div>
         </div>
       </div>
       <div className="canvas-wrap">

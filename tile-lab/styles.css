@@ -51,6 +51,8 @@ body {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   margin-bottom: 10px; flex-wrap: wrap;
 }
+.panel-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lab-hint { font-size: 11px; white-space: nowrap; }
 .rotation-controls { display: flex; gap: 4px; }
 .rotation-controls button {
   padding: 3px 8px; border: 1px solid #3a4659; border-radius: 6px;

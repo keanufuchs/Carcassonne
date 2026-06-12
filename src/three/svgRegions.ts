@@ -1,4 +1,5 @@
 import type { SegmentKind } from '../core/types/tile';
+import { parseSegmentLocalId } from '../shared/segmentHighlight';
 import { ROAD_DEFAULT_WIDTH } from './palette';
 
 /**
@@ -271,8 +272,8 @@ export function parseTileRegions(svgMarkup: string): TileRegions {
     const parts = id.split('-');
     if (parts.length < 3) return;
     const kind = parts[1] as SegmentKind;
-    const localId = parseInt(parts[2], 10);
-    if (Number.isNaN(localId)) return;
+    const localId = parseSegmentLocalId(id);
+    if (localId === null) return;
     const attrs: Record<string, string> = {};
     for (const attr of Array.from(el.attributes)) attrs[attr.name] = attr.value;
     shapes.push({

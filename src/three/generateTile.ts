@@ -7,6 +7,7 @@ import { generateCity, cityBanner, generateGates } from './generators/city';
 import { generateField } from './generators/field';
 import { generateRoad } from './generators/road';
 import { generateMonastery } from './generators/monastery';
+import { tagSegmentMeshes } from './regionHighlight';
 
 /**
  * Iteration 3/4 — procedural content per segment kind. The TS topology (`proto`)
@@ -73,7 +74,12 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
 
   // MONASTERY → cloister building at the marker point.
   for (const marker of regions.markers) {
-    group.add(...generateMonastery(svgToWorld(marker.pos)));
+    const segment = new THREE.Group();
+    for (const piece of generateMonastery(svgToWorld(marker.pos))) {
+      segment.add(piece);
+    }
+    tagSegmentMeshes(segment, marker.localId, 'MONASTERY');
+    group.add(segment);
   }
 
   return group;

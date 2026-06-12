@@ -3,7 +3,7 @@ import { PALETTE, DETAIL } from '../palette';
 import { type World2, standard, extrudeWorldPolygon } from './util';
 
 /** Offsets a centreline by ±width/2 into a closed ribbon polygon. */
-function ribbon(centerline: World2[], width: number): World2[] {
+export function roadRibbon(centerline: World2[], width: number): World2[] {
   const half = width / 2;
   const left: World2[] = [];
   const right: World2[] = [];
@@ -28,7 +28,7 @@ function ribbon(centerline: World2[], width: number): World2[] {
 export function generateRoad(centerline: World2[], width: number): THREE.Object3D[] {
   if (centerline.length < 2) return [];
   return [
-    extrudeWorldPolygon(ribbon(centerline, width * 1.7), 0.025, standard(DETAIL.roadCurb)),
-    extrudeWorldPolygon(ribbon(centerline, width), PALETTE.ROAD.height, standard(PALETTE.ROAD.color)),
+    extrudeWorldPolygon(roadRibbon(centerline, width * 1.7), 0.025, standard(DETAIL.roadCurb)),
+    extrudeWorldPolygon(roadRibbon(centerline, width), PALETTE.ROAD.height, standard(PALETTE.ROAD.color)),
   ];
 }
