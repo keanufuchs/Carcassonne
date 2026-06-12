@@ -98,6 +98,38 @@ function pointAlong(segs: WallSeg[], dist: number): { p: World2; angle: number }
 const stretchLength = (segs: WallSeg[]) =>
   segs.reduce((sum, [a, b]) => sum + Math.hypot(b[0] - a[0], b[1] - a[1]), 0);
 
+/** Wall geometry runs and the tower-anchoring subset for one city polygon. */
+export interface WallLayout {
+  /** Every run of true outer city boundary — each carries wall geometry. */
+  wallRuns: WallSeg[];
+  /**
+   * Subset anchoring towers and merlons: corner-hugging stubs (both ends within
+   * `tower.borderMargin` of the tile perimeter) are excluded, so end towers
+   * stay deliberately inset from the tile corners.
+   */
+  towerSegs: WallSeg[];
+}
+
+export function computeWallLayout(poly: World2[], allCityPolys: World2[][]): WallLayout {
+  const margin = TOWN.tower.borderMargin;
+  const wallRuns: WallSeg[] = [];
+  const towerSegs: WallSeg[] = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i];
+    const b = poly[(i + 1) % poly.length];
+    for (const run of edgeWallRuns(a, b, poly, allCityPolys)) {
+      const [pA, pB] = run;
+      if (Math.hypot(pB[0] - pA[0], pB[1] - pA[1]) < 2e-3) continue;
+      wallRuns.push(run);
+      // Corner-hugging stubs still get wall geometry; towers/merlon rhythm skip them.
+      if (!(nearTilePerimeter(pA, margin) && nearTilePerimeter(pB, margin))) {
+        towerSegs.push(run);
+      }
+    }
+  }
+  return { wallRuns, towerSegs };
+}
+
 /**
  * A defensive wall along the city's true outer boundary only, structured with
  * watchtowers (stretch ends + regular intervals) and a crenellation rhythm of
@@ -112,25 +144,16 @@ function cityWalls(
   const tw = TOWN.tower;
   const mat = standard(DETAIL.wall);
   const walls: THREE.Object3D[] = [];
-  const segs: WallSeg[] = [];
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i];
-    const b = poly[(i + 1) % poly.length];
-    for (const [pA, pB] of edgeWallRuns(a, b, poly, allCityPolys)) {
-      const dx = pB[0] - pA[0];
-      const dz = pB[1] - pA[1];
-      const len = Math.hypot(dx, dz);
-      if (len < 2e-3) continue;
-      // Drop corner-hugging stubs (both ends at the perimeter) — smoothing
-      // artefacts where the city chamfers a tile corner; they read as orphans.
-      if (nearTilePerimeter(pA, tw.borderMargin) && nearTilePerimeter(pB, tw.borderMargin)) continue;
-      segs.push([pA, pB]);
-      const geo = roundedBox(len + DETAIL.wallThickness, DETAIL.wallHeight, DETAIL.wallThickness, 0.25);
-      const mesh = shadowMesh(geo, mat);
-      mesh.position.set((pA[0] + pB[0]) / 2, baseTop + DETAIL.wallHeight / 2, (pA[1] + pB[1]) / 2);
-      mesh.rotation.y = -Math.atan2(dz, dx);
-      walls.push(mesh);
-    }
+  const { wallRuns, towerSegs } = computeWallLayout(poly, allCityPolys);
+  for (const [pA, pB] of wallRuns) {
+    const dx = pB[0] - pA[0];
+    const dz = pB[1] - pA[1];
+    const len = Math.hypot(dx, dz);
+    const geo = roundedBox(len + DETAIL.wallThickness, DETAIL.wallHeight, DETAIL.wallThickness, 0.25);
+    const mesh = shadowMesh(geo, mat);
+    mesh.position.set((pA[0] + pB[0]) / 2, baseTop + DETAIL.wallHeight / 2, (pA[1] + pB[1]) / 2);
+    mesh.rotation.y = -Math.atan2(dz, dx);
+    walls.push(mesh);
   }
 
   const towerBodies: Instance[] = [];
@@ -138,7 +161,8 @@ function cityWalls(
   const finials: Instance[] = [];
   const flags: Instance[] = [];
   const merlons: Instance[] = [];
-  for (const stretch of chainStretches(segs)) {
+  const towerPositions: World2[] = [];
+  for (const stretch of chainStretches(towerSegs)) {
     const length = stretchLength(stretch);
     // A wall end that meets the tile border is a merge seam: set its tower back
     // by borderMargin (so the body never crosses the seam). Interior corners get
@@ -156,6 +180,7 @@ function cityWalls(
       const { p } = pointAlong(stretch, d);
       // Never let a tower body cross the tile border (would overlap a neighbour).
       if (nearTilePerimeter(p, tw.borderMargin - 0.005)) continue;
+      towerPositions.push(p);
       const r = tw.baseRadius * (0.85 + rng() * 0.4);
       const h = DETAIL.wallHeight * (1.3 + rng() * 0.5);
       const spireH = tw.spireHeight * (0.85 + rng() * 0.4);
@@ -169,10 +194,13 @@ function cityWalls(
         });
       }
     }
-    // Crenellations run the full wall (incl. to the seam) so ends look finished.
+  }
+  // Crenellations run the full wall (incl. to the seam) so ends look finished.
+  for (const stretch of chainStretches(wallRuns)) {
+    const length = stretchLength(stretch);
     for (let d = MERLON_SPACING / 2; d < length; d += MERLON_SPACING) {
-      if (towerDists.some((t) => Math.abs(t - d) < 0.04)) continue;
       const { p, angle } = pointAlong(stretch, d);
+      if (towerPositions.some((t) => Math.hypot(t[0] - p[0], t[1] - p[1]) < 0.04)) continue;
       merlons.push({
         pos: [p[0], baseTop + DETAIL.wallHeight + 0.0055, p[1]],
         scale: [0.014, 0.011, DETAIL.wallThickness * 0.85],
