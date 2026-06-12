@@ -25,4 +25,15 @@ describe('fieldAnchor', () => {
     const anchor = fieldAnchor(lShape);
     expect(pointInPolygon(anchor, lShape)).toBe(true);
   });
+
+  it('keeps the anchor away from an obstacle at the field centre (monastery case)', () => {
+    // Whole-tile field with a monastery building at the centre.
+    const tile: World2[] = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
+    const monastery: World2 = [0, 0];
+    const anchor = fieldAnchor(tile, [monastery]);
+    expect(pointInPolygon(anchor, tile)).toBe(true);
+    // Monastery hall is ~0.2 wide → its corner reaches ~0.14 from centre.
+    const distToMonastery = Math.hypot(anchor[0] - monastery[0], anchor[1] - monastery[1]);
+    expect(distToMonastery).toBeGreaterThan(0.15);
+  });
 });

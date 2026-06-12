@@ -63,15 +63,12 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
 
   addShieldBanners(group, proto, regions);
 
-  // ROAD → ribbon + curb along the centreline (tagged so claim tinting can find it).
+  // ROAD → ribbon + curb along the centreline. The surface mesh carries its
+  // localId (ROAD_LOCAL_ID) so claim tinting can find it; roads are not tagged
+  // for mesh-emissive highlighting (they use shell overlays instead).
   const roadCenterlines: World2[][] = regions.roads.map((road) => road.centerline.map(svgToWorld));
   for (let i = 0; i < regions.roads.length; i++) {
-    const segment = new THREE.Group();
-    for (const piece of generateRoad(roadCenterlines[i], regions.roads[i].width / 100)) {
-      segment.add(piece);
-    }
-    tagSegmentMeshes(segment, regions.roads[i].localId, 'ROAD');
-    group.add(segment);
+    group.add(...generateRoad(roadCenterlines[i], regions.roads[i].width / 100, regions.roads[i].localId));
   }
 
   // GATEHOUSE → where a road meets a city wall, straddling the boundary.

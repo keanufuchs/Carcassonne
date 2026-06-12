@@ -20,21 +20,29 @@ export function cityAnchor(parts: World2[][]): World2 {
 }
 
 /**
- * Field marker anchor: the "visual center" — the sampled interior point farthest
- * from the boundary (pole of inaccessibility). Guarantees the pole lands inside
- * even for concave fields, where the plain centroid can fall in a notch.
+ * Field marker anchor: the sampled interior point that is farthest from both the
+ * field boundary AND any obstacle (e.g. a monastery building, which sits inside
+ * the field polygon). Maximising `min(edgeDist, obstacleDist)` keeps the pole off
+ * the boundary and clear of the cloister, instead of landing dead-centre on it.
  */
-export function fieldAnchor(poly: World2[]): World2 {
+export function fieldAnchor(poly: World2[], obstacles: World2[] = []): World2 {
   const { minX, minZ, maxX, maxZ } = polygonBounds(poly);
-  const steps = 16;
+  const steps = 24;
+  const score = (p: World2): number => {
+    const edge = distToPolygonEdge(p, poly);
+    const obs = obstacles.length
+      ? Math.min(...obstacles.map((o) => Math.hypot(p[0] - o[0], p[1] - o[1])))
+      : Infinity;
+    return Math.min(edge, obs);
+  };
   let best: World2 = centroid(poly);
-  let bestDist = pointInPolygon(best, poly) ? distToPolygonEdge(best, poly) : -Infinity;
+  let bestScore = pointInPolygon(best, poly) ? score(best) : -Infinity;
   for (let i = 1; i < steps; i++) {
     for (let j = 1; j < steps; j++) {
       const p: World2 = [minX + ((maxX - minX) * i) / steps, minZ + ((maxZ - minZ) * j) / steps];
       if (!pointInPolygon(p, poly)) continue;
-      const d = distToPolygonEdge(p, poly);
-      if (d > bestDist) { bestDist = d; best = p; }
+      const s = score(p);
+      if (s > bestScore) { bestScore = s; best = p; }
     }
   }
   return best;

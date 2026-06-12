@@ -5,8 +5,7 @@ import type { TileRegions } from './svgRegions';
 import { svgToWorld, type World2 } from './generators/util';
 import { cityAnchor, fieldAnchor, playerGonfalon, playerShield } from './generators/banner';
 import { MONASTERY_APEX_Y } from './generators/monastery';
-import { ROAD_SURFACE_TAG } from './generators/road';
-import { SEGMENT_MESH_TAG } from './regionHighlight';
+import { ROAD_SURFACE_TAG, ROAD_LOCAL_ID } from './generators/road';
 import { BANNER, DETAIL, PALETTE } from './palette';
 
 /**
@@ -39,7 +38,9 @@ function markerFor(regions: TileRegions, claim: FeatureClaim): THREE.Group | nul
   if (claim.kind === 'FIELD') {
     const region = regions.polygons.find((r) => r.kind === 'FIELD' && r.localId === claim.localId);
     if (!region) return null;
-    return playerGonfalon(fieldAnchor(region.points.map(svgToWorld)), PALETTE.FIELD.height, color, BANNER.gonfalon.fieldScale);
+    // Monastery buildings sit inside the field polygon — keep the banner away from them.
+    const obstacles = regions.markers.map((m) => svgToWorld(m.pos));
+    return playerGonfalon(fieldAnchor(region.points.map(svgToWorld), obstacles), PALETTE.FIELD.height, color, BANNER.gonfalon.fieldScale);
   }
   if (claim.kind === 'MONASTERY') {
     const marker = regions.markers.find((m) => m.localId === claim.localId);
@@ -75,7 +76,7 @@ function tintedRoadColor(base: THREE.Color, playerHex: string): THREE.Color {
 export function applyRoadClaimTints(tileGroup: THREE.Object3D, claims: ClaimMap): void {
   tileGroup.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh) || obj.userData[ROAD_SURFACE_TAG] !== true) return;
-    const localId = obj.userData[SEGMENT_MESH_TAG] as number | undefined;
+    const localId = obj.userData[ROAD_LOCAL_ID] as number | undefined;
     const material = obj.material;
     if (localId === undefined || !(material instanceof THREE.MeshStandardMaterial)) return;
 
