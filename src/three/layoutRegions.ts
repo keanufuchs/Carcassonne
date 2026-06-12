@@ -333,12 +333,12 @@ export function layoutRoadSegment(
 
 // ── Orchestration ────────────────────────────────────────────────────────────
 
-export function layoutRegions(proto: TilePrototype): TileRegions {
+export function layoutRegions(proto: TilePrototype, seed: string = proto.id): TileRegions {
   const polygons: PolygonRegion[] = [];
   const roads: RoadRegion[] = [];
   const markers: MarkerRegion[] = [];
 
-  const segRng = (seg: SegmentBlueprint) => makeRng(`${proto.id}:layout:${seg.kind}:${seg.localId}`);
+  const segRng = (seg: SegmentBlueprint) => makeRng(`${seed}:layout:${seg.kind}:${seg.localId}`);
 
   for (const seg of proto.segments) {
     if (seg.kind !== 'CITY') continue;

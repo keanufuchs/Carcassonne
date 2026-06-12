@@ -42,7 +42,7 @@ function addShieldBanners(group: THREE.Group, proto: TilePrototype, regions: Til
   }
 }
 
-export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.Group {
+export function generateTile(proto: TilePrototype, regions: TileRegions, seed: string = proto.id): THREE.Group {
   const group = new THREE.Group();
   group.name = `tile-${proto.id}`;
   group.add(basePlate());
@@ -53,7 +53,7 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
 
   // CITY / FIELD areas → procedural settlements / countryside.
   for (const region of regions.polygons) {
-    const rng = makeRng(`${proto.id}:${region.kind}:${region.localId}`);
+    const rng = makeRng(`${seed}:${region.kind}:${region.localId}`);
     const poly = region.points.map(svgToWorld);
     const objects = region.kind === 'CITY'
       ? generateCity(poly, rng, cityPolys)

@@ -20,17 +20,19 @@ function TileScene({
   prototype,
   regions,
   rotation,
+  seed,
 }: {
   prototype: TilePrototype;
   regions: TileRegions;
   rotation: Rotation;
+  seed: string;
 }) {
   const [hoveredLocalId, setHoveredLocalId] = useState<number | null>(null);
   const tileGroup = useMemo(() => {
-    const group = generateTile(prototype, regions);
+    const group = generateTile(prototype, regions, seed);
     disableTileContentRaycast(group);
     return group;
-  }, [prototype, regions]);
+  }, [prototype, regions, seed]);
 
   useEffect(() => {
     setHoveredLocalId(null);
@@ -66,6 +68,7 @@ const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
   const [svgRegions, setSvgRegions] = useState<TileRegions | null>(null);
   const [rotation, setRotation] = useState<Rotation>(0);
+  const [seed, setSeed] = useState(prototype.id);
 
   useEffect(() => {
     if (!svgPath) return;
@@ -81,8 +84,8 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
   }, [svgPath]);
 
   const derivedRegions = useMemo(
-    () => (svgPath ? null : layoutRegions(prototype)),
-    [svgPath, prototype],
+    () => (svgPath ? null : layoutRegions(prototype, seed)),
+    [svgPath, prototype, seed],
   );
   const regions = svgPath ? svgRegions : derivedRegions;
 
@@ -91,6 +94,17 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
       <div className="panel-head">
         <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
         <div className="panel-head-actions">
+          <label className="seed-control">
+            <span className="label">Seed</span>
+            <input
+              type="text"
+              className="seed-input"
+              value={seed}
+              onChange={(e) => setSeed(e.target.value)}
+              spellCheck={false}
+              aria-label="Tile generation seed"
+            />
+          </label>
           <span className="muted lab-hint">Hover regions to highlight</span>
           <div className="rotation-controls" role="group" aria-label="Tile rotation">
           {ROTATIONS.map((r) => (
@@ -108,7 +122,7 @@ export function Tile3DPanel({ prototype, svgPath, title, subtitle }: Props) {
       </div>
       <div className="canvas-wrap">
         <TileLabCanvas>
-          {regions && <TileScene prototype={prototype} regions={regions} rotation={rotation} />}
+          {regions && <TileScene prototype={prototype} regions={regions} rotation={rotation} seed={seed} />}
         </TileLabCanvas>
       </div>
     </div>

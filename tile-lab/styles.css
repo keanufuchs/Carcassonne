@@ -85,10 +85,17 @@ body {
 }
 .png-reference img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-.claim-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.claim-controls .label {
+.claim-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.claim-controls .label,
+.seed-control .label {
   text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; color: #8a93a6;
 }
+.seed-control { display: flex; align-items: center; gap: 6px; }
+.seed-input {
+  width: 140px; padding: 4px 8px; border: 1px solid #3a4659; border-radius: 6px;
+  background: #11151d; color: #e6e9ef; font-size: 12px; font-family: ui-monospace, monospace;
+}
+.seed-input:focus { outline: none; border-color: #5b8def; }
 .player-swatches { display: flex; gap: 6px; }
 .player-swatch {
   width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent;

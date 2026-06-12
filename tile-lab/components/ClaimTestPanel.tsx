@@ -24,21 +24,22 @@ const KIND_ICON: Record<SegmentKind, string> = { CITY: '🏰', ROAD: '🛣️', 
 const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 function ClaimScene({
-  prototype, regions, rotation, claims, onClaim,
+  prototype, regions, rotation, claims, seed, onClaim,
 }: {
   prototype: TilePrototype;
   regions: TileRegions;
   rotation: Rotation;
   claims: ClaimMap;
+  seed: string;
   onClaim: (localId: number, kind: SegmentKind) => void;
 }) {
   const [hoveredLocalId, setHoveredLocalId] = useState<number | null>(null);
 
   const tileGroup = useMemo(() => {
-    const group = generateTile(prototype, regions);
+    const group = generateTile(prototype, regions, seed);
     disableTileContentRaycast(group);
     return group;
-  }, [prototype, regions]);
+  }, [prototype, regions, seed]);
 
   const markers = useMemo(() => buildClaimMarkers(regions, claims), [regions, claims]);
 
@@ -72,8 +73,9 @@ export function ClaimTestPanel({ prototype, title, subtitle, pngPath, tileId }: 
   const [rotation, setRotation] = useState<Rotation>(0);
   const [activePlayer, setActivePlayer] = useState(0);
   const [claims, setClaims] = useState<ClaimMap>(new Map());
+  const [seed, setSeed] = useState(prototype.id);
 
-  const regions = useMemo(() => layoutRegions(prototype), [prototype]);
+  const regions = useMemo(() => layoutRegions(prototype, seed), [prototype, seed]);
 
   const handleClaim = (localId: number, kind: SegmentKind) =>
     setClaims((prev) => nextClaims(prev, { localId, kind }, activePlayer));
@@ -101,6 +103,17 @@ export function ClaimTestPanel({ prototype, title, subtitle, pngPath, tileId }: 
       </div>
 
       <div className="claim-controls">
+        <label className="seed-control">
+          <span className="label">Seed</span>
+          <input
+            type="text"
+            className="seed-input"
+            value={seed}
+            onChange={(e) => setSeed(e.target.value)}
+            spellCheck={false}
+            aria-label="Tile generation seed"
+          />
+        </label>
         <span className="label">Active player</span>
         <div className="player-swatches" role="group" aria-label="Active player">
           {PLAYER_COLORS.map((color, i) => (
@@ -124,6 +137,7 @@ export function ClaimTestPanel({ prototype, title, subtitle, pngPath, tileId }: 
             regions={regions}
             rotation={rotation}
             claims={claims}
+            seed={seed}
             onClaim={handleClaim}
           />
         </TileLabCanvas>
