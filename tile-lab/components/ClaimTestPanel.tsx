@@ -16,6 +16,8 @@ interface Props {
   prototype: TilePrototype;
   title: string;
   subtitle?: string;
+  pngPath: string;
+  tileId: string;
 }
 
 const KIND_ICON: Record<SegmentKind, string> = { CITY: '🏰', ROAD: '🛣️', FIELD: '🌾', MONASTERY: '⛪' };
@@ -66,7 +68,7 @@ function ClaimScene({
   );
 }
 
-export function ClaimTestPanel({ prototype, title, subtitle }: Props) {
+export function ClaimTestPanel({ prototype, title, subtitle, pngPath, tileId }: Props) {
   const [rotation, setRotation] = useState<Rotation>(0);
   const [activePlayer, setActivePlayer] = useState(0);
   const [claims, setClaims] = useState<ClaimMap>(new Map());
@@ -86,7 +88,7 @@ export function ClaimTestPanel({ prototype, title, subtitle }: Props) {
   const claimList = [...claims.values()].sort((a, b) => a.localId - b.localId);
 
   return (
-    <div className="panel">
+    <div className="panel claim-test-panel">
       <div className="panel-head">
         <h2>{title} {subtitle && <span className="muted">({subtitle})</span>}</h2>
         <div className="rotation-controls" role="group" aria-label="Tile rotation">
@@ -125,6 +127,9 @@ export function ClaimTestPanel({ prototype, title, subtitle }: Props) {
             onClaim={handleClaim}
           />
         </TileLabCanvas>
+        <div className="png-reference">
+          <img src={pngPath} alt={`${tileId} PNG`} />
+        </div>
       </div>
 
       <div className="claim-list">

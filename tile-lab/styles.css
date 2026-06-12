@@ -36,15 +36,17 @@ body {
 .selector button img { border-radius: 4px; display: block; }
 .selector button span { font-size: 12px; font-weight: 600; }
 
-/* 3×2 comparison grid */
-.grid {
-  flex: 1; min-height: 0; display: grid;
-  grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr;
-  gap: 12px; padding: 14px;
+.main-container {
+  flex: 1; min-height: 0; display: flex; position: relative;
+  padding: 14px;
 }
 .panel {
   display: flex; flex-direction: column; min-height: 0;
   background: #1b2230; border: 1px solid #2a3344; border-radius: 12px; padding: 12px;
+}
+
+.main-container > .panel {
+  flex: 1; width: 100%;
 }
 .panel h2 { font-size: 14px; margin: 0; }
 .panel-head {
@@ -73,6 +75,16 @@ body {
 .panel.info dd { margin: 0; font-size: 13px; font-family: ui-monospace, monospace; }
 
 /* ── Claim-test panel (banner ownership) ─────────────────────────────────── */
+.claim-test-panel .canvas-wrap { position: relative; }
+.png-reference {
+  position: absolute; top: 12px; right: 12px; z-index: 10;
+  width: 110px; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  background: #0f1320; border: 1px solid #2a3344; border-radius: 8px;
+  pointer-events: none;
+}
+.png-reference img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
 .claim-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .claim-controls .label {
   text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; color: #8a93a6;
