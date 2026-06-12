@@ -106,6 +106,50 @@ export const TOWN = {
 } as const;
 
 /**
+ * Banner-based ownership markers (2026-06-12). A claimed feature shows a marker
+ * in the owning player's colour with a white meeple emblem. All tunables live
+ * here — the banner generator must not hard-wire magic numbers.
+ * See docs/superpowers/specs/2026-06-12-banner-ownership-visualization-design.md.
+ */
+export const BANNER = {
+  /** White used for the meeple emblem and cloth/shield trim. */
+  meepleWhite: '#f4f1ea',
+  /** Weathered timber for poles, crossbars and shield staves. */
+  pole: '#6a543a',
+  /** Gold cap/finial atop poles. */
+  finial: '#caa94a',
+  /** Gonfalon (city/field) base geometry, in world units before per-use scaling. */
+  gonfalon: {
+    poleHeight: 0.34,
+    poleRadius: 0.007,
+    crossbarWidth: 0.16,
+    crossbarThickness: 0.008,
+    /** Hanging cloth size; the swallowtail notch is `tailNotch` of clothHeight. */
+    clothWidth: 0.14,
+    clothHeight: 0.17,
+    clothThickness: 0.006,
+    tailNotch: 0.16,
+    /** Emblem (meeple) height as a fraction of clothHeight. */
+    emblemFraction: 0.55,
+    /** Multipliers applied to the whole marker per feature. */
+    cityScale: 1.4,
+    fieldScale: 0.82,
+  },
+  /** Heraldic shield (monastery), mounted at the roof apex. */
+  shield: {
+    width: 0.075,
+    height: 0.09,
+    thickness: 0.014,
+    /** Short stave the shield hangs from. */
+    staveHeight: 0.05,
+    staveRadius: 0.005,
+    emblemFraction: 0.5,
+  },
+  /** Road claim: blend the road surface this far toward the player colour. */
+  roadTintFactor: 0.65,
+} as const;
+
+/**
  * Iteration-3 detail palette for the procedural content generators
  * (`src/three/generators/*`). Arrays are sampled deterministically per tile.
  */

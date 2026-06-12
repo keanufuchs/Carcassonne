@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LAB_TILES, type LabTile } from './tiles';
 import { TileSelector } from './components/TileSelector';
 import { Tile3DPanel } from './components/Tile3DPanel';
+import { ClaimTestPanel } from './components/ClaimTestPanel';
 import { PngPanel, SvgPanel, InfoPanel } from './components/AssetPanels';
 
 export function TileLabApp() {
@@ -29,6 +30,12 @@ export function TileLabApp() {
             prototype={selected.prototype}
             title="3D-Modell (TS-Topologie)"
             subtitle="ohne SVG"
+          />
+          <ClaimTestPanel
+            key={selected.id}
+            prototype={selected.prototype}
+            title="Claim-Test"
+            subtitle="Banner-Eigentum"
           />
         </main>
       </div>

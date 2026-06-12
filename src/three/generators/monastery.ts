@@ -2,6 +2,12 @@ import type * as THREE from 'three';
 import { DETAIL, TOWN } from '../palette';
 import { type World2, standard, shadowMesh, roundedBox, pyramidRoof } from './util';
 
+/** Main-hall dimensions, shared so ownership markers can sit at the roof apex. */
+export const MONASTERY_BODY_HEIGHT = 0.16;
+export const MONASTERY_ROOF_HEIGHT = 0.1;
+/** Y of the main-hall roof apex (where a claim shield is mounted). */
+export const MONASTERY_APEX_Y = MONASTERY_BODY_HEIGHT + MONASTERY_ROOF_HEIGHT;
+
 /** A small Latin cross (vertical + transom) for a roof apex. */
 function cross(x: number, y: number, z: number): THREE.Object3D[] {
   const mat = standard('#caa94a');
@@ -18,12 +24,12 @@ export function generateMonastery([x, z]: World2): THREE.Object3D[] {
 
   // Main hall
   const w = 0.2;
-  const bodyH = 0.16;
+  const bodyH = MONASTERY_BODY_HEIGHT;
   const body = shadowMesh(roundedBox(w, bodyH, w, 0.12), standard(DETAIL.monasteryWall));
   body.position.set(x, bodyH / 2, z);
   out.push(body);
 
-  const roofH = 0.1;
+  const roofH = MONASTERY_ROOF_HEIGHT;
   const roof = pyramidRoof(w, roofH, DETAIL.monasteryRoof);
   roof.position.set(x, bodyH + roofH / 2, z);
   out.push(roof);

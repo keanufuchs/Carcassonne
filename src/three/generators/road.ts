@@ -24,11 +24,14 @@ export function roadRibbon(centerline: World2[], width: number): World2[] {
   return [...left, ...right.reverse()];
 }
 
+/** Marks the paved surface mesh so ownership tinting targets it (not the curb). */
+export const ROAD_SURFACE_TAG = 'roadSurface' as const;
+
 /** A paved road ribbon on a slightly wider, lower stone curb. */
 export function generateRoad(centerline: World2[], width: number): THREE.Object3D[] {
   if (centerline.length < 2) return [];
-  return [
-    extrudeWorldPolygon(roadRibbon(centerline, width * 1.7), 0.025, standard(DETAIL.roadCurb)),
-    extrudeWorldPolygon(roadRibbon(centerline, width), PALETTE.ROAD.height, standard(PALETTE.ROAD.color)),
-  ];
+  const curb = extrudeWorldPolygon(roadRibbon(centerline, width * 1.7), 0.025, standard(DETAIL.roadCurb));
+  const surface = extrudeWorldPolygon(roadRibbon(centerline, width), PALETTE.ROAD.height, standard(PALETTE.ROAD.color));
+  surface.userData[ROAD_SURFACE_TAG] = true;
+  return [curb, surface];
 }

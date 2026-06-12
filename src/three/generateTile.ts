@@ -63,10 +63,15 @@ export function generateTile(proto: TilePrototype, regions: TileRegions): THREE.
 
   addShieldBanners(group, proto, regions);
 
-  // ROAD → ribbon + curb along the centreline.
+  // ROAD → ribbon + curb along the centreline (tagged so claim tinting can find it).
   const roadCenterlines: World2[][] = regions.roads.map((road) => road.centerline.map(svgToWorld));
   for (let i = 0; i < regions.roads.length; i++) {
-    group.add(...generateRoad(roadCenterlines[i], regions.roads[i].width / 100));
+    const segment = new THREE.Group();
+    for (const piece of generateRoad(roadCenterlines[i], regions.roads[i].width / 100)) {
+      segment.add(piece);
+    }
+    tagSegmentMeshes(segment, regions.roads[i].localId, 'ROAD');
+    group.add(segment);
   }
 
   // GATEHOUSE → where a road meets a city wall, straddling the boundary.

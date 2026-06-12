@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree, type ThreeEvent } from '@react-three/fiber';
+import type { SegmentKind } from '../core/types/tile';
 import type { TileRegions } from './svgRegions';
 import {
   buildRegionHighlightShells,
@@ -15,6 +16,8 @@ interface Props {
   regions: TileRegions;
   hoveredLocalId: number | null;
   onHoverLocalId: (localId: number | null) => void;
+  /** Optional: clicking a region fires this (used by the lab claim-test mode). */
+  onClickLocalId?: (localId: number, kind: SegmentKind) => void;
 }
 
 /**
@@ -22,7 +25,7 @@ interface Props {
  * Interaction mirrors the 2D SegmentHitZone + InlineTile highlight: hover a
  * region on the tile to light up every shape that shares its localId.
  */
-export function RegionInteractionLayer({ tileGroup, regions, hoveredLocalId, onHoverLocalId }: Props) {
+export function RegionInteractionLayer({ tileGroup, regions, hoveredLocalId, onHoverLocalId, onClickLocalId }: Props) {
   const { gl } = useThree();
   const hitTargets = useMemo(() => buildRegionHitTargets(regions), [regions]);
   const highlightShells = useMemo(() => buildRegionHighlightShells(regions), [regions]);
@@ -50,6 +53,12 @@ export function RegionInteractionLayer({ tileGroup, regions, hoveredLocalId, onH
     onHoverLocalId(null);
   };
 
+  const handleClick = (localId: number, kind: SegmentKind) => (event: ThreeEvent<MouseEvent>) => {
+    if (!onClickLocalId) return;
+    event.stopPropagation();
+    onClickLocalId(localId, kind);
+  };
+
   return (
     <group name="region-interaction">
       {highlightShells.map((shell) => (
@@ -62,6 +71,7 @@ export function RegionInteractionLayer({ tileGroup, regions, hoveredLocalId, onH
           eventPriority={HIT_EVENT_PRIORITY[kind]}
           onPointerOver={handlePointerOver(localId)}
           onPointerOut={handlePointerOut}
+          onClick={handleClick(localId, kind)}
         />
       ))}
     </group>
