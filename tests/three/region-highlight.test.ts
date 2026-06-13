@@ -5,7 +5,7 @@ import {
   buildRegionHitTargets,
   buildRegionHighlightShells,
   SEGMENT_MESH_TAG,
-  setHighlightedLocalId,
+  setHighlightedLocalIds,
   setMeshHighlight,
   setTileRegionHighlight,
   tagSegmentMeshes,
@@ -53,19 +53,32 @@ describe('buildRegionHighlightShells', () => {
   });
 });
 
-describe('setHighlightedLocalId', () => {
-  it('reveals only shells for the hovered localId', () => {
+describe('setHighlightedLocalIds', () => {
+  it('reveals only shells for the active localIds', () => {
     const shells = buildRegionHighlightShells(sampleRegions);
-    setHighlightedLocalId(shells, 1);
+    setHighlightedLocalIds(shells, new Set([1]));
     const visible = shells.filter((s) => s.mesh.visible);
     expect(visible).toHaveLength(1);
     expect(visible[0]?.localId).toBe(1);
   });
 
-  it('hides every shell when hover clears', () => {
+  it('reveals every shell of a multi-segment feature', () => {
     const shells = buildRegionHighlightShells(sampleRegions);
-    setHighlightedLocalId(shells, 2);
-    setHighlightedLocalId(shells, null);
+    setHighlightedLocalIds(shells, new Set([1, 2]));
+    expect(shells.filter((s) => s.mesh.visible).map((s) => s.localId).sort()).toEqual([1, 2]);
+  });
+
+  it('tints the active shells with the given colour', () => {
+    const shells = buildRegionHighlightShells(sampleRegions);
+    setHighlightedLocalIds(shells, new Set([1]), '#2a9d8f');
+    const city = shells.find((s) => s.localId === 1)!;
+    expect((city.mesh.material as THREE.MeshBasicMaterial).color.getHexString()).toBe('2a9d8f');
+  });
+
+  it('hides every shell when the active set is empty', () => {
+    const shells = buildRegionHighlightShells(sampleRegions);
+    setHighlightedLocalIds(shells, new Set([2]));
+    setHighlightedLocalIds(shells, new Set());
     expect(shells.every((s) => !s.mesh.visible)).toBe(true);
   });
 });
@@ -104,7 +117,7 @@ describe('setTileRegionHighlight', () => {
     tagSegmentMeshes(tileGroup, 3, 'MONASTERY');
 
     const shells = buildRegionHighlightShells(sampleRegions);
-    setTileRegionHighlight(tileGroup, shells, 3);
+    setTileRegionHighlight(tileGroup, shells, new Set([3]));
 
     expect(shells.every((s) => !s.mesh.visible)).toBe(true);
     expect((mesh.material as THREE.MeshStandardMaterial).emissiveIntensity).toBeGreaterThan(0);

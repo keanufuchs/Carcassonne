@@ -1,12 +1,14 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
+import type { FeatureId } from '../../core/types';
 import { candidatePlacements } from '../../core/board/Board';
-import { PlacedTile3D } from './PlacedTile3D';
+import { PlacedTile3D, type BoardHover } from './PlacedTile3D';
 import { GhostTile3D } from './GhostTile3D';
+import { classifySlot, featureHighlightColor, type SlotClass } from './board3d';
 
 interface Props {
   state: GameState;
@@ -56,16 +58,31 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
     [state.board.tiles, state.version], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  const candidates = useMemo(() => {
+  // Every reachable slot (legal at some rotation); `illegal` flags ones the
+  // current rotation can't fill, which render red.
+  const slots = useMemo<SlotClass[]>(() => {
     if (state.phase !== 'PLACING_TILE' || !state.pendingTile || isAiTurn) return [];
     return candidatePlacements(state.board)
-      .filter((c) => controller.previewPlacement(c, state.pendingRotation).legal);
+      .map((coord) =>
+        classifySlot(coord, state.pendingRotation, (c, r) => controller.previewPlacement(c, r).legal),
+      )
+      .filter((s): s is SlotClass => s !== null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.board, state.phase, state.pendingTile, state.pendingRotation, state.version, isAiTurn]);
 
-  const meepleTargets = state.phase === 'PLACING_MEEPLE' && !isAiTurn
-    ? controller.getMeepleTargetsForLastTile()
-    : [];
+  const isMeeplePhase = state.phase === 'PLACING_MEEPLE';
+  const meepleTargets = isMeeplePhase && !isAiTurn ? controller.getMeepleTargetsForLastTile() : [];
+
+  const [hover, setHover] = useState<BoardHover | null>(null);
+  const handleHoverFeature = useCallback(
+    (featureId: FeatureId | null) => {
+      if (featureId === null) return setHover(null);
+      const feature = state.board.registry.features.get(featureId);
+      if (!feature) return setHover(null);
+      setHover({ featureId, color: featureHighlightColor(feature, state.players, isMeeplePhase) });
+    },
+    [state.board.registry, state.players, isMeeplePhase],
+  );
 
   const pendingProto = state.pendingTile;
 
@@ -87,16 +104,19 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
             registry={state.board.registry}
             players={state.players}
             controller={controller}
+            hover={hover}
+            onHoverFeature={handleHoverFeature}
             targets={tile.tileId === state.lastPlacedTileId ? meepleTargets : undefined}
           />
         ))}
 
-        {pendingProto && candidates.map((coord) => (
+        {pendingProto && slots.map(({ coord, illegal }) => (
           <GhostTile3D
             key={`${coord.x},${coord.y}`}
             proto={pendingProto}
             rotation={state.pendingRotation}
             coord={coord}
+            illegal={illegal}
             onPlace={() => controller.placeTile(coord)}
           />
         ))}

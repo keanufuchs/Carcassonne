@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import type { PlacedTile } from '../../core/tile/Tile';
+import type { Feature } from '../../core/feature/Feature';
 import type { FeatureRegistry } from '../../core/feature/segments';
-import type { Player } from '../../core/types';
-import { segmentKey, PLAYER_COLORS } from '../../core/types';
-import type { SegmentKind, TilePrototype } from '../../core/types/tile';
+import type { Coord, Player, TileId } from '../../core/types';
+import { parseSegmentKey, segmentKey, PLAYER_COLORS } from '../../core/types';
+import type { Rotation, TilePrototype } from '../../core/types/tile';
 import type { ClaimMap, FeatureClaim } from '../../three/claims';
-import type { TileRegions } from '../../three/svgRegions';
+import { SEGMENT_HIGHLIGHT } from '../../shared/segmentHighlight';
 import { START_TILE, BASE_GAME_DISTRIBUTION } from '../../core/deck/baseGameTiles';
 
 /**
@@ -30,58 +31,101 @@ export function getPrototype(prototypeId: string): TilePrototype {
   return proto;
 }
 
-// ── Meeples / claims for one placed tile ─────────────────────────────────────
+// ── Feature ownership → per-tile claims ──────────────────────────────────────
 
-export interface TileMeeple {
-  localId: number;
-  kind: SegmentKind;
-  playerIndex: number;
-  color: string;
-}
-
-const playerColor = (i: number): string =>
+export const playerColor = (i: number): string =>
   PLAYER_COLORS[((i % PLAYER_COLORS.length) + PLAYER_COLORS.length) % PLAYER_COLORS.length];
 
 /**
- * The meeples physically sitting on this tile (one per claimed segment whose
- * feature has a meeple placed on *this* tile). Mirrors the 2D TileView, which
- * draws a meeple only on the tile where it was placed.
+ * The player who controls a feature: the one with the most meeples on it. Ties
+ * resolve to the lowest player index (deterministic). Returns -1 when unclaimed.
  */
-export function tileMeeples(placed: PlacedTile, registry: FeatureRegistry, players: Player[]): TileMeeple[] {
-  const out: TileMeeple[] = [];
-  for (const seg of placed.segmentInstances) {
-    const fid = registry.segmentToFeature.get(segmentKey(seg.ref));
-    const feature = fid ? registry.features.get(fid) : undefined;
-    if (!feature) continue;
-    for (const m of feature.meeples) {
-      if (m.segmentRef.tileId !== placed.tileId || m.segmentRef.localId !== seg.ref.localId) continue;
-      const idx = players.findIndex((p) => p.id === m.playerId);
-      const playerIndex = idx < 0 ? 0 : idx;
-      out.push({ localId: seg.ref.localId, kind: seg.kind, playerIndex, color: playerColor(playerIndex) });
+export function controllingPlayerIndex(feature: Feature, players: Player[]): number {
+  const counts = new Map<number, number>();
+  for (const m of feature.meeples) {
+    const idx = players.findIndex((p) => p.id === m.playerId);
+    const playerIndex = idx < 0 ? 0 : idx;
+    counts.set(playerIndex, (counts.get(playerIndex) ?? 0) + 1);
+  }
+  let bestIdx = -1;
+  let bestCount = 0;
+  for (const [idx, count] of counts) {
+    if (count > bestCount || (count === bestCount && (bestIdx === -1 || idx < bestIdx))) {
+      bestIdx = idx;
+      bestCount = count;
     }
+  }
+  return bestIdx;
+}
+
+/** The localIds of `feature` that live on `tileId` (a feature may span tiles). */
+export function featureLocalIdsOnTile(feature: Feature, tileId: TileId): Set<number> {
+  const out = new Set<number>();
+  for (const key of feature.segments) {
+    const seg = parseSegmentKey(key);
+    if (seg.tileId === tileId) out.add(seg.localId);
   }
   return out;
 }
 
-/** A stable signature so claim markers only rebuild when ownership changes. */
-export function meeplesSignature(meeples: TileMeeple[]): string {
-  return meeples.map((m) => `${m.localId}:${m.playerIndex}`).join(',');
-}
-
-/** The claim map (one banner/lantern per owned segment) for `buildClaimMarkers`. */
-export function toClaimMap(meeples: TileMeeple[]): ClaimMap {
+/**
+ * One claim per segment on this tile whose feature is owned — derived from
+ * feature membership, not meeple location, so every tile of a claimed feature
+ * carries the controlling player's banner/lantern.
+ */
+export function tileClaims(placed: PlacedTile, registry: FeatureRegistry, players: Player[]): ClaimMap {
   const map = new Map<number, FeatureClaim>();
-  for (const m of meeples) map.set(m.localId, { localId: m.localId, kind: m.kind, playerIndex: m.playerIndex });
+  for (const seg of placed.segmentInstances) {
+    const fid = registry.segmentToFeature.get(segmentKey(seg.ref));
+    const feature = fid ? registry.features.get(fid) : undefined;
+    if (!feature || feature.meeples.length === 0) continue;
+    const playerIndex = controllingPlayerIndex(feature, players);
+    if (playerIndex < 0) continue;
+    map.set(seg.ref.localId, { localId: seg.ref.localId, kind: seg.kind, playerIndex });
+  }
   return map;
 }
 
-/** Keeps only the regions whose localId is a valid meeple target (drops the rest). */
-export function filterRegions(regions: TileRegions, localIds: Set<number>): TileRegions {
-  return {
-    polygons: regions.polygons.filter((r) => localIds.has(r.localId)),
-    roads: regions.roads.filter((r) => localIds.has(r.localId)),
-    markers: regions.markers.filter((r) => localIds.has(r.localId)),
-  };
+/**
+ * The colour to glow a hovered feature: gold while placing a meeple, otherwise
+ * the controlling player's colour (gold if the feature is unclaimed).
+ */
+export function featureHighlightColor(feature: Feature, players: Player[], meeplePhase: boolean): string {
+  if (meeplePhase) return SEGMENT_HIGHLIGHT.glowColor;
+  const idx = controllingPlayerIndex(feature, players);
+  return idx < 0 ? SEGMENT_HIGHLIGHT.glowColor : playerColor(idx);
+}
+
+/** A stable signature so claim markers only rebuild when ownership changes. */
+export function claimsSignature(claims: ClaimMap): string {
+  return [...claims.values()]
+    .map((c) => `${c.localId}:${c.playerIndex}`)
+    .sort()
+    .join(',');
+}
+
+// ── Tile-placement slot classification ───────────────────────────────────────
+
+const ROTATIONS: Rotation[] = [0, 90, 180, 270];
+
+export interface SlotClass {
+  coord: Coord;
+  /** Legal at some rotation but not the current one (rotating would fix it). */
+  illegal: boolean;
+}
+
+/**
+ * Classifies an empty neighbour slot for the pending tile: dropped (null) when
+ * no rotation can fit, otherwise `illegal` iff the current rotation is the wrong
+ * one. `isLegal` is injected so this stays pure and testable.
+ */
+export function classifySlot(
+  coord: Coord,
+  currentRotation: Rotation,
+  isLegal: (coord: Coord, rotation: Rotation) => boolean,
+): SlotClass | null {
+  if (!ROTATIONS.some((r) => isLegal(coord, r))) return null;
+  return { coord, illegal: !isLegal(coord, currentRotation) };
 }
 
 // ── THREE housekeeping ───────────────────────────────────────────────────────
@@ -107,6 +151,24 @@ export function setGroupOpacity(root: THREE.Object3D, opacity: number): void {
       m.transparent = true;
       m.opacity = opacity;
       m.depthWrite = false;
+    }
+  });
+}
+
+/** Tints every material in a group toward `color` (illegal red ghost). */
+export function setGroupTint(root: THREE.Object3D, color: string): void {
+  const tint = new THREE.Color(color);
+  root.traverse((obj) => {
+    const material = (obj as THREE.Mesh).material;
+    if (!material) return;
+    const list = Array.isArray(material) ? material : [material];
+    for (const m of list) {
+      const std = m as THREE.MeshStandardMaterial;
+      std.color?.lerp(tint, 0.65);
+      if (std.emissive) {
+        std.emissive.copy(tint);
+        std.emissiveIntensity = 0.35;
+      }
     }
   });
 }

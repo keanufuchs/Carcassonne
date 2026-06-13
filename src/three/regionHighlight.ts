@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { SegmentKind } from '../core/types/tile';
-import { highlightLocalIdsForSegment, SEGMENT_HIGHLIGHT, segmentElementId } from '../shared/segmentHighlight';
+import { SEGMENT_HIGHLIGHT, segmentElementId } from '../shared/segmentHighlight';
 import type { TileRegions } from './svgRegions';
 import { extrudeWorldPolygon, svgToWorld, type World2 } from './generators/util';
 import { roadRibbon } from './generators/road';
@@ -38,6 +38,7 @@ const HIT_THICKNESS = 0.04;
 const OVERLAY_THICKNESS = 0.018;
 
 const GLOW_COLOR = new THREE.Color(SEGMENT_HIGHLIGHT.glowColor);
+const _glowScratch = new THREE.Color();
 
 interface SavedMaterialHighlight {
   emissive: number;
@@ -136,8 +137,9 @@ export function tagSegmentMeshes(root: THREE.Object3D, localId: number, kind: Se
   });
 }
 
-/** Applies or removes the gold emissive highlight on a tagged mesh material. */
-export function setMeshHighlight(mesh: THREE.Mesh, on: boolean): void {
+/** Applies or removes an emissive highlight (default gold) on a tagged mesh material. */
+export function setMeshHighlight(mesh: THREE.Mesh, on: boolean, color?: string): void {
+  const glow = color ? _glowScratch.set(color) : GLOW_COLOR;
   const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   for (const material of materials) {
     if (!(material instanceof THREE.MeshStandardMaterial)) continue;
@@ -149,7 +151,7 @@ export function setMeshHighlight(mesh: THREE.Mesh, on: boolean): void {
           color: material.color.getHex(),
         } satisfies SavedMaterialHighlight;
       }
-      material.emissive.copy(GLOW_COLOR);
+      material.emissive.copy(glow);
       material.emissiveIntensity = 0.52;
       const saved = material.userData[MATERIAL_HL_KEY] as SavedMaterialHighlight;
       material.color.setHex(saved.color);
@@ -225,26 +227,35 @@ export function buildRegionHighlightShells(regions: TileRegions): RegionHighligh
   return shells;
 }
 
-/** Shows footprint overlays and/or mesh emissive highlights for the hovered segment. */
+/**
+ * Lights up exactly `activeLocalIds` in `color`: shows their footprint overlays
+ * and applies the emissive mesh highlight. The active set is computed by the
+ * board from feature membership, so a feature spanning several tiles glows whole.
+ */
 export function setTileRegionHighlight(
   tileGroup: THREE.Object3D,
   shells: readonly RegionHighlightShell[],
-  localId: number | null,
+  activeLocalIds: ReadonlySet<number>,
+  color: string = SEGMENT_HIGHLIGHT.glowColor,
 ): void {
-  setHighlightedLocalId(shells, localId);
-  const active = localId === null ? new Set<number>() : new Set(highlightLocalIdsForSegment(localId));
+  setHighlightedLocalIds(shells, activeLocalIds, color);
   tileGroup.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return;
     const segId = obj.userData[SEGMENT_MESH_TAG] as number | undefined;
     if (segId === undefined) return;
-    setMeshHighlight(obj, active.has(segId));
+    setMeshHighlight(obj, activeLocalIds.has(segId), color);
   });
 }
 
-/** Shows highlight shells for the hovered localId; hides all others. */
-export function setHighlightedLocalId(shells: readonly RegionHighlightShell[], localId: number | null): void {
-  const active = localId === null ? new Set<number>() : new Set(highlightLocalIdsForSegment(localId));
+/** Shows the highlight shells whose localId is active (in `color`); hides the rest. */
+export function setHighlightedLocalIds(
+  shells: readonly RegionHighlightShell[],
+  activeLocalIds: ReadonlySet<number>,
+  color: string = SEGMENT_HIGHLIGHT.glowColor,
+): void {
   for (const shell of shells) {
-    shell.mesh.visible = active.has(shell.localId);
+    const on = activeLocalIds.has(shell.localId);
+    shell.mesh.visible = on;
+    if (on) (shell.mesh.material as THREE.MeshBasicMaterial).color.set(color);
   }
 }

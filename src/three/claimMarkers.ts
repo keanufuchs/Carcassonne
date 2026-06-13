@@ -27,6 +27,13 @@ function cityParts(regions: TileRegions, localId: number): World2[][] {
 
 /** Builds the marker for one claim, or null for roads / missing geometry. */
 function markerFor(regions: TileRegions, claim: FeatureClaim): THREE.Group | null {
+  const marker = buildMarker(regions, claim);
+  // Player-coloured markers billboard toward the camera (see PlacedTile3D).
+  if (marker) marker.userData.billboard = true;
+  return marker;
+}
+
+function buildMarker(regions: TileRegions, claim: FeatureClaim): THREE.Group | null {
   const color = playerColor(claim.playerIndex);
   if (claim.kind === 'CITY') {
     const parts = cityParts(regions, claim.localId);
@@ -59,6 +66,8 @@ function buildRoadLanterns(group: THREE.Group, regions: TileRegions, claims: Cla
     const color = claim && claim.kind === 'ROAD' ? playerColor(claim.playerIndex) : null;
     const lantern = roadLantern(anchor, color);
     lantern.name = `road-lantern-${road.localId}`;
+    // Only a claimed lantern carries a pennant worth billboarding; neutral stays fixed.
+    if (color) lantern.userData.billboard = true;
     group.add(lantern);
   }
 }
