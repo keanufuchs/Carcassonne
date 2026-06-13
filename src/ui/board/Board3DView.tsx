@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { MapControls, Grid } from '@react-three/drei';
+import { MapControls } from '@react-three/drei';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { candidatePlacements } from '../../core/board/Board';
@@ -77,17 +77,8 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
         <SceneLighting />
-        <Grid
-          args={[200, 200]}
-          cellSize={1}
-          sectionSize={5}
-          cellColor="#93a6b8"
-          sectionColor="#7e93a8"
-          infiniteGrid
-          fadeDistance={45}
-          fadeStrength={2}
-          position={[0, -0.02, 0]}
-        />
+        {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
+        <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
 
         {placedTiles.map((tile) => (
           <PlacedTile3D
