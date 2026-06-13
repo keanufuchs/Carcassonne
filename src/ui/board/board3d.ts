@@ -6,14 +6,12 @@ import { segmentKey, PLAYER_COLORS } from '../../core/types';
 import type { SegmentKind, TilePrototype } from '../../core/types/tile';
 import type { ClaimMap, FeatureClaim } from '../../three/claims';
 import type { TileRegions } from '../../three/svgRegions';
-import { centroid, svgToWorld, type World2 } from '../../three/generators/util';
 import { START_TILE, BASE_GAME_DISTRIBUTION } from '../../core/deck/baseGameTiles';
 
 /**
  * Shared, framework-free helpers for the 3D board: prototype lookup, meeple /
- * claim derivation from the live game state, segment centroids for placing the
- * meeple capsule, and THREE object housekeeping. Kept out of the React
- * components so they stay focused on rendering.
+ * claim derivation from the live game state, and THREE object housekeeping.
+ * Kept out of the React components so they stay focused on rendering.
  */
 
 // ── Prototype lookup ─────────────────────────────────────────────────────────
@@ -75,23 +73,6 @@ export function toClaimMap(meeples: TileMeeple[]): ClaimMap {
   const map = new Map<number, FeatureClaim>();
   for (const m of meeples) map.set(m.localId, { localId: m.localId, kind: m.kind, playerIndex: m.playerIndex });
   return map;
-}
-
-// ── Segment centroid (meeple capsule anchor) ─────────────────────────────────
-
-/** Tile-local world centre of a segment, used to stand the meeple capsule on it. */
-export function segmentCentroid(regions: TileRegions, localId: number, kind: SegmentKind): World2 {
-  if (kind === 'MONASTERY') {
-    const marker = regions.markers.find((m) => m.localId === localId);
-    if (marker) return svgToWorld(marker.pos);
-  }
-  if (kind === 'ROAD') {
-    const road = regions.roads.find((r) => r.localId === localId);
-    if (road) return centroid(road.centerline.map(svgToWorld));
-  }
-  const pts = regions.polygons.filter((p) => p.localId === localId).flatMap((p) => p.points.map(svgToWorld));
-  if (pts.length > 0) return centroid(pts);
-  return [0, 0];
 }
 
 /** Keeps only the regions whose localId is a valid meeple target (drops the rest). */
