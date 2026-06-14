@@ -15,10 +15,12 @@ import { Board3DView } from './board/Board3DView';
  */
 const SHOWCASE_PLAYERS = ['Amber', 'Sage', 'Rust'];
 
+/** Which AI drives the showcase — heuristic plays sensible, watchable moves. */
+const SHOWCASE_AI = 'heuristic' as const;
 /** Restart before the growing board drifts past the fixed isometric camera. */
 const MAX_TILES = 28;
-/** Leisurely pacing so the scene reads as calm ambience, not a frantic demo. */
-const TURN_PACE_MS = 950;
+/** Target cadence: one tile placed per second (the wait absorbs turn compute). */
+const TURN_INTERVAL_MS = 1000;
 /** Hold a finished board briefly before dealing a fresh one. */
 const RESTART_HOLD_MS = 2800;
 
@@ -45,8 +47,10 @@ export function GameShowcase() {
         while (!cancelled) {
           const s = ctrl.getState();
           if (s.phase === 'GAME_OVER' || s.board.tiles.size >= MAX_TILES) break;
-          try { await executeAITurn(ctrl, 'random'); } catch { break; }
-          await delay(TURN_PACE_MS);
+          const t0 = performance.now();
+          try { await executeAITurn(ctrl, SHOWCASE_AI); } catch { break; }
+          // Keep a steady ~1 tile/sec by waiting only the remainder of the second.
+          await delay(Math.max(0, TURN_INTERVAL_MS - (performance.now() - t0)));
         }
 
         unsub();
