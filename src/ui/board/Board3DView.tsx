@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
@@ -89,10 +89,37 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
 
   const pendingProto = state.pendingTile;
 
+  // Track the last cell + the pointer-down position so we only re-render on a
+  // cell change and don't place a tile at the end of a camera drag.
+  const lastCellRef = useRef('');
+  const downPosRef = useRef<{ x: number; y: number } | null>(null);
+
   const onHoverPlane = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    setHoverCoord({ x: Math.round(e.point.x), y: Math.round(e.point.z) });
+    const x = Math.round(e.point.x);
+    const y = Math.round(e.point.z);
+    const key = `${x},${y}`;
+    if (key === lastCellRef.current) return; // same cell — no re-render
+    lastCellRef.current = key;
+    setHoverCoord({ x, y });
   }, []);
+
+  const onLeavePlane = useCallback(() => {
+    lastCellRef.current = '';
+    setHoverCoord(null);
+  }, []);
+
+  const onPlaneDown = useCallback((e: ThreeEvent<PointerEvent>) => {
+    downPosRef.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY };
+  }, []);
+
+  const onPlaneClick = useCallback((e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    const down = downPosRef.current;
+    const dragged = down && Math.hypot(e.nativeEvent.clientX - down.x, e.nativeEvent.clientY - down.y) > 5;
+    if (dragged || !ghost || ghost.illegal) return;
+    controller.placeTile(ghost.coord);
+  }, [ghost, controller]);
 
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
@@ -118,27 +145,29 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
           />
         ))}
 
-        {/* Invisible ground plane that maps the cursor to a grid cell. */}
+        {/* Invisible ground plane: maps the cursor to a grid cell and owns the
+            placement click. Sole pointer target so the ghost never flickers. */}
         {placing && (
           <mesh
             rotation={[-Math.PI / 2, 0, 0]}
             position={[0, 0, 0]}
             onPointerMove={onHoverPlane}
-            onPointerOut={() => setHoverCoord(null)}
+            onPointerOut={onLeavePlane}
+            onPointerDown={onPlaneDown}
+            onClick={onPlaneClick}
           >
             <planeGeometry args={[400, 400]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
           </mesh>
         )}
 
-        {pendingProto && ghost && (
+        {/* One persistent ghost; it repositions/recolours instead of remounting. */}
+        {placing && pendingProto && (
           <GhostTile3D
-            key={`${ghost.coord.x},${ghost.coord.y}`}
             proto={pendingProto}
             rotation={state.pendingRotation}
-            coord={ghost.coord}
-            illegal={ghost.illegal}
-            onPlace={() => controller.placeTile(ghost.coord)}
+            coord={ghost?.coord ?? null}
+            illegal={ghost?.illegal ?? false}
           />
         )}
 

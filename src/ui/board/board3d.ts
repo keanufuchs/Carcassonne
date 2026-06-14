@@ -131,19 +131,48 @@ export function setGroupOpacity(root: THREE.Object3D, opacity: number): void {
   });
 }
 
-/** Tints every material in a group toward `color` (illegal red ghost). */
-export function setGroupTint(root: THREE.Object3D, color: string): void {
-  const tint = new THREE.Color(color);
+const TINT_KEY = '_ghostTint';
+const _tintScratch = new THREE.Color();
+
+interface SavedTint {
+  color: number;
+  emissive: number;
+  emissiveIntensity: number;
+}
+
+/**
+ * Tints every material in a group toward `color`, or restores the originals when
+ * `color` is null. Reversible (saves the base colour on first tint) so a single
+ * persistent ghost can flip between red/normal without rebuilding its geometry.
+ */
+export function setGroupTint(root: THREE.Object3D, color: string | null): void {
   root.traverse((obj) => {
     const material = (obj as THREE.Mesh).material;
     if (!material) return;
     const list = Array.isArray(material) ? material : [material];
     for (const m of list) {
       const std = m as THREE.MeshStandardMaterial;
-      std.color?.lerp(tint, 0.65);
-      if (std.emissive) {
-        std.emissive.copy(tint);
-        std.emissiveIntensity = 0.35;
+      if (!std.color) continue;
+      if (std.userData[TINT_KEY] === undefined) {
+        std.userData[TINT_KEY] = {
+          color: std.color.getHex(),
+          emissive: std.emissive?.getHex() ?? 0,
+          emissiveIntensity: std.emissiveIntensity ?? 0,
+        } satisfies SavedTint;
+      }
+      const base = std.userData[TINT_KEY] as SavedTint;
+      if (color) {
+        std.color.setHex(base.color).lerp(_tintScratch.set(color), 0.65);
+        if (std.emissive) {
+          std.emissive.set(_tintScratch.set(color));
+          std.emissiveIntensity = 0.35;
+        }
+      } else {
+        std.color.setHex(base.color);
+        if (std.emissive) {
+          std.emissive.setHex(base.emissive);
+          std.emissiveIntensity = base.emissiveIntensity;
+        }
       }
     }
   });
