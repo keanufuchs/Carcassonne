@@ -90,6 +90,9 @@ export function formatExpectRecapText(scenario: Scenario, checks: ExpectCheck[])
   const passed = allChecksPassed(checks);
   const lines = [
     `Scenario: ${scenario.name}`,
+    ...(scenario.description?.trim()
+      ? ['', scenario.description.trim(), '']
+      : ['']),
     `Result: ${passed ? 'PASS' : 'FAIL'}`,
     '',
     'Expect recap:',

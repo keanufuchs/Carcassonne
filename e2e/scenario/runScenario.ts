@@ -122,13 +122,12 @@ async function runStep(page: Page, step: ScenarioStep, index: number): Promise<v
   const phase = await page.evaluate(() => window.__carcTest!.getSummary().phase);
   if (phase === 'PLACING_MEEPLE') {
     if (step.skip || !step.meeple) {
-      await page.click('[data-testid="skip-meeple-btn"]');
+      await page.evaluate(() => window.__carcTest!.skipMeepleTurn());
     } else {
-      const seg = page.locator(`[data-segment-local-id="${step.meeple.segment}"]`);
-      if (await seg.count() === 0) {
-        throw new Error(`${ctx}: meeple segment ${step.meeple.segment} is not an available target on the placed tile.`);
-      }
-      await seg.first().click();
+      await page.evaluate(
+        (localId) => window.__carcTest!.placeMeepleOnLastTile(localId),
+        step.meeple.segment,
+      );
     }
   } else if (step.meeple) {
     throw new Error(`${ctx}: scenario wanted a meeple on segment ${step.meeple.segment}, but the placed tile produced no meeple targets.`);

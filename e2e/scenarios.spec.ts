@@ -13,14 +13,14 @@ import {
 } from './scenario/expectRecap';
 import type { ScenarioSummary } from '../src/test-bridge/scenarioBridge';
 import type { StepLogEntry } from './scenario/runScenario';
+import { fitBoardForScreenshot } from './scenario/fitBoardForScreenshot';
 
 const SCENARIO_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'tests', 'scenarios');
 
 const files = readdirSync(SCENARIO_DIR).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
 
 async function captureBoardScreenshot(page: import('@playwright/test').Page): Promise<Buffer | undefined> {
-  await page.evaluate(() => window.__carcTest?.fitBoardView?.()).catch(() => { /* ignore */ });
-  await page.waitForTimeout(300);
+  await fitBoardForScreenshot(page);
   const board = page.locator('[data-testid="board-scroll"]');
   if (await board.count() === 0) return undefined;
   return board.screenshot();
@@ -41,8 +41,11 @@ test.describe('YAML game-logic scenarios', () => {
     // Loaded at collection time → one named test per file.
     // Run one: npx playwright test -g "<name>"   ·   all: npm run test:scenarios
     const scenario = loadScenario(join(SCENARIO_DIR, file));
+    const desc = scenario.description?.trim();
 
-    test(scenario.name, async ({ page }, testInfo) => {
+    test(scenario.name, {
+      annotation: desc ? [{ type: 'description', description: desc }] : [],
+    }, async ({ page }, testInfo) => {
       let summary: ScenarioSummary | undefined;
       let stepLog: StepLogEntry[] = [];
       let runError: string | undefined;

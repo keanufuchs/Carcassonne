@@ -52,6 +52,10 @@ export interface ScenarioBridge {
   endGame(): void;
   /** Pan/zoom the 2D board so all placed tiles are centered (for screenshots). */
   fitBoardView(): void;
+  /** Place a meeple on the last-placed tile (avoids focus-animation click issues in Playwright). */
+  placeMeepleOnLastTile(localId: number): void;
+  /** Skip the meeple step for the current turn. */
+  skipMeepleTurn(): void;
 }
 
 declare global {

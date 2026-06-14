@@ -15,7 +15,7 @@ npx playwright test -g "monastery-completion"
 npx playwright show-report
 ```
 
-Each test attaches a **`scenario-report`** HTML file (main artifact): expect table with ✓/✗ per field, final-board screenshot, and placement steps folded in a `<details>` block. A plain-text **`expect-recap`** is also attached for copy/paste.
+Each test attaches a **`scenario-report`** HTML file (main artifact): scenario description, expect table with ✓/✗ per field, final-board screenshot, and placement steps folded in a `<details>` block. A plain-text **`expect-recap`** is also attached for copy/paste. The YAML `description` also appears as an annotation in the Playwright HTML report when you expand a test.
 
 ## Schema
 

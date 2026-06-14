@@ -449,6 +449,20 @@ export default function App() {
       fitBoardView() {
         window.dispatchEvent(new Event('carc:fit-board-view'));
       },
+      placeMeepleOnLastTile(localId) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const ref = ctrl.getMeepleTargetsForLastTile().find(r => r.localId === localId);
+        if (!ref) throw new Error(`Segment ${localId} is not a meeple target on the last placed tile`);
+        const result = ctrl.placeMeeple(ref);
+        if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
+      skipMeepleTurn() {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const result = ctrl.skipMeeple();
+        if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
     };
     return () => { delete window.__carcTest; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

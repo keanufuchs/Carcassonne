@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
 import { TileView } from './TileView';
@@ -6,9 +7,20 @@ import { CoordRulers } from './CoordRulers';
 import { GhostTile } from './GhostTile';
 import { candidatePlacements } from '../../core/board/Board';
 import { segmentKey, parseSegmentKey } from '../../core/types';
-import { useBoardTransform } from '../hooks/useBoardTransform';
+import { useBoardTransform, type BoardTransform } from '../hooks/useBoardTransform';
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import './board.css';
+
+declare global {
+  interface Window {
+    __carcBoardFitResolve?: () => void;
+  }
+}
+
+function finishBoardFit(): void {
+  window.__carcBoardFitResolve?.();
+  delete window.__carcBoardFitResolve;
+}
 
 const TILE_SIZE = 80;
 const MEEPLE_FOCUS_ANIMATION_MS = 260;
@@ -56,9 +68,23 @@ function fitTransformForTiles(
   );
 
   return {
-    x: (cx + COORD_OFFSET) * TILE_SIZE,
-    y: (cy + COORD_OFFSET) * TILE_SIZE,
+    x: (cx + COORD_OFFSET + 0.5) * TILE_SIZE,
+    y: (cy + COORD_OFFSET + 0.5) * TILE_SIZE,
     scale: Math.max(0.25, scale),
+  };
+}
+
+function boardTransformFor(
+  viewportW: number,
+  viewportH: number,
+  scale: number,
+  centerPxX: number,
+  centerPxY: number,
+): BoardTransform {
+  return {
+    scale,
+    offsetX: viewportW / 2 - centerPxX * scale,
+    offsetY: viewportH / 2 - centerPxY * scale,
   };
 }
 
@@ -223,6 +249,8 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
     ? `focus-${state.lastPlacedTileId}`
     : 'idle';
 
+  const [screenshotFit, setScreenshotFit] = useState<BoardTransform | null>(null);
+
   const { transform, isPanning, onMouseDown, onMouseMove, stopPan, recenter } = useBoardTransform(
     containerRef,
     CENTER_X,
@@ -234,13 +262,23 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
   useEffect(() => {
     function handleFitBoardView() {
       const el = containerRef.current;
-      if (!el) return;
+      if (!el || el.clientWidth === 0 || el.clientHeight === 0) {
+        finishBoardFit();
+        return;
+      }
       const { x, y, scale } = fitTransformForTiles(placedTiles, el.clientWidth, el.clientHeight);
-      recenter(x, y, scale);
+      const fit = boardTransformFor(el.clientWidth, el.clientHeight, scale, x, y);
+      flushSync(() => {
+        setScreenshotFit(fit);
+        recenter(x, y, scale);
+      });
+      finishBoardFit();
     }
     window.addEventListener('carc:fit-board-view', handleFitBoardView);
     return () => window.removeEventListener('carc:fit-board-view', handleFitBoardView);
   }, [placedTiles, recenter]);
+
+  const activeTransform = screenshotFit ?? transform;
 
   const hasMeepleFocus = meepleFocusTarget !== null;
 
@@ -320,12 +358,12 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
       data-meeple-focus={showMeepleFocus ? 'true' : undefined}
       data-meeple-focus-phase={meepleFocusPhase}
       style={{ cursor: isPanning ? 'grabbing' : 'grab', userSelect: 'none' }}
-      onMouseDown={onMouseDown}
+      onMouseDown={e => { setScreenshotFit(null); onMouseDown(e); }}
       onMouseMove={onMouseMove}
       onMouseUp={stopPan}
       onMouseLeave={stopPan}
     >
-      <CoordRulers transform={transform} />
+      <CoordRulers transform={activeTransform} />
       <div
         className="board-stage"
         style={{
@@ -339,9 +377,10 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
           style={{
             width: CANVAS_SIZE,
             height: CANVAS_SIZE,
-            transform: `translate(${transform.offsetX}px, ${transform.offsetY}px) scale(${transform.scale})`,
-            transformOrigin: '0 0',
-            transition: showMeepleFocus ? 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
+            transform: `translate(${activeTransform.offsetX}px, ${activeTransform.offsetY}px) scale(${activeTransform.scale})`,
+            transition: screenshotFit
+              ? undefined
+              : showMeepleFocus ? 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
           }}
         >
           {placedTiles.map(tile => {
