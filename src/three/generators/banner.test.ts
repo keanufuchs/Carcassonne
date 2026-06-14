@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cityAnchor, fieldAnchor } from './banner';
+import { cityAnchor, cityShieldAnchor, fieldAnchor } from './banner';
 import { pointInPolygon, type World2 } from './util';
 
 describe('cityAnchor', () => {
@@ -8,6 +8,17 @@ describe('cityAnchor', () => {
     const [x, z] = cityAnchor([a]);
     expect(x).toBeCloseTo(0.1, 5);
     expect(z).toBeCloseTo(0.1, 5);
+  });
+});
+
+describe('cityShieldAnchor', () => {
+  it('places the shield banner far from the claim gonfalon anchor', () => {
+    const city: World2[] = [[-0.3, -0.3], [0.3, -0.3], [0.3, 0.3], [-0.3, 0.3]];
+    const anchor = cityAnchor([city]);
+    const shield = cityShieldAnchor([city]);
+    expect(pointInPolygon(shield, city)).toBe(true);
+    const separation = Math.hypot(shield[0] - anchor[0], shield[1] - anchor[1]);
+    expect(separation).toBeGreaterThan(0.2);
   });
 });
 

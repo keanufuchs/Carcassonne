@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import type { TilePrototype } from '../core/types/tile';
 import type { TileRegions } from './svgRegions';
 import { BASE_COLOR, TILE_SIZE, DETAIL } from './palette';
-import { makeRng, svgToWorld, standard, centroid, pointInPolygon, type World2 } from './generators/util';
+import { makeRng, svgToWorld, standard, type World2 } from './generators/util';
+import { cityShieldAnchor } from './generators/banner';
 import { generateCity, cityBanner, generateGates } from './generators/city';
 import { generateField } from './generators/field';
 import { generateRoad } from './generators/road';
@@ -27,30 +28,6 @@ function basePlate(): THREE.Mesh {
   return mesh;
 }
 
-// Eight compass directions, tried in order, for nudging the shield off-centre.
-const SHIELD_OFFSET_DIRS: World2[] = [
-  [1, 0], [0, 1], [-1, 0], [0, -1],
-  [0.7071, 0.7071], [-0.7071, 0.7071], [0.7071, -0.7071], [-0.7071, -0.7071],
-];
-
-/**
- * Where a shielded city's heraldic banner stands: the city centroid nudged
- * off-centre so it doesn't collide with the player's claim gonfalon, which sits
- * at that same centroid (see `cityAnchor` in claimMarkers). Prefers the largest
- * offset that still lands inside a city part; falls back to the centroid for
- * cities too small to clear.
- */
-function shieldBannerPos(parts: World2[][]): World2 {
-  const c = centroid(parts.flat());
-  for (const dist of [0.16, 0.12, 0.08]) {
-    for (const [dx, dz] of SHIELD_OFFSET_DIRS) {
-      const p: World2 = [c[0] + dx * dist, c[1] + dz * dist];
-      if (parts.some((poly) => pointInPolygon(p, poly))) return p;
-    }
-  }
-  return c;
-}
-
 /** Adds one shield banner per shielded city (parts of a city share a localId). */
 function addShieldBanners(group: THREE.Group, proto: TilePrototype, regions: TileRegions): void {
   const done = new Set<number>();
@@ -62,7 +39,7 @@ function addShieldBanners(group: THREE.Group, proto: TilePrototype, regions: Til
     const parts = regions.polygons
       .filter((r) => r.kind === 'CITY' && r.localId === region.localId)
       .map((r) => r.points.map(svgToWorld));
-    group.add(cityBanner(shieldBannerPos(parts), DETAIL.cityBaseHeight));
+    group.add(cityBanner(cityShieldAnchor(parts), DETAIL.cityBaseHeight));
   }
 }
 

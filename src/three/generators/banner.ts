@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BANNER } from '../palette';
+import { TILE_SIZE } from '../palette';
 import {
   type World2, standard, shadowMesh, roundedBox, centroid, pyramidRoof,
   polygonBounds, pointInPolygon, distToPolygonEdge,
@@ -17,6 +18,52 @@ import {
 /** City marker anchor: the centroid of every polygon part of the city. */
 export function cityAnchor(parts: World2[][]): World2 {
   return centroid(parts.flat());
+}
+
+const SHIELD_EDGE_MARGIN = 0.04;
+
+/** True when `p` lies inside any city part with clearance from its boundary. */
+function insideCityParts(p: World2, parts: World2[][]): boolean {
+  return parts.some((poly) => pointInPolygon(p, poly) && distToPolygonEdge(p, poly) >= SHIELD_EDGE_MARGIN);
+}
+
+/** Furthest distance from `anchor` along `dir` that still lies inside the city. */
+function maxReachFromAnchor(anchor: World2, parts: World2[][], dir: World2): number {
+  const len = Math.hypot(dir[0], dir[1]) || 1;
+  const dx = dir[0] / len;
+  const dz = dir[1] / len;
+  const inside = (d: number): boolean => insideCityParts([anchor[0] + dx * d, anchor[1] + dz * d], parts);
+
+  let lo = 0;
+  let hi = TILE_SIZE;
+  if (inside(hi)) return hi;
+  while (hi - lo > 0.003) {
+    const mid = (lo + hi) / 2;
+    if (inside(mid)) lo = mid;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * Shielded-city heraldic banner anchor: as far from the claim gonfalon anchor
+ * (`cityAnchor`) as the city polygon allows, so the two markers sit on opposite
+ * sides of the settlement instead of crowding the centroid.
+ */
+export function cityShieldAnchor(parts: World2[][]): World2 {
+  const anchor = cityAnchor(parts);
+  let bestPos = anchor;
+  let bestDist = 0;
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2;
+    const dir: World2 = [Math.cos(a), Math.sin(a)];
+    const reach = maxReachFromAnchor(anchor, parts, dir);
+    if (reach > bestDist) {
+      bestDist = reach;
+      bestPos = [anchor[0] + dir[0] * reach, anchor[1] + dir[1] * reach];
+    }
+  }
+  return bestPos;
 }
 
 /**
