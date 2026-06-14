@@ -14,7 +14,12 @@ npx playwright test -g "monastery-completion"
 # Open HTML report (expect recap + board screenshot per scenario)
 npx playwright show-report
 
-After CI, download the **playwright-report** artifact from the GitHub Actions run and open `index.html` in a browser. Each scenario includes `scenario-report` (HTML), `expect-recap` (text), and `final-board` (PNG) attachments.
+After CI, open the workflow run:
+
+1. **Summary** tab — scenario table with pass/fail and YAML descriptions
+2. **Artifacts** (bottom of run page) — download **`playwright-report`**, open `index.html`
+
+Each scenario includes `scenario-report` (HTML), `expect-recap` (text), and `final-board` (PNG) attachments.
 ```
 
 Each test attaches a **`scenario-report`** HTML file (main artifact): scenario description, expect table with ✓/✗ per field, final-board screenshot, and placement steps folded in a `<details>` block. A plain-text **`expect-recap`** is also attached for copy/paste. The YAML `description` also appears as an annotation in the Playwright HTML report when you expand a test.

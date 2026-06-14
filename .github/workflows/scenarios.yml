@@ -21,13 +21,20 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      - run: npm run test:scenarios
+      - name: Run scenario tests
+        id: test
+        run: npm run test:scenarios
 
-      # Self-contained HTML report (index.html) + per-scenario attachments
-      # (scenario-report, expect-recap, final-board). Open index.html in a browser.
-      - uses: actions/upload-artifact@v4
+      - name: Upload Playwright report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+      - name: List results in job summary
+        if: always()
+        run: node scripts/ci-scenario-summary.mjs
+        env:
+          TEST_OUTCOME: ${{ steps.test.outcome }}

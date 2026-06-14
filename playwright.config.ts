@@ -14,6 +14,7 @@ export default defineConfig({
   reporter: [
     ['line'],
     ['html', { outputFolder: 'playwright-report/', open: 'never', noSnippets: true }],
+    ...(process.env.CI ? [['json', { outputFile: 'playwright-report/results.json' }] as const] : []),
   ],
 
   use: {
