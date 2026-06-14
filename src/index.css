@@ -1,5 +1,24 @@
+@import './ui/styles/theme.css';
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; }
-body { background: #111; color: #eee; }
+body {
+  background: var(--sky-bottom);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 button { font-family: inherit; }
-input { font-family: inherit; }
+input, select { font-family: inherit; }
+
+/* Themed scrollbars */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(58, 44, 30, 0.22);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(58, 44, 30, 0.38); background-clip: padding-box; }

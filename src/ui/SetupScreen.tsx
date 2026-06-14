@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { GameShowcase } from './GameShowcase';
+import { MeepleIcon } from './board/MeepleIcon';
+import './styles/menu.css';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
 
@@ -23,31 +26,17 @@ interface Props {
   onStartLocal: (players: PlayerSetup[]) => void;
 }
 
-type Tab = 'create' | 'join' | 'local';
+type Tab = 'local' | 'create' | 'join';
 
-const inputStyle: React.CSSProperties = {
-  background: '#252540', color: '#eee',
-  border: '1px solid #444', borderRadius: 5,
-  padding: '7px 10px', fontSize: 14, outline: 'none',
-  width: '100%', boxSizing: 'border-box',
-};
+const MEEPLE_COLORS = ['#c4583a', '#5f9444', '#d8a93f', '#4d6275', '#8a6fa0'];
 
-function PrimaryBtn({ enabled, onClick, children, testId }: { enabled: boolean; onClick: () => void; children: React.ReactNode; testId?: string }) {
-  return (
-    <button
-      data-testid={testId}
-      onClick={onClick}
-      disabled={!enabled}
-      style={{
-        background: enabled ? '#4a3a8a' : '#252530',
-        color: enabled ? '#eee' : '#555',
-        border: 'none', borderRadius: 7, padding: '12px',
-        cursor: enabled ? 'pointer' : 'not-allowed',
-        fontSize: 15, fontWeight: 700, width: '100%',
-      }}
-    >{children}</button>
-  );
-}
+/** Decorative meeples drifting in the background. */
+const FLOATERS = [
+  { color: '#c4583a', size: 58, top: '13%', left: '60%', r: '-12deg', dur: '7.5s' },
+  { color: '#5f9444', size: 46, top: '78%', left: '52%', r: '10deg', dur: '8.5s' },
+  { color: '#d8a93f', size: 54, top: '20%', left: '88%', r: '14deg', dur: '6.8s' },
+  { color: '#4d6275', size: 42, top: '74%', left: '90%', r: '-8deg', dur: '9.2s' },
+];
 
 export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLocal }: Props) {
   const [tab, setTab]   = useState<Tab>(initialGameId ? 'join' : 'local');
@@ -78,109 +67,144 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
     catch (e) { setError(String(e)); setBusy(false); }
   }
 
-  const tabBtn = (t: Tab): React.CSSProperties => ({
-    flex: 1, padding: '8px', cursor: 'pointer', fontSize: 13, fontWeight: 600,
-    border: 'none', borderRadius: 6,
-    background: tab === t ? '#3a3a6a' : 'transparent',
-    color: tab === t ? '#ffd700' : '#777',
-  });
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'local', label: 'Local' },
+    { id: 'create', label: 'Create' },
+    { id: 'join', label: 'Join' },
+  ];
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0e0e1a', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ background: '#1a1a2e', borderRadius: 14, padding: '36px 44px', minWidth: 340, border: '2px solid #3a3a6a', display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ color: '#ffd700', margin: 0, fontSize: 28, letterSpacing: 2 }}>Carcassonne</h1>
-          <p style={{ color: '#666', margin: '6px 0 0', fontSize: 12 }}>Base Game</p>
+    <div className="menu-screen">
+      <GameShowcase />
+      <div className="menu-veil" />
+
+      {FLOATERS.map((f, i) => (
+        <div
+          key={i}
+          className="menu-meeple"
+          style={{ top: f.top, left: f.left, ['--r' as string]: f.r, ['--dur' as string]: f.dur }}
+        >
+          <MeepleIcon color={f.color} size={f.size} />
         </div>
+      ))}
 
-        <div style={{ display: 'flex', gap: 4, background: '#12122a', borderRadius: 8, padding: 4 }}>
-          <button style={tabBtn('create')} onClick={() => switchTab('create')}>Create</button>
-          <button style={tabBtn('join')}   onClick={() => switchTab('join')}>Join</button>
-          <button style={tabBtn('local')}  onClick={() => switchTab('local')}>Local</button>
-        </div>
+      <div className="menu-stage">
+        <header className="hero-head">
+          <span className="hero-crest">
+            <span className="dot" />
+            <span className="eyebrow">The Classic Tile-Laying Game</span>
+          </span>
+          <h1 className="hero-title">Carcas<span className="accent">sonne</span></h1>
+          <p className="hero-sub">Build cities, claim roads, outwit your rivals.</p>
+        </header>
 
-        {tab === 'create' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Your Name</label>
-            <input style={inputStyle} value={createName} placeholder="Enter your name" autoFocus
-              onChange={e => setCreateName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleCreate()} />
-            <PrimaryBtn enabled={!!createName.trim() && !busy} onClick={handleCreate}>
-              {busy ? 'Creating…' : 'Create Game'}
-            </PrimaryBtn>
-          </div>
-        )}
-
-        {tab === 'join' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Game Code</label>
-            <input
-              style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 6, textTransform: 'uppercase', fontSize: 20, textAlign: 'center' }}
-              value={joinCode} placeholder="ABCDE" maxLength={5}
-              onChange={e => setJoinCode(e.target.value.toUpperCase())} />
-            <label style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Your Name</label>
-            <input style={inputStyle} value={joinName} placeholder="Enter your name"
-              onChange={e => setJoinName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleJoin()} />
-            <PrimaryBtn enabled={joinCode.length === 5 && !!joinName.trim() && !busy} onClick={handleJoin}>
-              {busy ? 'Joining…' : 'Join Game'}
-            </PrimaryBtn>
-          </div>
-        )}
-
-        {tab === 'local' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Players ({localPlayers.length}/5)</label>
-            {localPlayers.map((p, i) => (
-              <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <input style={{ ...inputStyle, flex: 2 }} value={p.name} placeholder={`Player ${i + 1}`}
-                  onChange={e => {
-                    const n = [...localPlayers];
-                    n[i] = { ...n[i], name: e.target.value };
-                    setLocalPlayers(n);
-                  }} />
-                <select
-                  value={p.aiMode}
-                  onChange={e => {
-                    const n = [...localPlayers];
-                    const newMode = e.target.value as AIMode;
-                    const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
-                    const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
-                      : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
-                    n[i] = { ...n[i], aiMode: newMode, name };
-                    setLocalPlayers(n);
-                  }}
-                  style={{
-                    background: '#252540', color: '#ffd700',
-                    border: '1px solid #444', borderRadius: 5,
-                    padding: '6px 8px', fontSize: 12, flex: 1.5,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <option value="human">👤 Human</option>
-                  <option value="random">🎲 Random AI</option>
-                  <option value="heuristic">🧠 Heuristic AI</option>
-                  <option value="intelligent">🤖 Reasoning AI</option>
-                </select>
-                {localPlayers.length > 2 && (
-                  <button onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}
-                    style={{ background: '#3a1a1a', color: '#f87171', border: '1px solid #5a2a2a', borderRadius: 5, cursor: 'pointer', padding: '0 10px', fontSize: 16 }}>✕</button>
-                )}
-              </div>
-            ))}
-            {localPlayers.length < 5 && (
-              <button onClick={() => setLocalPlayers([...localPlayers, { name: 'Random AI', aiMode: 'random' }])}
-                style={{ background: 'transparent', color: '#6a8ab8', border: '1px dashed #4a6a9a', borderRadius: 5, padding: '7px', cursor: 'pointer', fontSize: 13 }}>
-                + Add Player
+        <div className="card menu-card">
+          <div className="seg" role="tablist">
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={tab === t.id}
+                className="seg-btn"
+                onClick={() => switchTab(t.id)}
+              >
+                {t.label}
               </button>
-            )}
-            <PrimaryBtn enabled={localPlayers.every(p => p.name.trim())} testId="start-game-btn" onClick={() => onStartLocal(localPlayers)}>
-              Start Local Game
-            </PrimaryBtn>
+            ))}
           </div>
-        )}
 
-        {error && <div style={{ color: '#f87171', fontSize: 13, textAlign: 'center' }}>{error}</div>}
+          {tab === 'create' && (
+            <div className="stack">
+              <div>
+                <label className="field-label">Your Name</label>
+                <input className="input" value={createName} placeholder="Enter your name" autoFocus
+                  onChange={e => setCreateName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleCreate()} />
+              </div>
+              <button className="btn btn-primary btn-block" disabled={!createName.trim() || busy} onClick={handleCreate}>
+                {busy ? 'Creating…' : 'Create Game'}
+              </button>
+            </div>
+          )}
+
+          {tab === 'join' && (
+            <div className="stack">
+              <div>
+                <label className="field-label">Game Code</label>
+                <input
+                  className="input input-code"
+                  value={joinCode} placeholder="ABCDE" maxLength={5}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase())} />
+              </div>
+              <div>
+                <label className="field-label">Your Name</label>
+                <input className="input" value={joinName} placeholder="Enter your name"
+                  onChange={e => setJoinName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleJoin()} />
+              </div>
+              <button className="btn btn-primary btn-block"
+                disabled={!(joinCode.length === 5 && joinName.trim()) || busy} onClick={handleJoin}>
+                {busy ? 'Joining…' : 'Join Game'}
+              </button>
+            </div>
+          )}
+
+          {tab === 'local' && (
+            <div className="stack">
+              <label className="field-label">Players ({localPlayers.length}/5)</label>
+              <div className="player-rows">
+                {localPlayers.map((p, i) => (
+                  <div key={i} className="player-row">
+                    <span style={{ flexShrink: 0 }}>
+                      <MeepleIcon color={MEEPLE_COLORS[i] ?? '#888'} size={22} />
+                    </span>
+                    <input className="input" value={p.name} placeholder={`Player ${i + 1}`}
+                      onChange={e => {
+                        const n = [...localPlayers];
+                        n[i] = { ...n[i], name: e.target.value };
+                        setLocalPlayers(n);
+                      }} />
+                    <select
+                      className="select"
+                      value={p.aiMode}
+                      onChange={e => {
+                        const n = [...localPlayers];
+                        const newMode = e.target.value as AIMode;
+                        const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
+                        const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
+                          : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
+                        n[i] = { ...n[i], aiMode: newMode, name };
+                        setLocalPlayers(n);
+                      }}
+                    >
+                      <option value="human">👤 Human</option>
+                      <option value="random">🎲 Random AI</option>
+                      <option value="heuristic">🧠 Heuristic AI</option>
+                      <option value="intelligent">🤖 Reasoning AI</option>
+                    </select>
+                    {localPlayers.length > 2 && (
+                      <button className="row-remove" title="Remove player"
+                        onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}>✕</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {localPlayers.length < 5 && (
+                <button className="add-player"
+                  onClick={() => setLocalPlayers([...localPlayers, { name: 'Random AI', aiMode: 'random' }])}>
+                  + Add Player
+                </button>
+              )}
+              <button className="btn btn-primary btn-block" data-testid="start-game-btn"
+                disabled={!localPlayers.every(p => p.name.trim())}
+                onClick={() => onStartLocal(localPlayers)}>
+                Start Local Game
+              </button>
+            </div>
+          )}
+
+          {error && <div className="error-banner">{error}</div>}
+        </div>
       </div>
     </div>
   );

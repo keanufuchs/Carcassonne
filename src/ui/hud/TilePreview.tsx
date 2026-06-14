@@ -7,13 +7,6 @@ const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
 );
 
-const btnStyle: React.CSSProperties = {
-  background: '#333', color: '#eee',
-  border: '1px solid #555', borderRadius: 4,
-  padding: '4px 14px', cursor: 'pointer', fontSize: 20,
-  lineHeight: 1,
-};
-
 interface Props {
   tile: TilePrototype | null;
   rotation: Rotation;
@@ -23,27 +16,27 @@ interface Props {
 
 export function TilePreview({ tile, rotation, controller, deckSize }: Props) {
   return (
-    <div style={{ padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-      <div style={{ color: '#777', fontSize: 11 }}>Deck: {deckSize} remaining</div>
+    <div className="hud-pad tile-preview">
+      <div className="deck-pill">{deckSize} tiles in deck</div>
       {tile ? (
         <>
-          <div style={{ width: 80, height: 80, position: 'relative', border: '2px solid #555', borderRadius: 2 }}>
+          <div className="tile-frame">
             <img
               data-testid="tile-preview-img"
               data-rotation={rotation}
               draggable={false}
               src={tileImageMap[tile.id] ?? ''}
               alt={tile.id}
-              style={{ width: 80, height: 80, transform: `rotate(${rotation}deg)`, display: 'block' }}
+              style={{ transform: `rotate(${rotation}deg)` }}
             />
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button data-testid="rotate-ccw-btn" onClick={() => controller.rotatePending('CCW')} style={btnStyle} title="Rotate CCW">↺</button>
-            <button data-testid="rotate-cw-btn"  onClick={() => controller.rotatePending('CW')}  style={btnStyle} title="Rotate CW">↻</button>
+          <div className="rotate-row">
+            <button data-testid="rotate-ccw-btn" className="rotate-btn" onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">↺</button>
+            <button data-testid="rotate-cw-btn"  className="rotate-btn" onClick={() => controller.rotatePending('CW')}  title="Rotate clockwise (D)">↻</button>
           </div>
         </>
       ) : (
-        <div style={{ width: 80, height: 80, border: '2px dashed #444', borderRadius: 2, opacity: 0.4 }} />
+        <div className="tile-frame empty" />
       )}
     </div>
   );

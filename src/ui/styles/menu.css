@@ -1,0 +1,228 @@
+/* ============================================================================
+   Menu screens — Setup (game selection), Lobby, Connecting
+   ========================================================================== */
+
+.menu-screen {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: radial-gradient(120% 90% at 50% -10%, var(--sky-top), var(--sky-mid) 45%, var(--sky-bottom));
+}
+
+/* Live 3D game running behind the UI */
+.showcase {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.showcase canvas { pointer-events: none !important; }
+
+/* Atmospheric vignette + a soft scrim under the left-hand UI column so text
+   stays legible over the live game without hiding the action on the right. */
+.menu-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(214, 223, 231, 0.78) 0%, rgba(210, 221, 231, 0.40) 32%, transparent 56%),
+    radial-gradient(90% 80% at 60% 44%, transparent 40%, rgba(96, 112, 126, 0.16) 80%, rgba(54, 66, 78, 0.40) 100%),
+    linear-gradient(180deg, rgba(210, 221, 231, 0.28) 0%, transparent 24%, transparent 64%, rgba(48, 60, 72, 0.30) 100%);
+}
+
+/* Floating decorative meeples */
+.menu-meeple {
+  position: absolute;
+  z-index: 1;
+  filter: drop-shadow(0 8px 10px rgba(40, 30, 18, 0.28));
+  animation: floatY var(--dur, 7s) ease-in-out infinite;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Foreground content — anchored to the left so the live match plays in the
+   open space on the right (the board grows from screen-centre). */
+.menu-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 28px;
+  margin-left: clamp(20px, 6vw, 110px);
+  max-height: 100vh;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.hero-head { text-align: left; animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.hero-crest {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 249, 238, 0.72);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 #fff;
+  margin-bottom: 16px;
+}
+.hero-crest .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--terracotta); }
+.hero-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(46px, 6.5vw, 84px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.55), 0 18px 40px rgba(40, 30, 18, 0.28);
+}
+.hero-title .accent { color: var(--terracotta); }
+.hero-sub {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ── Menu card ──────────────────────────────────────────────────────────── */
+.menu-card {
+  width: min(440px, 92vw);
+  padding: 26px 28px 28px;
+  animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.08s both;
+}
+.menu-card .stack { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+
+.error-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(196, 88, 58, 0.12);
+  border: 1px solid rgba(196, 88, 58, 0.35);
+  color: var(--terracotta-deep);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ── Player rows (local setup) ──────────────────────────────────────────── */
+.player-rows { display: flex; flex-direction: column; gap: 9px; }
+.player-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.player-row .input { flex: 2; }
+.player-row .select { flex: 1.4; }
+.row-remove {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 2px solid rgba(196, 88, 58, 0.3);
+  background: rgba(196, 88, 58, 0.08);
+  color: var(--terracotta-deep);
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+.row-remove:hover { background: rgba(196, 88, 58, 0.16); }
+.add-player {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--slate);
+  background: transparent;
+  border: 2px dashed var(--panel-edge);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.add-player:hover { border-color: var(--gold); color: var(--gold-deep); background: rgba(216, 169, 63, 0.06); }
+
+/* ── Lobby ──────────────────────────────────────────────────────────────── */
+.code-stamp {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 40px;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-align: center;
+  color: var(--terracotta-deep);
+  background: var(--parchment-deep);
+  border: 2px dashed var(--gold);
+  border-radius: var(--radius);
+  padding: 14px 0;
+  box-shadow: inset 0 2px 6px rgba(58, 44, 30, 0.12);
+}
+.invite-link {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate);
+  background: var(--cream);
+  border: 2px solid var(--panel-edge);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  word-break: break-all;
+}
+.lobby-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  border: 2px solid var(--panel-edge);
+  font-weight: 700;
+  color: var(--ink);
+}
+.lobby-player .host-tag {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.waiting-note { text-align: center; color: var(--ink-faint); font-weight: 600; font-size: 14px; }
+
+/* ── Connecting ─────────────────────────────────────────────────────────── */
+.connecting {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  color: var(--ink);
+}
+.spinner {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 5px solid rgba(58, 44, 30, 0.15);
+  border-top-color: var(--terracotta);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Narrow screens: centre the column, lift the scrim ──────────────────── */
+@media (max-width: 880px) {
+  .menu-screen { justify-content: center; }
+  .menu-stage { margin-left: 0; align-items: center; }
+  .hero-head { text-align: center; }
+  .menu-veil {
+    background:
+      radial-gradient(80% 70% at 50% 44%, transparent 30%, rgba(96, 112, 126, 0.20) 78%, rgba(54, 66, 78, 0.46) 100%),
+      linear-gradient(180deg, rgba(210, 221, 231, 0.45) 0%, transparent 26%, transparent 64%, rgba(48, 60, 72, 0.34) 100%);
+  }
+}

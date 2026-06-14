@@ -10,6 +10,7 @@ import {
 } from './controller/NetworkController';
 import type { NetworkController, NetworkSession, LobbyInfo } from './controller/NetworkController';
 import { Board3DView } from './ui/board/Board3DView';
+import { BoardView } from './ui/board/BoardView';
 import { PlayerPanel } from './ui/hud/PlayerPanel';
 import { TilePreview } from './ui/hud/TilePreview';
 import { Controls } from './ui/hud/Controls';
@@ -48,6 +49,21 @@ function clearLocalGame(): void {
   try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
 }
 
+// ── Board view-mode (2D / 3D) persistence ───────────────────────────────────
+
+type BoardViewMode = '2d' | '3d';
+const BOARD_VIEW_KEY = 'carc_board_view';
+
+function loadBoardViewMode(): BoardViewMode {
+  try {
+    return localStorage.getItem(BOARD_VIEW_KEY) === '2d' ? '2d' : '3d';
+  } catch { return '3d'; }
+}
+
+function saveBoardViewMode(mode: BoardViewMode): void {
+  try { localStorage.setItem(BOARD_VIEW_KEY, mode); } catch { /* quota */ }
+}
+
 // ── Network session persistence ────────────────────────────────────────────
 
 function getGameIdFromUrl(): string | null {
@@ -84,7 +100,29 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
   const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
   const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
+  const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
+  const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
+  const [highlightKey, setHighlightKey] = useState(0);
+  const highlightTimerRef = useRef<number | null>(null);
   const prevTileKeysRef = useRef<Set<string>>(new Set());
+
+  function toggleBoardView() {
+    setBoardView(prev => {
+      const next: BoardViewMode = prev === '3d' ? '2d' : '3d';
+      saveBoardViewMode(next);
+      return next;
+    });
+  }
+
+  function handleHighlight(coord: { x: number; y: number }) {
+    if (highlightTimerRef.current !== null) window.clearTimeout(highlightTimerRef.current);
+    setHighlightedCoord(coord);
+    setHighlightKey(k => k + 1);
+    highlightTimerRef.current = window.setTimeout(() => {
+      setHighlightedCoord(null);
+      highlightTimerRef.current = null;
+    }, 3000);
+  }
 
   // Auto-draw tile at the start of every turn
   useEffect(() => {
@@ -227,6 +265,10 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   return (
     <div className="game-layout">
       <div className="game-sidebar">
+        <div className="game-brand">
+          <span className="mark">C</span>
+          <span className="name">Carcassonne</span>
+        </div>
         <div className="sidebar-section">
           <PlayerPanel players={state.players} currentPlayerIndex={state.currentPlayerIndex} />
         </div>
@@ -247,9 +289,25 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
         </div>
 
       </div>
-      <Board3DView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} />
+      <div className="board-area">
+        <button
+          type="button"
+          className="board-view-toggle"
+          onClick={toggleBoardView}
+          aria-label={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
+          title={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
+        >
+          <span className={boardView === '2d' ? 'is-active' : ''}>2D</span>
+          <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
+        </button>
+        {boardView === '3d' ? (
+          <Board3DView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} />
+        ) : (
+          <BoardView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
+        )}
+      </div>
       <div className="game-timeline">
-        <TurnTimeline moves={moveLog} />
+        <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
       </div>
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen players={state.players} onRestart={() => { clearLocalGame(); window.location.reload(); }} />
@@ -380,8 +438,11 @@ export default function App() {
 
   if (mode === 'connecting') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0e0e1a', color: '#ffd700', fontFamily: 'system-ui', fontSize: 18 }}>
-        Connecting…
+      <div className="menu-screen">
+        <div className="connecting">
+          <div className="spinner" />
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20 }}>Connecting…</div>
+        </div>
       </div>
     );
   }

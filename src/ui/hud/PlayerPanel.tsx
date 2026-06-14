@@ -8,30 +8,27 @@ interface Props {
 
 export function PlayerPanel({ players, currentPlayerIndex }: Props) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 12 }}>
-      <div style={{ color: '#888', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1 }}>Players</div>
-      {players.map((p, i) => (
-        <div
-          key={p.id}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '6px 8px', borderRadius: 6,
-            background: i === currentPlayerIndex ? 'rgba(255,255,255,0.1)' : 'transparent',
-            border: `2px solid ${i === currentPlayerIndex ? p.color : 'transparent'}`,
-            transition: 'all 0.15s',
-          }}
-        >
-          <MeepleIcon color={p.color} size={16} />
-          <span style={{ flex: 1, color: '#eee', fontSize: 13, fontWeight: i === currentPlayerIndex ? 700 : 400 }}>
-            {p.name}
-          </span>
-          <span style={{ color: '#ffd700', fontWeight: 700, fontSize: 14 }}>{p.score}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 2 }} title="Meeples available">
-            <MeepleIcon color={p.color} size={12} opacity={0.7} />
-            <span style={{ color: '#aaa', fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>{p.meeplesAvailable}</span>
-          </span>
-        </div>
-      ))}
+    <div className="hud-pad player-panel">
+      <div className="hud-label">Players</div>
+      {players.map((p, i) => {
+        const active = i === currentPlayerIndex;
+        return (
+          <div
+            key={p.id}
+            className={`player-chip${active ? ' active' : ''}`}
+            style={active ? { borderColor: p.color, background: `color-mix(in srgb, ${p.color} 12%, var(--cream))` } : undefined}
+          >
+            <MeepleIcon color={p.color} size={18} />
+            <span className="pname">{p.name}</span>
+            {active && <span className="turn-flag" style={{ color: p.color }}>Turn</span>}
+            <span className="pscore">{p.score}</span>
+            <span className="pmeeples" title="Meeples available">
+              <MeepleIcon color={p.color} size={12} opacity={0.65} />
+              {p.meeplesAvailable}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
