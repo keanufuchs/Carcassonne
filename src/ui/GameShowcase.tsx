@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createGameController } from '../controller/GameController';
 import type { GameController } from '../controller/GameController';
 import { executeAITurn } from '../ai';
@@ -18,23 +18,24 @@ const SHOWCASE_PLAYERS = ['Amber', 'Sage', 'Rust'];
 /** Which AI drives the showcase — heuristic plays sensible, watchable moves. */
 const SHOWCASE_AI = 'heuristic' as const;
 /** Restart before the growing board drifts past the fixed isometric camera. */
-const MAX_TILES = 28;
+const MAX_TILES = 25;
 /** Target cadence: one tile placed per second (the wait absorbs turn compute). */
-const TURN_INTERVAL_MS = 1000;
+const TURN_INTERVAL_MS = 250;
 /** Hold a finished board briefly before dealing a fresh one. */
-const RESTART_HOLD_MS = 2800;
+const RESTART_HOLD_MS = 1000;
 
 const delay = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
 export function GameShowcase() {
   const [controller, setController] = useState<GameController | null>(null);
   const [, forceRender] = useState(0);
-  const startedRef = useRef(false);
 
   useEffect(() => {
-    // Guard against React StrictMode's double-invoke in dev.
-    if (startedRef.current) return;
-    startedRef.current = true;
+    // No ref guard here: under React StrictMode the effect mounts, is cleaned
+    // up, then mounts again. A persistent guard would let the first (cancelled)
+    // run claim ownership and block the surviving second run — freezing the
+    // board. Instead each mount owns a `cancelled`-gated loop that its own
+    // cleanup stops; the surviving mount runs indefinitely.
     let cancelled = false;
 
     async function loop() {
