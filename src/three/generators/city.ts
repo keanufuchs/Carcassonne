@@ -356,16 +356,58 @@ function cityHouses(poly: World2[], rng: () => number, baseTop: number): THREE.O
   ].filter((m): m is THREE.InstancedMesh => m !== null);
 }
 
-/** A heraldic banner (pole + shield) marking a shielded city, at `pos`. */
-export function cityBanner([cx, cz]: World2, baseTop: number): THREE.Object3D[] {
-  const poleH = 0.34;
+/** Classic "heater" escutcheon silhouette: flat top, sides curving to a point. */
+function escutcheonShape(scale: number): THREE.Shape {
+  const hw = 0.06 * scale, top = 0.07 * scale, shoulder = 0.015 * scale, point = -0.085 * scale;
+  const s = new THREE.Shape();
+  s.moveTo(-hw, top);
+  s.lineTo(hw, top);
+  s.lineTo(hw, shoulder);
+  s.bezierCurveTo(hw, point * 0.5, hw * 0.55, point * 0.85, 0, point);
+  s.bezierCurveTo(-hw * 0.55, point * 0.85, -hw, point * 0.5, -hw, shoulder);
+  s.lineTo(-hw, top);
+  return s;
+}
+
+/** An extruded, vertically-centred escutcheon mesh facing +z. */
+function escutcheonMesh(scale: number, depth: number, color: string): THREE.Mesh {
+  const geo = new THREE.ExtrudeGeometry(escutcheonShape(scale), {
+    depth, steps: 1, bevelEnabled: true, bevelThickness: 0.005, bevelSize: 0.005, bevelSegments: 1,
+  });
+  geo.translate(0, 0.0075 * scale, 0); // recentre the silhouette on its own midline
+  return shadowMesh(geo, standard(color));
+}
+
+/**
+ * A heraldic shield marking a shielded city, mounted on a short stave at `pos`.
+ * A gold-rimmed blue escutcheon bearing a white cross — a clear, readable shield
+ * rather than the old little box. The group's face lies on +z and is tagged
+ * `billboard` so PlacedTile3D swings it to face the camera (like claim flags),
+ * keeping it recognisable under any tile rotation or camera orbit.
+ */
+export function cityBanner([cx, cz]: World2, baseTop: number): THREE.Group {
+  const group = new THREE.Group();
+  group.position.set(cx, 0, cz);
+  group.userData.billboard = true;
+
+  const poleH = 0.3;
   const pole = shadowMesh(new THREE.CylinderGeometry(0.006, 0.006, poleH, 6), standard('#6a543a'));
-  pole.position.set(cx, baseTop + poleH / 2, cz);
-  const shield = shadowMesh(roundedBox(0.06, 0.075, 0.014, 0.3), standard('#3b6fb0'));
-  shield.position.set(cx, baseTop + poleH - 0.025, cz);
-  const emblem = shadowMesh(roundedBox(0.03, 0.03, 0.02, 0.35), standard('#eef0f4'));
-  emblem.position.set(cx, baseTop + poleH - 0.025, cz);
-  return [pole, shield, emblem];
+  pole.position.set(0, baseTop + poleH / 2, 0);
+
+  const shieldY = baseTop + poleH - 0.02;
+  const rim = escutcheonMesh(1.16, 0.02, '#d8b24a'); // gold border, set slightly back
+  rim.position.set(0, shieldY, 0);
+  const field = escutcheonMesh(1.0, 0.03, '#2f5fa6'); // blue field, proud of the rim
+  field.position.set(0, shieldY, 0.008);
+
+  // White cross charge on the field front.
+  const crossV = shadowMesh(roundedBox(0.015, 0.092, 0.006, 0.3), standard('#f2f0e6'));
+  crossV.position.set(0, shieldY + 0.006, 0.05);
+  const crossH = shadowMesh(roundedBox(0.058, 0.015, 0.006, 0.3), standard('#f2f0e6'));
+  crossH.position.set(0, shieldY + 0.018, 0.05);
+
+  group.add(pole, rim, field, crossV, crossH);
+  return group;
 }
 
 /**

@@ -78,14 +78,23 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
 
   const rotationY = -(placed.rotation * Math.PI) / 180;
 
-  // Player-coloured markers always face the camera (locked isometric view).
+  // Objects tagged `billboard` always face the camera: player claim markers plus
+  // the shielded-city banner baked into the tile. Collected once per group so the
+  // per-frame loop iterates a short list instead of traversing every tile mesh.
+  const billboardTargets = useMemo(() => {
+    const out: THREE.Object3D[] = [];
+    const collect = (root: THREE.Object3D) => root.traverse((o) => { if (o.userData.billboard) out.push(o); });
+    collect(tileGroup);
+    collect(markers);
+    return out;
+  }, [tileGroup, markers]);
+
   useFrame(({ camera }) => {
-    markers.traverse((obj) => {
-      if (!obj.userData.billboard) return;
+    for (const obj of billboardTargets) {
       obj.getWorldPosition(_markerWorld);
       const angle = Math.atan2(camera.position.x - _markerWorld.x, camera.position.z - _markerWorld.z);
       obj.rotation.y = angle - rotationY;
-    });
+    }
   });
 
   // Which of this tile's localIds belong to the hovered feature.
