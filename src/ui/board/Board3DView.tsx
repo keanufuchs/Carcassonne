@@ -77,6 +77,8 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
   const meepleTargets = isMeeplePhase && !isAiTurn ? controller.getMeepleTargetsForLastTile() : [];
 
   const [hover, setHover] = useState<BoardHover | null>(null);
+  // Nullify hover outside meeple phase so stale state never leaks into highlights.
+  const effectiveHover = isMeeplePhase ? hover : null;
   const handleHoverFeature = useCallback(
     (featureId: FeatureId | null) => {
       if (featureId === null) return setHover(null);
@@ -139,9 +141,10 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
             registry={state.board.registry}
             players={state.players}
             controller={controller}
-            hover={hover}
+            hover={effectiveHover}
             onHoverFeature={handleHoverFeature}
             targets={tile.tileId === state.lastPlacedTileId ? meepleTargets : undefined}
+            interactive={isMeeplePhase && tile.tileId === state.lastPlacedTileId}
           />
         ))}
 

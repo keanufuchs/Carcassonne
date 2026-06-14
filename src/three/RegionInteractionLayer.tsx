@@ -3,21 +3,10 @@ import * as THREE from 'three';
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import type { SegmentKind } from '../core/types/tile';
 import type { TileRegions } from './svgRegions';
-import {
-  buildRegionHighlightShells,
-  buildRegionHitTargets,
-  HIT_EVENT_PRIORITY,
-  setTileRegionHighlight,
-  type RegionHighlightShell,
-} from './regionHighlight';
+import { buildRegionHitTargets, HIT_EVENT_PRIORITY } from './regionHighlight';
 
 interface Props {
-  tileGroup: THREE.Object3D;
   regions: TileRegions;
-  /** Controlled: localIds on this tile to light up (computed from feature membership). */
-  highlightLocalIds: ReadonlySet<number>;
-  /** Colour for the active highlight (gold during meeple placement, owner colour otherwise). */
-  highlightColor: string;
   onHoverLocalId: (localId: number | null) => void;
   /** When set, only these localIds are clickable (e.g. valid meeple targets). */
   clickableLocalIds?: ReadonlySet<number>;
@@ -25,34 +14,24 @@ interface Props {
 }
 
 /**
- * Invisible hit meshes over every region of one tile, plus the highlight shells.
- * Hover reports the region's localId upward; the board resolves it to a feature
- * and feeds back the localIds (across all its tiles) to light up. Clicking is
- * gated by `clickableLocalIds` so only valid meeple targets commit a placement.
+ * Invisible hit meshes over every region of one tile. Hover reports the
+ * region's localId upward so the board can resolve it to a feature and drive
+ * the highlight shells (which live in PlacedTile3D and span all tiles of the
+ * feature). Clicking is gated by `clickableLocalIds`.
  */
 export function RegionInteractionLayer({
-  tileGroup,
   regions,
-  highlightLocalIds,
-  highlightColor,
   onHoverLocalId,
   clickableLocalIds,
   onClickLocalId,
 }: Props) {
   const { gl } = useThree();
   const hitTargets = useMemo(() => buildRegionHitTargets(regions), [regions]);
-  const highlightShells = useMemo(() => buildRegionHighlightShells(regions), [regions]);
-
-  useEffect(() => {
-    setTileRegionHighlight(tileGroup, highlightShells, highlightLocalIds, highlightColor);
-  }, [tileGroup, highlightShells, highlightLocalIds, highlightColor]);
 
   useEffect(() => () => {
-    setTileRegionHighlight(tileGroup, highlightShells, EMPTY);
     gl.domElement.style.cursor = 'auto';
-    disposeShells(highlightShells);
     disposeMeshes(hitTargets.map((t) => t.mesh));
-  }, [gl, tileGroup, highlightShells, hitTargets]);
+  }, [gl, hitTargets]);
 
   const clickable = (localId: number) => clickableLocalIds === undefined || clickableLocalIds.has(localId);
 
@@ -75,10 +54,7 @@ export function RegionInteractionLayer({
   };
 
   return (
-    <group name="region-interaction">
-      {highlightShells.map((shell) => (
-        <primitive key={shell.mesh.uuid} object={shell.mesh} />
-      ))}
+    <group name="region-hit">
       {hitTargets.map(({ localId, kind, mesh }) => (
         <primitive
           key={mesh.uuid}
@@ -93,8 +69,6 @@ export function RegionInteractionLayer({
   );
 }
 
-const EMPTY: ReadonlySet<number> = new Set();
-
 function disposeMeshes(meshes: THREE.Mesh[]): void {
   for (const mesh of meshes) {
     mesh.geometry.dispose();
@@ -102,8 +76,4 @@ function disposeMeshes(meshes: THREE.Mesh[]): void {
     if (Array.isArray(material)) material.forEach((m) => m.dispose());
     else material.dispose();
   }
-}
-
-function disposeShells(shells: RegionHighlightShell[]): void {
-  disposeMeshes(shells.map((s) => s.mesh));
 }

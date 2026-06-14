@@ -9,7 +9,13 @@ import type { GameController } from '../../controller/GameController';
 import { layoutRegions } from '../../three/layoutRegions';
 import { generateTile } from '../../three/generateTile';
 import { buildClaimMarkers } from '../../three/claimMarkers';
-import { disableTileContentRaycast } from '../../three/regionHighlight';
+import {
+  buildRegionHighlightShells,
+  disableTileContentRaycast,
+  setTileRegionHighlight,
+  type RegionHighlightShell,
+} from '../../three/regionHighlight';
+import { SEGMENT_HIGHLIGHT } from '../../shared/segmentHighlight';
 import { RegionInteractionLayer } from '../../three/RegionInteractionLayer';
 import {
   claimsSignature,
@@ -36,6 +42,8 @@ interface Props {
   onHoverFeature: (featureId: FeatureId | null) => void;
   /** Valid meeple targets — only passed to the last placed tile during PLACING_MEEPLE. */
   targets?: SegmentRef[];
+  /** When false the interaction/highlight layer is skipped entirely (non-meeple phases). */
+  interactive?: boolean;
 }
 
 const EMPTY: ReadonlySet<number> = new Set();
@@ -47,7 +55,7 @@ const _markerWorld = new THREE.Vector3();
  * board can light the whole feature across tiles; player markers billboard to the
  * camera each frame. The last tile additionally accepts meeple-target clicks.
  */
-export function PlacedTile3D({ placed, registry, players, controller, hover, onHoverFeature, targets }: Props) {
+export function PlacedTile3D({ placed, registry, players, controller, hover, onHoverFeature, targets, interactive = false }: Props) {
   const proto = useMemo(() => getPrototype(placed.prototypeId), [placed.prototypeId]);
   const seed = placed.prototypeId;
   const regions = useMemo(() => layoutRegions(proto, seed), [proto, seed]);
@@ -92,8 +100,27 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
     [targets],
   );
 
+  // Highlight shells for this tile — always built so the feature glow can span
+  // all tiles, not just the interactive one.
+  const highlightShells = useMemo(() => buildRegionHighlightShells(regions), [regions]);
+
+  // Drive the shell visibility + emissive highlight whenever the active set or
+  // colour changes. Runs on every tile so the whole feature lights up.
+  useEffect(() => {
+    setTileRegionHighlight(tileGroup, highlightShells, activeLocalIds, hover?.color ?? SEGMENT_HIGHLIGHT.glowColor);
+  }, [tileGroup, highlightShells, activeLocalIds, hover?.color]);
+
+  // Clean up shells on unmount.
+  useEffect(() => () => {
+    setTileRegionHighlight(tileGroup, highlightShells, EMPTY);
+    disposeShells(highlightShells);
+  }, [tileGroup, highlightShells]);
+
+  // Only report hover for claimable segments so the highlight only fires on
+  // features the player can actually join.
   const reportHover = (localId: number | null) => {
     if (localId === null) return onHoverFeature(null);
+    if (clickableLocalIds && !clickableLocalIds.has(localId)) return onHoverFeature(null);
     const fid = registry.segmentToFeature.get(segmentKey({ tileId: placed.tileId, localId }));
     onHoverFeature(fid ?? null);
   };
@@ -102,17 +129,26 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
     <group position={[placed.coord.x, 0, placed.coord.y]} rotation={[0, rotationY, 0]}>
       <primitive object={tileGroup} />
       <primitive object={markers} />
-      <RegionInteractionLayer
-        tileGroup={tileGroup}
-        regions={regions}
-        highlightLocalIds={activeLocalIds}
-        highlightColor={hover?.color ?? ''}
-        onHoverLocalId={reportHover}
-        clickableLocalIds={clickableLocalIds}
-        onClickLocalId={
-          targets ? (localId) => controller.placeMeeple({ tileId: placed.tileId, localId }) : undefined
-        }
-      />
+      {highlightShells.map((shell) => (
+        <primitive key={shell.mesh.uuid} object={shell.mesh} />
+      ))}
+      {interactive && (
+        <RegionInteractionLayer
+          regions={regions}
+          onHoverLocalId={reportHover}
+          clickableLocalIds={clickableLocalIds}
+          onClickLocalId={
+            targets ? (localId) => controller.placeMeeple({ tileId: placed.tileId, localId }) : undefined
+          }
+        />
+      )}
     </group>
   );
+}
+
+function disposeShells(shells: RegionHighlightShell[]): void {
+  for (const shell of shells) {
+    shell.mesh.geometry.dispose();
+    (shell.mesh.material as THREE.MeshBasicMaterial).dispose();
+  }
 }
