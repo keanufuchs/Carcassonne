@@ -47,5 +47,4 @@ export const TILE_G: TilePrototype = {
   ],
 
   hasMonastery: false,
-  hasShield: false,
 };

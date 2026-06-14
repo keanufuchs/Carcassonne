@@ -22,5 +22,8 @@ export interface TilePrototype {
   edges: Record<EdgeSide, [Terrain, Terrain, Terrain]>;
   segments: SegmentBlueprint[];
   hasMonastery: boolean;
-  hasShield: boolean;
+}
+
+export function tileHasShield(proto: TilePrototype): boolean {
+  return proto.segments.some((s) => s.isShielded === true);
 }

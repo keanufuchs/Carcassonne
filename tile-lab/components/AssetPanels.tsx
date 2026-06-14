@@ -1,4 +1,5 @@
 import type { LabTile } from '../tiles';
+import { tileHasShield } from '../../src/core/types/tile';
 
 export function PngPanel({ tile }: { tile: LabTile }) {
   return (
@@ -39,7 +40,7 @@ export function InfoPanel({ tile }: { tile: LabTile }) {
           {' '}S: {prototype.edges.S.join('/')} · W: {prototype.edges.W.join('/')}
         </dd>
         <dt>Kloster / Wappen</dt>
-        <dd>{prototype.hasMonastery ? 'Kloster' : '–'} / {prototype.hasShield ? 'Wappen' : '–'}</dd>
+        <dd>{prototype.hasMonastery ? 'Kloster' : '–'} / {tileHasShield(prototype) ? 'Wappen' : '–'}</dd>
       </dl>
     </div>
   );

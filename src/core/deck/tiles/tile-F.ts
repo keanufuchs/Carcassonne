@@ -48,5 +48,4 @@ export const TILE_F: TilePrototype = {
   ],
 
   hasMonastery: false,
-  hasShield: true,
 };

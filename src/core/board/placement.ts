@@ -112,7 +112,7 @@ export function placeTileInternal(
     const kind = seg.kind as FeatureKind;
     const feature = createFeature(board.registry, kind);
     if (seg.kind !== 'MONASTERY') feature.openEdges = seg.edgeSlots.length;
-    if (seg.kind === 'CITY' && prototype.hasShield && seg.isShielded) feature.shieldCount = 1;
+    if (seg.kind === 'CITY' && seg.isShielded) feature.shieldCount = 1;
     if (seg.kind === 'MONASTERY') {
       feature.monasteryTileId = placed.tileId;
       feature.monasterySurroundCount = countPlacedNeighbors(board, coord);

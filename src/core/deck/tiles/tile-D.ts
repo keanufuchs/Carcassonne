@@ -21,5 +21,4 @@ export const TILE_D: TilePrototype = {
     },
   ],
   hasMonastery: false,
-  hasShield: false,
 };

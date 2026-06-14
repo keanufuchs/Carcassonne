@@ -1,5 +1,6 @@
 import type { Coord, Rotation, SegmentRef } from '../core/types';
 import type { EdgeSide, SlotPos } from '../core/types/tile';
+import { tileHasShield } from '../core/types/tile';
 import type { GameState } from '../core/game/GameState';
 import type { PlacedTile } from '../core/tile/Tile';
 import { canPlace } from '../core/board/placement';
@@ -143,7 +144,7 @@ export function legalMovesView(state: GameState): {
     totalMoves,
     tileId: state.pendingTile.id,
     hasMonastery: state.pendingTile.hasMonastery,
-    hasShield: state.pendingTile.hasShield,
+    hasShield: tileHasShield(state.pendingTile),
     boardTileCount: state.board.tiles.size,
   };
 }

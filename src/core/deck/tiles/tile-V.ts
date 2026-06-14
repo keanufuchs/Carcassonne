@@ -21,5 +21,4 @@ export const TILE_V: TilePrototype = {
     { localId: 2, kind: 'FIELD', edgeSlots: [{ side: 'W', pos: 'L' }, { side: 'S', pos: 'R' }] },
   ],
   hasMonastery: false,
-  hasShield: false,
 };

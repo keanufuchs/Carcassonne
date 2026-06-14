@@ -1,4 +1,5 @@
 import type { Coord, Rotation } from '../core/types';
+import { tileHasShield } from '../core/types/tile';
 import type { GameState } from '../core/game/GameState';
 import { canPlace } from '../core/board/placement';
 import { serializeState } from '../core/serialize';
@@ -186,7 +187,7 @@ function buildSystemPrompt(state: GameState): string {
   const segs = (state.pendingTile?.segments ?? [])
     .map(s => `localId ${s.localId}: ${s.kind}${s.isShielded ? ' (SHIELD)' : ''}`)
     .join('; ');
-  const tileHasShield = state.pendingTile?.hasShield ?? false;
+  const tileHasShieldFlag = state.pendingTile ? tileHasShield(state.pendingTile) : false;
 
   return `You are a strategic Carcassonne AI playing as "${p.name}" (ID: ${p.id}).
 
@@ -200,7 +201,7 @@ SHIELDS ARE WORTH DOUBLE: every shield (pennant) in a completed city adds +2 poi
 on top of the per-tile points — so a shielded city tile is worth twice as much as a
 plain one. Actively pursue and complete cities that contain shields, prefer claiming
 a city that already has (or will gain) shields, and use get_board_features to read
-each city's shieldCount. The tile you are placing ${tileHasShield ? 'HAS A SHIELD — placing it into a city you own is high value.' : 'has no shield.'}
+each city's shieldCount. The tile you are placing ${tileHasShieldFlag ? 'HAS A SHIELD — placing it into a city you own is high value.' : 'has no shield.'}
 
 Strategy: complete your own features (favouring shielded cities) > block opponent
 completions > extend your features.

@@ -19,5 +19,4 @@ export const TILE_C: TilePrototype = {
     },
   ],
   hasMonastery: false,
-  hasShield: true,
 };
