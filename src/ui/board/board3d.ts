@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import type { PlacedTile } from '../../core/tile/Tile';
 import type { Feature } from '../../core/feature/Feature';
 import type { FeatureRegistry } from '../../core/feature/segments';
-import type { Coord, Player, TileId } from '../../core/types';
+import type { Player, TileId } from '../../core/types';
 import { parseSegmentKey, segmentKey, PLAYER_COLORS } from '../../core/types';
-import type { Rotation, TilePrototype } from '../../core/types/tile';
+import type { TilePrototype } from '../../core/types/tile';
 import type { ClaimMap, FeatureClaim } from '../../three/claims';
 import { SEGMENT_HIGHLIGHT } from '../../shared/segmentHighlight';
 import { START_TILE, BASE_GAME_DISTRIBUTION } from '../../core/deck/baseGameTiles';
@@ -102,30 +102,6 @@ export function claimsSignature(claims: ClaimMap): string {
     .map((c) => `${c.localId}:${c.playerIndex}`)
     .sort()
     .join(',');
-}
-
-// ── Tile-placement slot classification ───────────────────────────────────────
-
-const ROTATIONS: Rotation[] = [0, 90, 180, 270];
-
-export interface SlotClass {
-  coord: Coord;
-  /** Legal at some rotation but not the current one (rotating would fix it). */
-  illegal: boolean;
-}
-
-/**
- * Classifies an empty neighbour slot for the pending tile: dropped (null) when
- * no rotation can fit, otherwise `illegal` iff the current rotation is the wrong
- * one. `isLegal` is injected so this stays pure and testable.
- */
-export function classifySlot(
-  coord: Coord,
-  currentRotation: Rotation,
-  isLegal: (coord: Coord, rotation: Rotation) => boolean,
-): SlotClass | null {
-  if (!ROTATIONS.some((r) => isLegal(coord, r))) return null;
-  return { coord, illegal: !isLegal(coord, currentRotation) };
 }
 
 // ── THREE housekeeping ───────────────────────────────────────────────────────

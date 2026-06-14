@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import * as THREE from 'three';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
-import type { FeatureId } from '../../core/types';
-import { candidatePlacements } from '../../core/board/Board';
+import type { Coord, FeatureId } from '../../core/types';
+import { coordKey } from '../../core/types';
 import { PlacedTile3D, type BoardHover } from './PlacedTile3D';
 import { GhostTile3D } from './GhostTile3D';
-import { classifySlot, featureHighlightColor, type SlotClass } from './board3d';
+import { featureHighlightColor } from './board3d';
 
 interface Props {
   state: GameState;
@@ -58,17 +58,20 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
     [state.board.tiles, state.version], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  // Every reachable slot (legal at some rotation); `illegal` flags ones the
-  // current rotation can't fill, which render red.
-  const slots = useMemo<SlotClass[]>(() => {
-    if (state.phase !== 'PLACING_TILE' || !state.pendingTile || isAiTurn) return [];
-    return candidatePlacements(state.board)
-      .map((coord) =>
-        classifySlot(coord, state.pendingRotation, (c, r) => controller.previewPlacement(c, r).legal),
-      )
-      .filter((s): s is SlotClass => s !== null);
+  const placing = state.phase === 'PLACING_TILE' && !!state.pendingTile && !isAiTurn;
+
+  // The grid cell under the cursor, snapped from the hover plane (or null).
+  const [hoverCoord, setHoverCoord] = useState<Coord | null>(null);
+
+  // A single ghost follows the cursor over any empty cell (not over an existing
+  // tile); it renders red wherever the current rotation can't legally be placed
+  // there — which includes every non-neighbour cell.
+  const ghost = useMemo(() => {
+    if (!placing || !hoverCoord || state.board.tiles.has(coordKey(hoverCoord))) return null;
+    const illegal = !controller.previewPlacement(hoverCoord, state.pendingRotation).legal;
+    return { coord: hoverCoord, illegal };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.board, state.phase, state.pendingTile, state.pendingRotation, state.version, isAiTurn]);
+  }, [placing, hoverCoord, state.board, state.pendingRotation, state.version]);
 
   const isMeeplePhase = state.phase === 'PLACING_MEEPLE';
   const meepleTargets = isMeeplePhase && !isAiTurn ? controller.getMeepleTargetsForLastTile() : [];
@@ -85,6 +88,11 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
   );
 
   const pendingProto = state.pendingTile;
+
+  const onHoverPlane = useCallback((e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    setHoverCoord({ x: Math.round(e.point.x), y: Math.round(e.point.z) });
+  }, []);
 
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
@@ -110,16 +118,29 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
           />
         ))}
 
-        {pendingProto && slots.map(({ coord, illegal }) => (
+        {/* Invisible ground plane that maps the cursor to a grid cell. */}
+        {placing && (
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[0, 0, 0]}
+            onPointerMove={onHoverPlane}
+            onPointerOut={() => setHoverCoord(null)}
+          >
+            <planeGeometry args={[400, 400]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+          </mesh>
+        )}
+
+        {pendingProto && ghost && (
           <GhostTile3D
-            key={`${coord.x},${coord.y}`}
+            key={`${ghost.coord.x},${ghost.coord.y}`}
             proto={pendingProto}
             rotation={state.pendingRotation}
-            coord={coord}
-            illegal={illegal}
-            onPlace={() => controller.placeTile(coord)}
+            coord={ghost.coord}
+            illegal={ghost.illegal}
+            onPlace={() => controller.placeTile(ghost.coord)}
           />
-        ))}
+        )}
 
         <MapControls
           makeDefault

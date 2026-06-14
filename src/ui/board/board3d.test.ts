@@ -4,9 +4,7 @@ import type { FeatureRegistry } from '../../core/feature/segments';
 import type { Player, SegmentRef } from '../../core/types';
 import { segmentKey } from '../../core/types';
 import type { PlacedTile } from '../../core/tile/Tile';
-import type { Rotation } from '../../core/types/tile';
 import {
-  classifySlot,
   controllingPlayerIndex,
   featureLocalIdsOnTile,
   tileClaims,
@@ -114,23 +112,5 @@ describe('tileClaims', () => {
 
     const claims = tileClaims(placed('T1', [{ localId: 2, kind: 'ROAD' }]), reg, players);
     expect(claims.size).toBe(0);
-  });
-});
-
-describe('classifySlot', () => {
-  const coord = { x: 1, y: 0 };
-  const cur: Rotation = 0;
-
-  it('returns null when no rotation is legal', () => {
-    expect(classifySlot(coord, cur, () => false)).toBeNull();
-  });
-
-  it('is legal (not illegal) when the current rotation fits', () => {
-    expect(classifySlot(coord, cur, () => true)).toEqual({ coord, illegal: false });
-  });
-
-  it('is illegal when only a different rotation fits', () => {
-    const isLegal = (_c: typeof coord, r: Rotation) => r === 90;
-    expect(classifySlot(coord, cur, isLegal)).toEqual({ coord, illegal: true });
   });
 });
