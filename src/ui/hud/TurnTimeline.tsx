@@ -37,11 +37,11 @@ function formatMissingReasoning(reason?: MoveRecord['reasoningUnavailableReason'
 }
 
 function HeuristicRow({ label, value, positive, dim }: { label: string; value: string; positive: boolean; dim?: boolean }) {
-  const color = dim ? '#4b5563' : positive ? '#4ade80' : '#f87171';
+  const color = dim ? 'var(--ink-faint)' : positive ? 'var(--field-deep)' : 'var(--terracotta-deep)';
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#6b7280', padding: '1px 0' }}>
+    <div className="move-kv">
       <span>{label}</span>
-      <span style={{ color }}>{value}</span>
+      <span style={{ color, fontWeight: 700 }}>{value}</span>
     </div>
   );
 }
@@ -52,112 +52,55 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
 
   return (
     <div
+      className="move-card"
       onClick={() => onHighlight?.(m.coord)}
-      style={{
-        padding: '5px 6px', marginBottom: 3, borderRadius: 5,
-        background: 'rgba(255,255,255,0.03)',
-        borderLeft: `3px solid ${m.playerColor}`,
-        cursor: onHighlight ? 'pointer' : 'default',
-      }}
+      style={{ borderLeftColor: m.playerColor, cursor: onHighlight ? 'pointer' : 'default' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-        {/* Tile thumbnail */}
-        <div style={{
-          width: 34, height: 34, flexShrink: 0,
-          overflow: 'hidden', borderRadius: 3,
-          background: '#111',
-        }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="thumb">
           <img
             src={tileImageMap[m.prototypeId] ?? ''}
             alt={m.prototypeId}
-            style={{
-              width: '100%', height: '100%',
-              objectFit: 'cover',
-              transform: `rotate(${m.rotation}deg)`,
-              display: 'block',
-            }}
+            style={{ transform: `rotate(${m.rotation}deg)` }}
           />
         </div>
-
-        {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontSize: 12, fontWeight: 600,
-            color: m.playerColor,
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {m.playerName}
-          </div>
-          <div style={{ fontSize: 11, color: '#6b7280', marginTop: 1 }}>
-            ({m.coord.x}, {m.coord.y})
-          </div>
+          <div className="move-pname" style={{ color: m.playerColor }}>{m.playerName}</div>
+          <div className="move-coord">({m.coord.x}, {m.coord.y})</div>
         </div>
-
-        {/* Turn badge */}
-        <div style={{
-          fontSize: 10, color: '#4b5563',
-          flexShrink: 0, fontVariantNumeric: 'tabular-nums',
-        }}>
-          #{m.turn}
-        </div>
+        <div className="move-turn">#{m.turn}</div>
       </div>
 
-      {/* AI Analysis */}
       {m.toolCalls && m.toolCalls.length > 0 && (
-        <div style={{ marginTop: 5 }}>
-          <div style={{
-            fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
-            letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
-            paddingTop: 4, marginBottom: 3,
-          }}>
-            AI Analysis
-          </div>
+        <div>
+          <div className="move-section-label">AI Analysis</div>
           {m.toolCalls.map((tc, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#6b7280' }}>
+            <div key={i} className="move-kv">
               <span>{tc.name}</span>
-              <span style={{ color: '#4b5563' }}>{tc.summary}</span>
+              <span style={{ color: 'var(--ink-faint)' }}>{tc.summary}</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Reasoning */}
       {isReasoningAiMove && (
-        <div style={{ marginTop: 5 }}>
-          <div style={{
-            fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
-            letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
-            paddingTop: 4, marginBottom: 3,
-          }}>
-            Reasoning:
-          </div>
-          <div style={{
-            fontSize: 10,
-            color: reasoningText ? '#9ca3af' : '#6b7280',
-            fontStyle: 'italic',
-            lineHeight: 1.5,
-          }}>
+        <div>
+          <div className="move-section-label">Reasoning</div>
+          <div className="move-reasoning">
             {reasoningText ? `"${reasoningText}"` : formatMissingReasoning(m.reasoningUnavailableReason)}
           </div>
         </div>
       )}
 
-      {/* Heuristic Analysis */}
       {m.heuristicAnalysis && (
-        <div style={{ marginTop: 5 }}>
-          <div style={{
-            fontSize: 9, color: '#4b5563', textTransform: 'uppercase',
-            letterSpacing: '0.06em', borderTop: '1px solid #1f2937',
-            paddingTop: 4, marginBottom: 3,
-          }}>
-            Heuristic Analysis
-          </div>
+        <div>
+          <div className="move-section-label">Heuristic Analysis</div>
           <HeuristicRow label="Neighbors" value={`+${m.heuristicAnalysis.adjacency * 5} pts`} positive={m.heuristicAnalysis.adjacency > 0} />
           <HeuristicRow label="Own features" value={`+${m.heuristicAnalysis.ownConnections * 15} pts`} positive={m.heuristicAnalysis.ownConnections > 0} />
           <HeuristicRow label="Opponents" value={`−${m.heuristicAnalysis.opponentConnections * 10} pts`} positive={false} dim={m.heuristicAnalysis.opponentConnections === 0} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#9ca3af', fontWeight: 600, borderTop: '1px solid #1f2937', paddingTop: 3, marginTop: 2 }}>
+          <div className="move-kv" style={{ borderTop: '1px solid var(--panel-edge)', paddingTop: 3, marginTop: 2, fontWeight: 800, color: 'var(--ink)' }}>
             <span>Score: {m.heuristicAnalysis.totalScore}</span>
-            <span style={{ color: '#4b5563' }}>{m.heuristicAnalysis.candidatesEvaluated} moves</span>
+            <span style={{ color: 'var(--ink-faint)' }}>{m.heuristicAnalysis.candidatesEvaluated} moves</span>
           </div>
         </div>
       )}
@@ -174,30 +117,18 @@ export function TurnTimeline({ moves, onHighlight }: Props) {
   const reversed = [...moves].reverse();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{
-        padding: '8px 10px 6px',
-        color: '#6b7280', fontSize: 11, textTransform: 'uppercase',
-        letterSpacing: '0.06em', borderBottom: '1px solid #2a2a4a',
-        flexShrink: 0,
-      }}>
-        Move History
-        {moves.length > 0 && (
-          <span style={{ float: 'right', color: '#4b5563' }}>{moves.length}</span>
-        )}
+    <>
+      <div className="timeline-head">
+        <span className="hud-label">Move History</span>
+        {moves.length > 0 && <span className="timeline-count">{moves.length}</span>}
       </div>
-
-      <div style={{ flex: 1, overflowY: 'auto', padding: '6px 6px' }}>
+      <div className="timeline-scroll">
         {moves.length === 0 ? (
-          <div style={{ color: '#374151', fontSize: 11, padding: '8px 4px' }}>
-            No moves yet
-          </div>
+          <div className="timeline-empty">No moves yet</div>
         ) : (
-          reversed.map((m) => (
-            <MoveCard key={m.turn} m={m} onHighlight={onHighlight} />
-          ))
+          reversed.map((m) => <MoveCard key={m.turn} m={m} onHighlight={onHighlight} />)
         )}
       </div>
-    </div>
+    </>
   );
 }

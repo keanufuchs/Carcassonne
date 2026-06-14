@@ -227,6 +227,10 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   return (
     <div className="game-layout">
       <div className="game-sidebar">
+        <div className="game-brand">
+          <span className="mark">C</span>
+          <span className="name">Carcassonne</span>
+        </div>
         <div className="sidebar-section">
           <PlayerPanel players={state.players} currentPlayerIndex={state.currentPlayerIndex} />
         </div>
@@ -380,8 +384,11 @@ export default function App() {
 
   if (mode === 'connecting') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0e0e1a', color: '#ffd700', fontFamily: 'system-ui', fontSize: 18 }}>
-        Connecting…
+      <div className="menu-screen">
+        <div className="connecting">
+          <div className="spinner" />
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20 }}>Connecting…</div>
+        </div>
       </div>
     );
   }
