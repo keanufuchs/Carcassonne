@@ -1,0 +1,25 @@
+name: city-shield-scoring
+description: >
+  A 3-tile city including one shielded TILE-M scores 2 × (tiles + shields) = 8
+  when the closing TILE-E is placed. Field TILE-B tiles bridge the layout south
+  and east of the start tile; the city itself never touches the start city's
+  north edge.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-B, at: { x: 0, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 1, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 1, y: 2 }, rotation: 0, skip: true }
+  - { tile: TILE-E, at: { x: 2, y: 2 }, rotation: 0, meeple: { segment: 0 } }
+  - { tile: TILE-M, at: { x: 2, y: 1 }, rotation: 90, skip: true }
+  - { tile: TILE-E, at: { x: 3, y: 1 }, rotation: 270, skip: true }
+
+padding: [TILE-B]
+
+expect:
+  scores: { Alice: 0, Bob: 8 }
+  meeplesAvailable: { Alice: 7, Bob: 7 }
+  completedFeatures:
+    - { kind: CITY, points: 8, tiles: 3, shieldCount: 1 }
+  placedTiles: 7

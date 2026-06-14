@@ -70,3 +70,18 @@ export function buildRemainingTiles(): TilePrototype[] {
   }
   return tiles;
 }
+
+// Lookup of every prototype by its id (incl. the start tile). Used by the
+// scenario test bridge to resolve a YAML deck (["TILE-B", …]) into prototypes.
+export const prototypeById: ReadonlyMap<string, TilePrototype> = (() => {
+  const map = new Map<string, TilePrototype>();
+  map.set(START_TILE.id, START_TILE);
+  for (const { prototype } of BASE_GAME_DISTRIBUTION) map.set(prototype.id, prototype);
+  return map;
+})();
+
+export function getPrototype(id: string): TilePrototype {
+  const p = prototypeById.get(id);
+  if (!p) throw new Error(`Unknown tile prototype: ${id}`);
+  return p;
+}

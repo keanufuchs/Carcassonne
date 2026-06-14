@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
+import { startGame as startGameCore } from './core/game/Game';
+import { getPrototype } from './core/deck/baseGameTiles';
+import { buildSummary } from './test-bridge/scenarioBridge';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -418,6 +421,37 @@ export default function App() {
   }
 
   const [aiModes, setAiModes] = useState<PlayerAIMode[] | undefined>();
+
+  // DEV-only scenario test bridge (see src/test-bridge/scenarioBridge.ts).
+  // Lets the Playwright/YAML runner start a deterministic game and read an
+  // assertable summary. Stripped from production builds via import.meta.env.DEV.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    window.__carcTest = {
+      startScenario({ players, deck }) {
+        clearLocalGame();
+        aiRef.current?.stop?.();
+        aiRef.current = null;
+        const ctrl = createGameController(
+          startGameCore(players, undefined, deck.map(getPrototype)),
+        );
+        localRef.current = ctrl;
+        setAiModes(players.map(() => 'human' as PlayerAIMode));
+        setMode('game');
+      },
+      getSummary() {
+        if (!localRef.current) throw new Error('No active game');
+        return buildSummary(localRef.current.getState());
+      },
+      endGame() {
+        localRef.current?.endGame();
+      },
+      fitBoardView() {
+        window.dispatchEvent(new Event('carc:fit-board-view'));
+      },
+    };
+    return () => { delete window.__carcTest; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleStartNetworkGame(): void {
     networkRef.current?.startGame([]);

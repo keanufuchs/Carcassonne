@@ -23,6 +23,45 @@ const CANVAS_SIZE = (COORD_OFFSET * 2 + 1) * TILE_SIZE;
 const CENTER_X = (COORD_OFFSET + 0.5) * TILE_SIZE;
 const CENTER_Y = (COORD_OFFSET + 0.5) * TILE_SIZE;
 
+/** Canvas-pixel center + a scale that fits every placed tile in the viewport. */
+function fitTransformForTiles(
+  tiles: Array<{ coord: { x: number; y: number } }>,
+  viewportW: number,
+  viewportH: number,
+): { x: number; y: number; scale: number } {
+  if (tiles.length === 0) {
+    return { x: CENTER_X, y: CENTER_Y, scale: 1 };
+  }
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const t of tiles) {
+    minX = Math.min(minX, t.coord.x);
+    maxX = Math.max(maxX, t.coord.x);
+    minY = Math.min(minY, t.coord.y);
+    maxY = Math.max(maxY, t.coord.y);
+  }
+
+  const cx = (minX + maxX + 1) / 2;
+  const cy = (minY + maxY + 1) / 2;
+  const spanX = (maxX - minX + 1) * TILE_SIZE;
+  const spanY = (maxY - minY + 1) * TILE_SIZE;
+  const padding = 1.35;
+  const scale = Math.min(
+    1,
+    (viewportW / padding) / spanX,
+    (viewportH / padding) / spanY,
+  );
+
+  return {
+    x: (cx + COORD_OFFSET) * TILE_SIZE,
+    y: (cy + COORD_OFFSET) * TILE_SIZE,
+    scale: Math.max(0.25, scale),
+  };
+}
+
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
 );
@@ -184,12 +223,24 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
     ? `focus-${state.lastPlacedTileId}`
     : 'idle';
 
-  const { transform, isPanning, onMouseDown, onMouseMove, stopPan } = useBoardTransform(
+  const { transform, isPanning, onMouseDown, onMouseMove, stopPan, recenter } = useBoardTransform(
     containerRef,
     CENTER_X,
     CENTER_Y,
     meepleFocusTarget,
   );
+
+  // DEV/scenario hook: frame every placed tile in the viewport (see __carcTest.fitBoardView).
+  useEffect(() => {
+    function handleFitBoardView() {
+      const el = containerRef.current;
+      if (!el) return;
+      const { x, y, scale } = fitTransformForTiles(placedTiles, el.clientWidth, el.clientHeight);
+      recenter(x, y, scale);
+    }
+    window.addEventListener('carc:fit-board-view', handleFitBoardView);
+    return () => window.removeEventListener('carc:fit-board-view', handleFitBoardView);
+  }, [placedTiles, recenter]);
 
   const hasMeepleFocus = meepleFocusTarget !== null;
 
@@ -259,11 +310,12 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
   const focusSpotlightSize = TILE_SIZE * 2.7;
   const boardBounceOffset = boardBouncePhase === 'bouncing' ? '-2px' : '0px';
 
-  if (placedTiles.length === 0) return <div className="board-scroll" ref={containerRef} />;
+  if (placedTiles.length === 0) return <div className="board-scroll" data-testid="board-scroll" ref={containerRef} />;
 
   return (
     <div
       className="board-scroll"
+      data-testid="board-scroll"
       ref={containerRef}
       data-meeple-focus={showMeepleFocus ? 'true' : undefined}
       data-meeple-focus-phase={meepleFocusPhase}
@@ -357,6 +409,7 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
                   onLeave={() => setHovered(null)}
                   imageSrc={imgSrc}
                   rotation={state.pendingRotation}
+                  coord={coord}
                 />
               </div>
             );

@@ -1,0 +1,20 @@
+name: road-closed-endpoints
+description: >
+  The start tile's east–west road is capped at both ends with TILE-W dead-end
+  stubs. The closing placement completes the 3-tile road (1 pt/tile) and returns
+  the meeple.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-W, at: { x: -1, y: 0 }, rotation: 0, skip: true }
+  - { tile: TILE-W, at: { x: 1, y: 0 }, rotation: 0, meeple: { segment: 0 } }
+
+padding: [TILE-B]
+
+expect:
+  scores: { Alice: 0, Bob: 3 }
+  meeplesAvailable: { Alice: 7, Bob: 7 }
+  completedFeatures:
+    - { kind: ROAD, points: 3, tiles: 3 }
+  placedTiles: 3

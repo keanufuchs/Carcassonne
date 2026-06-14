@@ -1,0 +1,16 @@
+name: road-incomplete-endgame
+description: >
+  A single west cap leaves the start-tile road open. End-game scoring awards
+  1 pt per road tile (2 total) while the meeple stays on the incomplete feature.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-W, at: { x: -1, y: 0 }, rotation: 0, meeple: { segment: 1 } }
+
+endGame: true
+
+expect:
+  scores: { Alice: 2, Bob: 0 }
+  meeplesAvailable: { Alice: 6, Bob: 7 }
+  placedTiles: 2

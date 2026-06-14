@@ -13,7 +13,7 @@ export default defineConfig({
   // ✅ Use HTML reporter instead of line (or combine both)
   reporter: [
     ['line'],
-    ['html', { outputFolder: 'playwright-report/', open: 'never' }],
+    ['html', { outputFolder: 'playwright-report/', open: 'never', noSnippets: true }],
   ],
 
   use: {

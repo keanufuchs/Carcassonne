@@ -1,0 +1,33 @@
+name: monastery-completion
+description: >
+  A monastery scores 9 points only once ALL 8 surrounding tiles are placed,
+  and the cloister meeple is returned on completion. The monastery sits at
+  (0,2), south of the start tile, and is bridged to the board via (0,1); every
+  surrounding tile is an all-field TILE-B, so all edges match trivially.
+
+players: [Alice, Bob]
+
+steps:
+  # 1. Bridge tile linking the board (start tile @ 0,0) to the monastery block.
+  - { tile: TILE-B, at: { x: 0, y: 1 }, rotation: 0, skip: true }
+  # 2. The monastery we will complete — Bob claims it with a meeple (segment 0).
+  - { tile: TILE-B, at: { x: 0, y: 2 }, rotation: 0, meeple: { segment: 0 } }
+  # 3..9. The remaining 7 of the 8 surrounding tiles.
+  - { tile: TILE-B, at: { x: 1, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: -1, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 1, y: 2 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: -1, y: 2 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 0, y: 3 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: -1, y: 3 }, rotation: 0, skip: true }
+  # 8th neighbour — this placement completes the monastery.
+  - { tile: TILE-B, at: { x: 1, y: 3 }, rotation: 0, skip: true }
+
+# One filler tile keeps the deck non-empty so the game stays mid-game.
+padding: [TILE-B]
+
+expect:
+  scores: { Alice: 0, Bob: 9 }
+  meeplesAvailable: { Alice: 7, Bob: 7 }   # Bob's cloister meeple is returned
+  completedFeatures:
+    - { kind: MONASTERY, points: 9 }
+  placedTiles: 10                          # start tile + 9 placed
