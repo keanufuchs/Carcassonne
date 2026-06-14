@@ -11,6 +11,47 @@
   color: var(--ink);
 }
 
+/* ── Board area + 2D/3D view toggle ─────────────────────────────────────── */
+.board-area {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  display: flex;
+}
+
+.board-view-toggle {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-edge);
+  background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
+  box-shadow: var(--shadow-sm), 0 2px 10px rgba(40, 30, 18, 0.18);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.board-view-toggle span {
+  padding: 4px 11px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.board-view-toggle span.is-active {
+  background: linear-gradient(180deg, var(--terracotta), var(--terracotta-deep));
+  color: #fff5ec;
+  box-shadow: 0 2px 0 #7f3420;
+}
+.board-view-toggle:hover { filter: brightness(1.03); }
+.board-view-toggle:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+
 /* ── Side panels ────────────────────────────────────────────────────────── */
 .game-sidebar {
   width: 256px;

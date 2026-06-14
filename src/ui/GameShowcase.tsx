@@ -18,7 +18,7 @@ const SHOWCASE_PLAYERS = ['Amber', 'Sage', 'Rust'];
 /** Which AI drives the showcase — heuristic plays sensible, watchable moves. */
 const SHOWCASE_AI = 'heuristic' as const;
 /** Restart before the growing board drifts past the fixed isometric camera. */
-const MAX_TILES = 25;
+const MAX_TILES = 50;
 /** Target cadence: one tile placed per second (the wait absorbs turn compute). */
 const TURN_INTERVAL_MS = 250;
 /** Hold a finished board briefly before dealing a fresh one. */
