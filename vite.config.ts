@@ -30,6 +30,7 @@ export default defineConfig(async ({ mode }) => {
     plugins,
     server: {
       host: true,
+      allowedHosts: ['.ngrok-free.dev', '.ngrok.io', '.ngrok.app'],
       proxy: { '/api': 'http://localhost:3001' },
     },
   };

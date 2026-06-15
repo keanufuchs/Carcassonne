@@ -8,14 +8,44 @@ import type { GameController } from './GameController';
 import { createPubSub } from './pubsub';
 import type { Unsubscribe } from './pubsub';
 
-/** Dev: VITE_API_URL (Vite proxy). Prod: same-origin relative URLs (ignores mis-set localhost). */
+/**
+ * Same-origin relative base URL. Requests go to whatever origin served the page
+ * (localhost, LAN-IP, ngrok, …) and are forwarded by the Vite dev proxy
+ * (`/api → :3001`) or the serverless functions in prod. An explicit VITE_API_URL
+ * can override this, but the default must stay origin-relative so that a second
+ * player joining over the LAN does not hit their own `localhost`.
+ */
 function apiBase(): string {
-  if (import.meta.env.PROD) return '';
-  return import.meta.env.VITE_API_URL || 'http://localhost:5173';
+  return import.meta.env.VITE_API_URL || '';
 }
 
-const USE_POLLING = import.meta.env.PROD || !import.meta.env.VITE_WS_URL;
-const WS = import.meta.env.VITE_WS_URL ?? '';
+/** Host is directly reachable on the game-server port (localhost or a private LAN IP). */
+function isDirectlyReachable(host: string): boolean {
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+  if (host.endsWith('.local')) return true;
+  return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+}
+
+/**
+ * WebSocket endpoint. Returns the page host on the game-server port (3001) when
+ * that port is directly reachable (localhost / LAN), so a second player on the
+ * LAN connects to the host instead of their own `localhost`.
+ *
+ * For tunneled origins (e.g. ngrok serving only :5173 over https) port 3001 is
+ * NOT reachable, so we return '' → the client falls back to HTTP polling, which
+ * is forwarded through the same-origin `/api` proxy.
+ */
+function wsUrl(): string {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+  if (typeof window === 'undefined') return '';
+  const { protocol, hostname } = window.location;
+  if (protocol === 'https:' || !isDirectlyReachable(hostname)) return '';
+  return `ws://${hostname}:3001`;
+}
+
+const WS = wsUrl();
+// Polling is the only transport without a reachable WS server (prod / tunneled / serverless).
+const USE_POLLING = import.meta.env.PROD || !WS;
 
 export interface NetworkSession {
   gameId: string;
