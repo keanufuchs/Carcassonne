@@ -1,9 +1,8 @@
 name: city-shield-scoring
 description: >
-  A 3-tile city including one shielded TILE-M scores 2 × (tiles + shields) = 8
-  when the closing TILE-E is placed. Field TILE-B tiles bridge the layout south
-  and east of the start tile; the city itself never touches the start city's
-  north edge.
+  Eine Stadt gilt erst als abgeschlossen, wenn alle offenen Stadtseiten geschlossen
+  sind. Kontrollierter 3-Kachel-Stadtaufbau mit Schild: 2 × (3 + 1) = 8 Punkte,
+  Meeple-Rückgabe.
 
 players: [Alice, Bob]
 

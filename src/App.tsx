@@ -266,7 +266,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="game-layout">
+    <div className="game-layout" data-testid="game-layout">
       <div className="game-sidebar">
         <div className="game-brand">
           <span className="mark">C</span>
@@ -462,6 +462,25 @@ export default function App() {
         if (!ctrl) throw new Error('No active game');
         const result = ctrl.skipMeeple();
         if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
+      previewPlacement(coord, rotation) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        return ctrl.previewPlacement(coord, rotation as 0 | 90 | 180 | 270);
+      },
+      tryPlaceMeepleOnLastTile(localId) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const ref = ctrl.getMeepleTargetsForLastTile().find(r => r.localId === localId)
+          ?? (() => {
+            const lastId = ctrl.getState().lastPlacedTileId;
+            if (!lastId) return undefined;
+            return { tileId: lastId, localId };
+          })();
+        if (!ref) return { ok: false as const, error: 'SEGMENT_NOT_FOUND' };
+        const result = ctrl.placeMeeple(ref);
+        if (result.ok === false) return { ok: false as const, error: result.error };
+        return { ok: true as const };
       },
     };
     return () => { delete window.__carcTest; };

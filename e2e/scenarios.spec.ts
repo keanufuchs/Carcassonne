@@ -13,18 +13,11 @@ import {
 } from './scenario/expectRecap';
 import type { ScenarioSummary } from '../src/test-bridge/scenarioBridge';
 import type { StepLogEntry } from './scenario/runScenario';
-import { fitBoardForScreenshot } from './scenario/fitBoardForScreenshot';
+import { captureGameScreenshot } from './scenario/captureGameScreenshot';
 
 const SCENARIO_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'tests', 'scenarios');
 
 const files = readdirSync(SCENARIO_DIR).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
-
-async function captureBoardScreenshot(page: import('@playwright/test').Page): Promise<Buffer | undefined> {
-  await fitBoardForScreenshot(page);
-  const board = page.locator('[data-testid="board-scroll"]');
-  if (await board.count() === 0) return undefined;
-  return board.screenshot();
-}
 
 async function readSummary(page: import('@playwright/test').Page): Promise<ScenarioSummary | undefined> {
   return page.evaluate(() => window.__carcTest?.getSummary?.()).catch(() => undefined);
@@ -64,7 +57,7 @@ test.describe('YAML game-logic scenarios', () => {
         summary = await readSummary(page);
       }
 
-      const screenshot = await captureBoardScreenshot(page).catch(() => undefined);
+      const screenshot = await captureGameScreenshot(page).catch(() => undefined);
 
       if (summary) {
         const checks = evaluateExpectations(scenario, summary);
@@ -89,7 +82,7 @@ test.describe('YAML game-logic scenarios', () => {
         });
 
         if (screenshot) {
-          await testInfo.attach('final-board', {
+          await testInfo.attach('final-game', {
             body: screenshot,
             contentType: 'image/png',
           });

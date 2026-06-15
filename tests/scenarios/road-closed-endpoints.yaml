@@ -1,8 +1,8 @@
 name: road-closed-endpoints
 description: >
-  The start tile's east–west road is capped at both ends with TILE-W dead-end
-  stubs. The closing placement completes the 3-tile road (1 pt/tile) and returns
-  the meeple.
+  Eine Straße gilt erst als abgeschlossen, wenn beide Enden geschlossen sind.
+  Start-Straße wird an beiden Enden mit TILE-W-Stummeln geschlossen: 3 Punkte,
+  Meeple-Rückgabe.
 
 players: [Alice, Bob]
 

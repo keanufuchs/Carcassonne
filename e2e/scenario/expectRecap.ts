@@ -63,6 +63,37 @@ export function evaluateExpectations(scenario: Scenario, summary: ScenarioSummar
     });
   }
 
+  if (typeof e.deckRemaining === 'number') {
+    checks.push({
+      field: 'deckRemaining',
+      expected: String(e.deckRemaining),
+      actual: String(summary.deckRemaining),
+      ok: summary.deckRemaining === e.deckRemaining,
+    });
+  }
+
+  if (e.deckCounts) {
+    for (const [id, exp] of Object.entries(e.deckCounts)) {
+      const got = summary.deckCounts[id] ?? 0;
+      checks.push({
+        field: `deckCounts.${id}`,
+        expected: String(exp),
+        actual: String(got),
+        ok: got === exp,
+      });
+    }
+  }
+
+  if (typeof e.deckTotalTiles === 'number') {
+    const total = summary.deckRemaining + (summary.pendingTileId ? 1 : 0);
+    checks.push({
+      field: 'deckTotalTiles',
+      expected: String(e.deckTotalTiles),
+      actual: String(total),
+      ok: total === e.deckTotalTiles,
+    });
+  }
+
   if (e.completedFeatures) {
     const remaining = [...summary.completedFeatures];
     for (let i = 0; i < e.completedFeatures.length; i++) {
@@ -146,8 +177,8 @@ export function buildScenarioReportHtml(input: ScenarioReportInput): string {
   }).join('');
 
   const boardImg = screenshotBase64
-    ? `<img class="board" src="data:image/png;base64,${screenshotBase64}" alt="Final board" />`
-    : '<p class="muted">Board screenshot unavailable</p>';
+    ? `<img class="board" src="data:image/png;base64,${screenshotBase64}" alt="Final game view" />`
+    : '<p class="muted">Game screenshot unavailable</p>';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -205,7 +236,7 @@ export function buildScenarioReportHtml(input: ScenarioReportInput): string {
       <p class="meta">phase=${esc(summary.phase)} · placedTiles=${summary.placedTiles}</p>
     </section>
     <section>
-      <h2>Final board</h2>
+      <h2>Final game view</h2>
       ${boardImg}
     </section>
   </div>

@@ -71,6 +71,16 @@ export function buildRemainingTiles(): TilePrototype[] {
   return tiles;
 }
 
+/** Ordered draw-pile ids for the base game (72 tiles, excludes the start tile). */
+export function buildBaseGameDeckIds(): string[] {
+  return buildRemainingTiles().map(t => t.id);
+}
+
+/** Expected per-type counts in the base-game draw pile. */
+export const BASE_GAME_DECK_COUNTS: Readonly<Record<string, number>> = Object.fromEntries(
+  BASE_GAME_DISTRIBUTION.map(({ prototype, count }) => [prototype.id, count]),
+);
+
 // Lookup of every prototype by its id (incl. the start tile). Used by the
 // scenario test bridge to resolve a YAML deck (["TILE-B", …]) into prototypes.
 export const prototypeById: ReadonlyMap<string, TilePrototype> = (() => {

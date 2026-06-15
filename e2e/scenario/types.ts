@@ -14,6 +14,10 @@ export interface ScenarioStep {
   meeple?: { segment: number };
   /** Explicitly skip the meeple step. */
   skip?: boolean;
+  /** Assert preview legality before the final placement (same pending tile). */
+  placementChecks?: Array<{ at: { x: number; y: number }; rotation?: Rotation; legal: boolean }>;
+  /** Expect meeple placement on `meeple.segment` to be rejected by the engine. */
+  rejectMeeple?: boolean;
 }
 
 export interface ExpectedFeature {
@@ -32,6 +36,12 @@ export interface ScenarioExpect {
   completedFeatures?: ExpectedFeature[];
   /** Optional sanity check: total tiles on the board (incl. start tile). */
   placedTiles?: number;
+  /** Remaining draw-pile size (deck-check scenarios). */
+  deckRemaining?: number;
+  /** Per-type tile counts left in the draw pile. */
+  deckCounts?: Record<string, number>;
+  /** Draw pile + pending tile (full distribution check). */
+  deckTotalTiles?: number;
 }
 
 export interface Scenario {
@@ -39,6 +49,8 @@ export interface Scenario {
   description?: string;
   players: string[];
   steps: ScenarioStep[];
+  /** Use the canonical 72-tile base-game draw pile (ignores step-derived deck). */
+  deckFrom?: 'base-game';
   /** Filler tiles kept in the deck so the game stays mid-game after the last step. */
   padding?: string[];
   /** If true, the runner triggers end-game scoring before asserting. */

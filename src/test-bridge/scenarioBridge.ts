@@ -40,6 +40,8 @@ export interface ScenarioSummary {
   placedTiles: number;
   players: PlayerSummary[];
   completedFeatures: CompletedFeatureSummary[];
+  deckRemaining: number;
+  deckCounts: Record<string, number>;
 }
 
 /** The DEV-only API exposed on `window.__carcTest` for the scenario runner. */
@@ -56,6 +58,10 @@ export interface ScenarioBridge {
   placeMeepleOnLastTile(localId: number): void;
   /** Skip the meeple step for the current turn. */
   skipMeepleTurn(): void;
+  /** Preview whether the pending tile fits at coord/rotation (no mutation). */
+  previewPlacement(coord: { x: number; y: number }, rotation: number): { legal: boolean };
+  /** Attempt meeple placement; returns ok/error without throwing. */
+  tryPlaceMeepleOnLastTile(localId: number): { ok: true } | { ok: false; error: string };
 }
 
 declare global {
@@ -95,5 +101,16 @@ export function buildSummary(state: GameState): ScenarioSummary {
       meeplesAvailable: p.meeplesAvailable,
     })),
     completedFeatures,
+    deckRemaining: state.deck.remaining.length,
+    deckCounts: countDeck([
+      ...state.deck.remaining.map(t => t.id),
+      ...(state.pendingTile ? [state.pendingTile.id] : []),
+    ]),
   };
+}
+
+function countDeck(ids: string[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const id of ids) counts[id] = (counts[id] ?? 0) + 1;
+  return counts;
 }

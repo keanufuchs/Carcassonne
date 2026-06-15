@@ -73,8 +73,8 @@ lines.push('3. Open **`index.html`** in a browser.');
 lines.push('');
 lines.push('| Attachment (per scenario) | Format |');
 lines.push('|---------------------------|--------|');
-lines.push('| `scenario-report` | HTML — description, expect table, board screenshot |');
+lines.push('| `scenario-report` | HTML — description, expect table, game screenshot |');
 lines.push('| `expect-recap` | Plain text |');
-lines.push('| `final-board` | PNG |');
+lines.push('| `final-game` | PNG — full HUD + board (View Map if game over) |');
 
 appendFileSync(summaryPath, lines.join('\n') + '\n');

@@ -1,9 +1,8 @@
 name: monastery-completion
 description: >
-  A monastery scores 9 points only once ALL 8 surrounding tiles are placed,
-  and the cloister meeple is returned on completion. The monastery sits at
-  (0,2), south of the start tile, and is bridged to the board via (0,1); every
-  surrounding tile is an all-field TILE-B, so all edges match trivially.
+  Ein Kloster gilt erst als abgeschlossen, wenn alle acht umliegenden Felder belegt
+  sind. Neun-Kachel-Deck (1 Kloster + 8 Umgebungskacheln), feste Platzierungsreihenfolge.
+  Nach dem letzten Nachbarn: 9 Punkte, Meeple-Rückgabe.
 
 players: [Alice, Bob]
 

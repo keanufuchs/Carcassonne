@@ -1,7 +1,7 @@
 name: road-incomplete-endgame
 description: >
-  A single west cap leaves the start-tile road open. End-game scoring awards
-  1 pt per road tile (2 total) while the meeple stays on the incomplete feature.
+  Unvollständige Straße wird in der Endwertung mit 1 Punkt pro Kachel bewertet
+  (2 Punkte gesamt); der Meeple bleibt auf dem offenen Feature.
 
 players: [Alice, Bob]
 

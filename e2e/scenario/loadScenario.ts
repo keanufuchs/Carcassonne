@@ -19,7 +19,9 @@ export function loadScenario(file: string): Scenario {
   if (!Array.isArray(s.players) || s.players.length < 2 || s.players.length > 5) {
     fail(file, '"players" must list 2..5 names');
   }
-  if (!Array.isArray(s.steps) || s.steps.length === 0) fail(file, '"steps" must be a non-empty list');
+  const deckOnly = s.deckFrom === 'base-game';
+  if (!Array.isArray(s.steps)) fail(file, '"steps" must be a list');
+  if (!deckOnly && s.steps.length === 0) fail(file, '"steps" must be a non-empty list (or use deckFrom: base-game)');
 
   s.steps.forEach((step: ScenarioStep, i) => {
     const ctx = `step ${i}`;
@@ -33,7 +35,24 @@ export function loadScenario(file: string): Scenario {
     if (step.meeple && typeof step.meeple.segment !== 'number') {
       fail(file, `${ctx}: "meeple.segment" must be a number (segment localId)`);
     }
+    if (step.rejectMeeple && !step.meeple) {
+      fail(file, `${ctx}: "rejectMeeple" requires "meeple.segment"`);
+    }
+    for (const [j, check] of (step.placementChecks ?? []).entries()) {
+      const cctx = `${ctx}.placementChecks[${j}]`;
+      if (!check.at || typeof check.at.x !== 'number' || typeof check.at.y !== 'number') {
+        fail(file, `${cctx}: "at" must be {x, y}`);
+      }
+      if (check.rotation !== undefined && ![0, 90, 180, 270].includes(check.rotation)) {
+        fail(file, `${cctx}: "rotation" must be 0|90|180|270`);
+      }
+      if (typeof check.legal !== 'boolean') fail(file, `${cctx}: "legal" must be true|false`);
+    }
   });
+
+  if (s.deckFrom !== undefined && s.deckFrom !== 'base-game') {
+    fail(file, '"deckFrom" must be "base-game" when set');
+  }
 
   for (const t of s.padding ?? []) {
     if (!TILE_ID.test(t)) fail(file, `padding tile "${t}" must match TILE-A..TILE-X`);

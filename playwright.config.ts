@@ -19,6 +19,7 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:5173',
+    viewport: { width: 1400, height: 900 },
 
     // ✅ Ensure artifacts are actually created
     screenshot: 'only-on-failure',   // or 'on'
