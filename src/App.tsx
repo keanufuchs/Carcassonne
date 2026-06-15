@@ -37,6 +37,7 @@ import './ui/styles/game.css';
 
 const LOCAL_SAVE_KEY = 'carc_local_game';
 const LOCAL_SAVE_AI_KEY = 'carc_local_game_ai';
+const LOCAL_SAVE_AI_MODELS_KEY = 'carc_local_game_ai_models';
 
 function saveLocalGame(state: Readonly<import('./core/game/GameState').GameState>): void {
   try { localStorage.setItem(LOCAL_SAVE_KEY, serializeState(state)); } catch { /* quota */ }
@@ -52,6 +53,7 @@ function loadLocalGame(): import('./core/game/GameState').GameState | null {
 function clearLocalGame(): void {
   localStorage.removeItem(LOCAL_SAVE_KEY);
   try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
+  try { localStorage.removeItem(LOCAL_SAVE_AI_MODELS_KEY); } catch {}
 }
 
 // ── Board view-mode (2D / 3D) persistence ───────────────────────────────────
@@ -108,7 +110,7 @@ function canInteract(
   return true;
 }
 
-function GameApp({ controller, aiModes }: { controller: GameController; aiModes?: PlayerAIMode[] }) {
+function GameApp({ controller, aiModes, aiModels }: { controller: GameController; aiModes?: PlayerAIMode[]; aiModels?: (string | undefined)[] }) {
   const state = useGameState();
   const currentPlayer = state.players[state.currentPlayerIndex];
   const interactive = canInteract(controller, state, aiModes);
@@ -271,7 +273,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
             pendingHeuristicRef.current = event.analysis;
           }
           pendingToolCallsRef.current = accumulateToolCall(pendingToolCallsRef.current, event);
-        });
+        }, aiModels?.[state.currentPlayerIndex]);
       } finally {
         if (activeAiRunRef.current === runId) {
           activeAiRunRef.current = 0;
@@ -377,6 +379,11 @@ export default function App() {
       if (!raw) return;
       const modes = JSON.parse(raw);
       if (Array.isArray(modes)) setAiModes(modes);
+      const rawModels = localStorage.getItem(LOCAL_SAVE_AI_MODELS_KEY);
+      if (rawModels) {
+        const models = JSON.parse(rawModels);
+        if (Array.isArray(models)) setAiModels(models);
+      }
     } catch { /* ignore */ }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -434,12 +441,16 @@ export default function App() {
     ctrl.startGame(players.map(p => p.name));
     localRef.current = ctrl;
     const modes = players.map(p => p.aiMode);
+    const models = players.map(p => p.aiModel);
     setAiModes(modes);
+    setAiModels(models);
     try { localStorage.setItem(LOCAL_SAVE_AI_KEY, JSON.stringify(modes)); } catch { /* quota */ }
+    try { localStorage.setItem(LOCAL_SAVE_AI_MODELS_KEY, JSON.stringify(models)); } catch { /* quota */ }
     setMode('game');
   }
 
   const [aiModes, setAiModes] = useState<PlayerAIMode[] | undefined>();
+  const [aiModels, setAiModels] = useState<(string | undefined)[] | undefined>();
 
   // DEV-only scenario test bridge (see src/test-bridge/scenarioBridge.ts).
   // Lets the Playwright/YAML runner start a deterministic game and read an
@@ -553,7 +564,7 @@ export default function App() {
 
   return (
     <ControllerContext.Provider value={controller}>
-      <GameApp controller={controller} aiModes={aiModes} />
+      <GameApp controller={controller} aiModes={aiModes} aiModels={aiModels} />
     </ControllerContext.Provider>
   );
 }

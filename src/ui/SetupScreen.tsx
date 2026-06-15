@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { GameShowcase } from './GameShowcase';
 import { MeepleIcon } from './board/MeepleIcon';
+import { getAvailableModels, getDefaultModel } from '../ai/models';
 import './styles/menu.css';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
@@ -14,9 +15,13 @@ const AI_DEFAULT_NAMES: Record<AIMode, string> = {
 
 function aiDefaultName(mode: AIMode) { return AI_DEFAULT_NAMES[mode]; }
 
+const AI_MODELS = getAvailableModels();
+
 export interface PlayerSetup {
   name: string;
   aiMode: AIMode;
+  /** Reasoning-AI model id (only meaningful when aiMode === 'intelligent'). */
+  aiModel?: string;
 }
 
 interface Props {
@@ -173,7 +178,8 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                         const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
                         const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
                           : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
-                        n[i] = { ...n[i], aiMode: newMode, name };
+                        const aiModel = newMode === 'intelligent' ? (n[i].aiModel ?? getDefaultModel()) : undefined;
+                        n[i] = { ...n[i], aiMode: newMode, name, aiModel };
                         setLocalPlayers(n);
                       }}
                     >
@@ -182,6 +188,22 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                       <option value="heuristic">🧠 Heuristic AI</option>
                       <option value="intelligent">🤖 Reasoning AI</option>
                     </select>
+                    {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
+                      <select
+                        className="select"
+                        title="Reasoning-AI model"
+                        value={p.aiModel ?? getDefaultModel()}
+                        onChange={e => {
+                          const n = [...localPlayers];
+                          n[i] = { ...n[i], aiModel: e.target.value };
+                          setLocalPlayers(n);
+                        }}
+                      >
+                        {AI_MODELS.map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    )}
                     {localPlayers.length > 2 && (
                       <button className="row-remove" title="Remove player"
                         onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}>✕</button>

@@ -40,10 +40,13 @@ Takes priority when both base URL and API key are set:
 # .env
 VITE_AI_BASE_URL=https://api.ai.rh-koeln.de/v1
 VITE_AI_API_KEY=your-key-here
-VITE_AI_MODEL=your-model-id
+# Comma-separated list of models selectable per player in the setup screen
+VITE_AI_MODELS=openai-gpt-oss-120b,gemma-4-31b-it,qwen3.6-35b-a3b
 ```
 
 The full URL `https://api.ai.rh-koeln.de/v1/chat/completions` also works as `VITE_AI_BASE_URL` — the `/chat/completions` suffix is stripped automatically.
+
+When several models are configured via `VITE_AI_MODELS`, each **Reasoning AI** player gets a model dropdown in the setup screen. The first entry is the default. `VITE_AI_MODEL` still works for a single model and is prepended to the list.
 
 ### Option B — OpenRouter
 

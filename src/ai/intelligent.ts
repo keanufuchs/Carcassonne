@@ -6,13 +6,13 @@ import { serializeState } from '../core/serialize';
 import { legalMovesView, boardFeaturesView, playerStatusView, connectionsForMove, generateMoveReasoning, meeplesView } from './boardAnalysis';
 import type { AIDecision } from './AI';
 import { computeHeuristicMove } from './heuristic';
+import { getDefaultModel } from './models';
 import type { AIStatusEvent } from './index';
 
 // ── Config ─────────────────────────────────────────────────────────────────
 
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1';
-const DEFAULT_MODEL   = 'anthropic/claude-sonnet-4-6';
-const MOVE_TIMEOUT_MS = 20_000;
+const MOVE_TIMEOUT_MS = 50_000;
 const MCP_BASE        = 'http://localhost:3002';
 const MAX_TOOL_ROUNDS = 6;
 
@@ -35,8 +35,8 @@ function normalizeBaseUrl(raw: string): string {
   return url;
 }
 
-function getConfig(): AIProviderConfig | null {
-  const model = import.meta.env.VITE_AI_MODEL ?? DEFAULT_MODEL;
+function getConfig(modelOverride?: string): AIProviderConfig | null {
+  const model = modelOverride?.trim() || getDefaultModel();
   const customBase = import.meta.env.VITE_AI_BASE_URL?.trim();
   const customKey  = import.meta.env.VITE_AI_API_KEY ?? '';
   const orKey      = import.meta.env.VITE_OPENROUTER_API_KEY ?? '';
@@ -350,13 +350,25 @@ async function _callWithTools(
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     roundsCompleted = round + 1;
+    // On the final round, force the model to commit: some (over-deliberating)
+    // models keep calling analysis tools and never submit. Requiring submit_move
+    // guarantees a decision instead of running out of rounds and falling back.
+    const forceSubmit = round === MAX_TOOL_ROUNDS - 1;
+    if (forceSubmit) {
+      messages.push({
+        role: 'user',
+        content: 'You have analyzed enough. Now call submit_move with your final move (coord + rotation, reasoning required).',
+      });
+    }
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: buildRequestHeaders(apiKey, baseUrl),
       body: JSON.stringify({
         model,
         tools: TOOLS,
-        tool_choice: 'auto',
+        tool_choice: forceSubmit
+          ? { type: 'function', function: { name: 'submit_move' } }
+          : 'auto',
         messages,
       }),
     });
@@ -385,7 +397,7 @@ async function _callWithTools(
     const msg = choice.message;
     messages.push(msg);
 
-    if (choice.finish_reason === 'tool_calls' && msg.tool_calls?.length) {
+    if (msg.tool_calls?.length) {
       const toolResults: OAIMessage[] = [];
 
       for (const tc of msg.tool_calls) {
@@ -445,9 +457,9 @@ async function _callWithTools(
 
       messages.push(...toolResults);
 
-    } else if (choice.finish_reason === 'stop') {
-      // Model responded with text — try JSON parse as last resort
-      return done(_parseDecisionFromText(msg.content ?? '', state));
+    } else if (msg.content) {
+      // Model responded with plain text — try JSON parse as last resort
+      return done(_parseDecisionFromText(msg.content, state));
     } else {
       return done(null);
     }
@@ -493,8 +505,9 @@ function _parseDecisionFromText(text: string, state: GameState): AIDecision | nu
 export async function computeIntelligentMove(
   state: GameState,
   onStatus?: (e: AIStatusEvent) => void,
+  model?: string,
 ): Promise<AIDecision> {
-  const config = getConfig();
+  const config = getConfig(model);
 
   if (!config) {
     onStatus?.({ type: 'fallback', reason: 'no_config' });
