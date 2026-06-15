@@ -126,7 +126,7 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
       <Canvas
-        shadows
+        shadows="percentage"
         camera={{ position: [12, 14, 12], fov: 40 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
