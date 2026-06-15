@@ -12,9 +12,10 @@ interface Props {
   rotation: Rotation;
   controller: GameController;
   deckSize: number;
+  canInteract?: boolean;
 }
 
-export function TilePreview({ tile, rotation, controller, deckSize }: Props) {
+export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true }: Props) {
   return (
     <div className="hud-pad tile-preview">
       <div className="deck-pill">{deckSize} tiles in deck</div>
@@ -31,8 +32,8 @@ export function TilePreview({ tile, rotation, controller, deckSize }: Props) {
             />
           </div>
           <div className="rotate-row">
-            <button data-testid="rotate-ccw-btn" className="rotate-btn" onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">↺</button>
-            <button data-testid="rotate-cw-btn"  className="rotate-btn" onClick={() => controller.rotatePending('CW')}  title="Rotate clockwise (D)">↻</button>
+            <button data-testid="rotate-ccw-btn" className="rotate-btn" disabled={!canInteract} onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">↺</button>
+            <button data-testid="rotate-cw-btn"  className="rotate-btn" disabled={!canInteract} onClick={() => controller.rotatePending('CW')}  title="Rotate clockwise (D)">↻</button>
           </div>
         </>
       ) : (
