@@ -32,6 +32,7 @@ export async function executeAITurn(
   controller: GameController,
   mode: AIMode,
   onStatus?: (event: AIStatusEvent) => void,
+  model?: string,
 ): Promise<void> {
   const state = controller.getState();
   if (state.phase === 'GAME_OVER') return;
@@ -61,7 +62,7 @@ export async function executeAITurn(
       break;
     }
     case 'intelligent':
-      decision = await (await import('./intelligent')).computeIntelligentMove(afterDraw, onStatus);
+      decision = await (await import('./intelligent')).computeIntelligentMove(afterDraw, onStatus, model);
       break;
     case 'random':
     default:
