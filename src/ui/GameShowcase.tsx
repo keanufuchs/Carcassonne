@@ -68,7 +68,7 @@ export function GameShowcase() {
 
   return (
     <div className="showcase" aria-hidden="true">
-      <Board3DView state={controller.getState()} controller={controller} isAiTurn />
+      <Board3DView state={controller.getState()} controller={controller} canInteract={false} />
     </div>
   );
 }

@@ -141,12 +141,12 @@ function playTilePlacementSound(): void {
 interface Props {
   state: GameState;
   controller: GameController;
-  isAiTurn?: boolean;
+  canInteract?: boolean;
   highlightedCoord?: { x: number; y: number } | null;
   highlightKey?: number;
 }
 
-export function BoardView({ state, controller, isAiTurn = false, highlightedCoord, highlightKey }: Props) {
+export function BoardView({ state, controller, canInteract = true, highlightedCoord, highlightKey }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [hoveredFeatureId, setHoveredFeatureId] = useState<string | null>(null);
   const [boardBouncePhase, setBoardBouncePhase] = useState<'idle' | 'bouncing'>('idle');
@@ -166,7 +166,7 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
     [state.board, state.phase, state.pendingTile, state.version],
   );
 
-  const meepleTargets = state.phase === 'PLACING_MEEPLE'
+  const meepleTargets = state.phase === 'PLACING_MEEPLE' && canInteract
     ? controller.getMeepleTargetsForLastTile()
     : [];
 
@@ -413,7 +413,7 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
                   registry={state.board.registry}
                   players={state.players}
                   size={TILE_SIZE}
-                  targets={isAiTurn ? [] : targets}
+                  targets={canInteract ? targets : []}
                   currentPlayerColor={currentPlayer.color}
                   onPlace={ref => controller.placeMeeple(ref)}
                   featureHighlightIds={featureHighlightByTile.get(tile.tileId) ?? []}
@@ -424,7 +424,7 @@ export function BoardView({ state, controller, isAiTurn = false, highlightedCoor
             );
           })}
 
-          {state.phase === 'PLACING_TILE' && state.pendingTile && !isAiTurn && candidates.map(coord => {
+          {state.phase === 'PLACING_TILE' && state.pendingTile && canInteract && candidates.map(coord => {
             const key = `${coord.x},${coord.y}`;
             const preview = controller.previewPlacement(coord, state.pendingRotation);
             const isHovered = hovered === key;
