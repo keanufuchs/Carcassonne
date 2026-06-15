@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
+import { startGame as startGameCore } from './core/game/Game';
+import { getPrototype } from './core/deck/baseGameTiles';
+import { buildSummary } from './test-bridge/scenarioBridge';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -263,7 +266,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="game-layout">
+    <div className="game-layout" data-testid="game-layout">
       <div className="game-sidebar">
         <div className="game-brand">
           <span className="mark">C</span>
@@ -418,6 +421,70 @@ export default function App() {
   }
 
   const [aiModes, setAiModes] = useState<PlayerAIMode[] | undefined>();
+
+  // DEV-only scenario test bridge (see src/test-bridge/scenarioBridge.ts).
+  // Lets the Playwright/YAML runner start a deterministic game and read an
+  // assertable summary. Stripped from production builds via import.meta.env.DEV.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    window.__carcTest = {
+      startScenario({ players, deck }) {
+        clearLocalGame();
+        aiRef.current?.stop?.();
+        aiRef.current = null;
+        const ctrl = createGameController(
+          startGameCore(players, undefined, deck.map(getPrototype)),
+        );
+        localRef.current = ctrl;
+        setAiModes(players.map(() => 'human' as PlayerAIMode));
+        setMode('game');
+      },
+      getSummary() {
+        if (!localRef.current) throw new Error('No active game');
+        return buildSummary(localRef.current.getState());
+      },
+      endGame() {
+        localRef.current?.endGame();
+      },
+      fitBoardView() {
+        window.dispatchEvent(new Event('carc:fit-board-view'));
+      },
+      placeMeepleOnLastTile(localId) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const ref = ctrl.getMeepleTargetsForLastTile().find(r => r.localId === localId);
+        if (!ref) throw new Error(`Segment ${localId} is not a meeple target on the last placed tile`);
+        const result = ctrl.placeMeeple(ref);
+        if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
+      skipMeepleTurn() {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const result = ctrl.skipMeeple();
+        if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
+      previewPlacement(coord, rotation) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        return ctrl.previewPlacement(coord, rotation as 0 | 90 | 180 | 270);
+      },
+      tryPlaceMeepleOnLastTile(localId) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const ref = ctrl.getMeepleTargetsForLastTile().find(r => r.localId === localId)
+          ?? (() => {
+            const lastId = ctrl.getState().lastPlacedTileId;
+            if (!lastId) return undefined;
+            return { tileId: lastId, localId };
+          })();
+        if (!ref) return { ok: false as const, error: 'SEGMENT_NOT_FOUND' };
+        const result = ctrl.placeMeeple(ref);
+        if (result.ok === false) return { ok: false as const, error: result.error };
+        return { ok: true as const };
+      },
+    };
+    return () => { delete window.__carcTest; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleStartNetworkGame(): void {
     networkRef.current?.startGame([]);

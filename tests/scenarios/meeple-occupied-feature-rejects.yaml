@@ -1,0 +1,22 @@
+name: meeple-occupied-feature-rejects
+description: >
+  Ein Meeple darf nur auf ein unbesetztes Feature gesetzt werden. Bob besetzt
+  zuerst die Straße; Alice versucht auf demselben verbundenen Straßen-Feature
+  einen weiteren Meeple zu setzen — die Aktion wird abgelehnt.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-D, at: { x: 1, y: 0 }, rotation: 0, skip: true }
+  - { tile: TILE-D, at: { x: 2, y: 0 }, rotation: 0, meeple: { segment: 1 } }
+  - tile: TILE-D
+    at: { x: 3, y: 0 }
+    rotation: 0
+    meeple: { segment: 1 }
+    rejectMeeple: true
+
+padding: [TILE-B]
+
+expect:
+  placedTiles: 4
+  meeplesAvailable: { Alice: 7, Bob: 6 }

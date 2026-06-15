@@ -75,6 +75,7 @@ export function SegmentHitZone({
           <g
             key={ref.localId}
             className="segment-hit-group"
+            data-segment-local-id={ref.localId}
             style={{ '--player-color': playerColor } as React.CSSProperties}
             onClick={() => onPlace(ref)}
             onMouseEnter={featureId && onHoverFeature ? () => onHoverFeature(featureId) : undefined}

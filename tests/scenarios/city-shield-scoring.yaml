@@ -1,0 +1,24 @@
+name: city-shield-scoring
+description: >
+  Eine Stadt gilt erst als abgeschlossen, wenn alle offenen Stadtseiten geschlossen
+  sind. Kontrollierter 3-Kachel-Stadtaufbau mit Schild: 2 × (3 + 1) = 8 Punkte,
+  Meeple-Rückgabe.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-B, at: { x: 0, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 1, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 1, y: 2 }, rotation: 0, skip: true }
+  - { tile: TILE-E, at: { x: 2, y: 2 }, rotation: 0, meeple: { segment: 0 } }
+  - { tile: TILE-M, at: { x: 2, y: 1 }, rotation: 90, skip: true }
+  - { tile: TILE-E, at: { x: 3, y: 1 }, rotation: 270, skip: true }
+
+padding: [TILE-B]
+
+expect:
+  scores: { Alice: 0, Bob: 8 }
+  meeplesAvailable: { Alice: 7, Bob: 7 }
+  completedFeatures:
+    - { kind: CITY, points: 8, tiles: 3, shieldCount: 1 }
+  placedTiles: 7

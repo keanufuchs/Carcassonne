@@ -6,13 +6,15 @@ interface Props {
   onLeave: () => void;
   imageSrc?: string;
   rotation: number;
+  coord?: { x: number; y: number };
 }
 
-export function GhostTile({ size, legal, onClick, onHover, onLeave, imageSrc, rotation }: Props) {
+export function GhostTile({ size, legal, onClick, onHover, onLeave, imageSrc, rotation, coord }: Props) {
   return (
     <div
       data-testid="ghost-tile"
       data-legal={legal ? 'true' : 'false'}
+      data-coord={coord ? `${coord.x},${coord.y}` : undefined}
       onClick={onClick}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}

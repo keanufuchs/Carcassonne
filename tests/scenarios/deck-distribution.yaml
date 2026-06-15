@@ -1,0 +1,40 @@
+name: deck-distribution
+description: >
+  Die Basisspiel-Verteilung ist vollständig: 79 Nachziehsteine (ohne Startkachel)
+  mit den kanonischen Stückzahlen pro Kacheltyp. Nach dem ersten Zug liegt eine
+  Kachel auf der Hand, 78 verbleiben im Nachziehstapel.
+
+players: [Alice, Bob]
+
+deckFrom: base-game
+
+steps: []
+
+expect:
+  deckRemaining: 78
+  deckTotalTiles: 79
+  deckCounts:
+    TILE-A: 2
+    TILE-B: 4
+    TILE-C: 1
+    TILE-D: 4
+    TILE-E: 5
+    TILE-F: 5
+    TILE-G: 5
+    TILE-H: 3
+    TILE-I: 2
+    TILE-J: 3
+    TILE-K: 3
+    TILE-L: 3
+    TILE-M: 2
+    TILE-N: 3
+    TILE-O: 2
+    TILE-P: 3
+    TILE-Q: 1
+    TILE-R: 3
+    TILE-S: 2
+    TILE-T: 1
+    TILE-U: 8
+    TILE-V: 9
+    TILE-W: 4
+    TILE-X: 1
