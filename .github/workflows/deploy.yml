@@ -40,7 +40,8 @@ jobs:
             cd /var/www/carcassonne-app
 
             # Pull latest code
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             # Install dependencies (production only for server)
             npm ci
