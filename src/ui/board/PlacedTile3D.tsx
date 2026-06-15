@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import type { PlacedTile } from '../../core/tile/Tile';
@@ -17,6 +17,7 @@ import {
 } from '../../three/regionHighlight';
 import { SEGMENT_HIGHLIGHT } from '../../shared/segmentHighlight';
 import { RegionInteractionLayer } from '../../three/RegionInteractionLayer';
+import { DustBurst } from './DustBurst';
 import {
   claimsSignature,
   disposeObject,
@@ -44,10 +45,22 @@ interface Props {
   targets?: SegmentRef[];
   /** When false the interaction/highlight layer is skipped entirely (non-meeple phases). */
   interactive?: boolean;
+  /** Play the drop-in + dust impact once when this tile first mounts (the freshly placed tile). */
+  animateDrop?: boolean;
 }
 
 const EMPTY: ReadonlySet<number> = new Set();
 const _markerWorld = new THREE.Vector3();
+
+/** Height above the board the tile starts at before falling into place. */
+const DROP_HEIGHT = 3.2;
+/** Fall time in seconds; the squash that follows is a short settle. */
+const DROP_DURATION = 0.4;
+const SETTLE_DURATION = 0.18;
+
+const easeOut = (t: number): number => 1 - (1 - t) * (1 - t);
+
+type DropPhase = 'fall' | 'settle' | 'done';
 
 /**
  * One placed tile: procedural geometry + per-feature ownership markers, with a
@@ -55,7 +68,7 @@ const _markerWorld = new THREE.Vector3();
  * board can light the whole feature across tiles; player markers billboard to the
  * camera each frame. The last tile additionally accepts meeple-target clicks.
  */
-export function PlacedTile3D({ placed, registry, players, controller, hover, onHoverFeature, targets, interactive = false }: Props) {
+export function PlacedTile3D({ placed, registry, players, controller, hover, onHoverFeature, targets, interactive = false, animateDrop = false }: Props) {
   const proto = useMemo(() => getPrototype(placed.prototypeId), [placed.prototypeId]);
   const seed = placed.prototypeId;
   const regions = useMemo(() => layoutRegions(proto, seed), [proto, seed]);
@@ -94,6 +107,44 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
       obj.getWorldPosition(_markerWorld);
       const angle = Math.atan2(camera.position.x - _markerWorld.x, camera.position.z - _markerWorld.z);
       obj.rotation.y = angle - rotationY;
+    }
+  });
+
+  // Drop-in + landing squash, played once on the freshly placed tile. We capture
+  // `animateDrop` at mount: each placed tile is keyed by tileId and mounts once,
+  // so the newly placed tile falls while the rest of the board sits still.
+  const shouldDrop = useRef(animateDrop).current;
+  const dropGroupRef = useRef<THREE.Group>(null);
+  const dropState = useRef<{ phase: DropPhase; elapsed: number }>({
+    phase: shouldDrop ? 'fall' : 'done',
+    elapsed: 0,
+  });
+  const [showDust, setShowDust] = useState(false);
+
+  useFrame((_, delta) => {
+    const st = dropState.current;
+    const group = dropGroupRef.current;
+    if (st.phase === 'done' || !group) return;
+    st.elapsed += delta;
+
+    if (st.phase === 'fall') {
+      const t = Math.min(st.elapsed / DROP_DURATION, 1);
+      // Accelerating, gravity-like fall: most of the drop happens late for a snappy impact.
+      group.position.y = DROP_HEIGHT * (1 - t * t);
+      if (t >= 1) {
+        group.position.y = 0;
+        st.phase = 'settle';
+        st.elapsed = 0;
+        setShowDust(true);
+      }
+    } else {
+      const e = easeOut(Math.min(st.elapsed / SETTLE_DURATION, 1));
+      // Brief squash-and-recover at the moment of impact.
+      group.scale.set(1.09 - 0.09 * e, 0.86 + 0.14 * e, 1.09 - 0.09 * e);
+      if (e >= 1) {
+        group.scale.set(1, 1, 1);
+        st.phase = 'done';
+      }
     }
   });
 
@@ -136,11 +187,14 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
 
   return (
     <group position={[placed.coord.x, 0, placed.coord.y]} rotation={[0, rotationY, 0]}>
-      <primitive object={tileGroup} />
-      <primitive object={markers} />
-      {highlightShells.map((shell) => (
-        <primitive key={shell.mesh.uuid} object={shell.mesh} />
-      ))}
+      <group ref={dropGroupRef} position={[0, shouldDrop ? DROP_HEIGHT : 0, 0]}>
+        <primitive object={tileGroup} />
+        <primitive object={markers} />
+        {highlightShells.map((shell) => (
+          <primitive key={shell.mesh.uuid} object={shell.mesh} />
+        ))}
+      </group>
+      {showDust && <DustBurst onComplete={() => setShowDust(false)} />}
       {interactive && (
         <RegionInteractionLayer
           regions={regions}

@@ -145,6 +145,7 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
             onHoverFeature={handleHoverFeature}
             targets={tile.tileId === state.lastPlacedTileId ? meepleTargets : undefined}
             interactive={canInteract && isMeeplePhase && tile.tileId === state.lastPlacedTileId}
+            animateDrop={tile.tileId === state.lastPlacedTileId}
           />
         ))}
 
