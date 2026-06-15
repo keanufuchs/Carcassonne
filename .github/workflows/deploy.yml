@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -28,10 +29,11 @@ jobs:
         env:
           VITE_WS_URL: wss://carcassonne.spelk.de/ws
           VITE_API_URL: https://carcassonne.spelk.de
-
-          VITE_AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          # Intelligent AI agent (EW-02) — baked into the client bundle.
+          # NOTE: VITE_* vars are exposed in the public JS bundle.
           VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
-          VITE_AI_MODELS: ${{ vars.VITE_AI_MODELS }}
+          VITE_AI_BASE_URL: ${{ secrets.VITE_AI_BASE_URL }}
+          VITE_AI_MODELS: ${{ secrets.VITE_AI_MODELS }}
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
@@ -47,19 +49,22 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            # Install dependencies (production only for server)
+            rm -rf node_modules
             npm ci
 
             # Restart backend via PM2
             pm2 restart ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
             pm2 save
 
-      - name: Copy frontend build to webroot
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: 'dist/*'
-          target: '/var/www/carcassonne.spelk.de'
-          strip_components: 1
+      # rsync --delete mirrors the build into the webroot, removing stale
+      # hashed bundles from previous deploys (scp would leave them behind).
+      - name: Deploy frontend to webroot
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            dist/ \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/carcassonne.spelk.de/"
