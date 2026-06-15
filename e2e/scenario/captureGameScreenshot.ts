@@ -17,7 +17,10 @@ export async function dismissEndGameOverlayIfPresent(page: Page): Promise<void> 
  */
 export async function captureGameScreenshot(page: Page): Promise<Buffer | undefined> {
   await dismissEndGameOverlayIfPresent(page);
-  await fitBoardForScreenshot(page);
+  // Best-effort centering: on a large board (e.g. the full-game playthrough with
+  // ~80 tiles) the fit's centroid sanity-check can't settle within tolerance.
+  // Don't let that drop the screenshot — capture the frame regardless.
+  await fitBoardForScreenshot(page).catch(() => { /* keep the best available view */ });
 
   const layout = page.locator('[data-testid="game-layout"]');
   if (await layout.count() === 0) return undefined;

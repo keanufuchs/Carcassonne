@@ -378,6 +378,11 @@ export function BoardView({ state, controller, canInteract = true, highlightedCo
             width: CANVAS_SIZE,
             height: CANVAS_SIZE,
             transform: `translate(${activeTransform.offsetX}px, ${activeTransform.offsetY}px) scale(${activeTransform.scale})`,
+            // The board-canvas defaults to transform-origin: center, so a scaled
+            // transform also shifts by canvasSize/2*(1-scale). Live play stays at
+            // scale 1 (term vanishes), but the screenshot fit zooms out — pin the
+            // origin to the top-left there so boardTransformFor's offset is exact.
+            transformOrigin: screenshotFit ? '0 0' : undefined,
             transition: screenshotFit
               ? undefined
               : showMeepleFocus ? 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' : undefined,

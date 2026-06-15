@@ -5,6 +5,7 @@ import { createGameController } from './controller/GameController';
 import { startGame as startGameCore } from './core/game/Game';
 import { getPrototype } from './core/deck/baseGameTiles';
 import { buildSummary } from './test-bridge/scenarioBridge';
+import { autoPlayToEnd as runAutoPlay } from './test-bridge/autoPlay';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -463,6 +464,11 @@ export default function App() {
       },
       endGame() {
         localRef.current?.endGame();
+      },
+      autoPlayToEnd(seed) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        runAutoPlay(ctrl, seed);
       },
       fitBoardView() {
         window.dispatchEvent(new Event('carc:fit-board-view'));

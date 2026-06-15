@@ -37,6 +37,7 @@ Each test attaches a **`scenario-report`** HTML file (main artifact): scenario d
 | `road-incomplete-endgame` | Offene Straße in Endwertung |
 | `farmer-endgame-scoring` | Farmer nur bei Spielende |
 | `deck-distribution` | Vollständige Basisspiel-Kachelverteilung |
+| `full-game-playthrough` | Komplette Partie deterministisch bis Spielende (kein Regelbruch, kein Absturz, korrekte Endabrechnung) |
 
 > **Mehrheitswertung (2:1):** Pro Feature ist nur ein Meeple vor dem Zusammenwachsen erlaubt; ein 2-gegen-1-Mehrheitsszenario braucht getrennte Feature-Fragmente. Das ist in `tests/core/scoring.test.ts` abgedeckt. `city-shield-scoring` zeigt den Einzelbesetzer-Fall (alle Punkte an einen Spieler).
 
@@ -50,6 +51,7 @@ Each test attaches a **`scenario-report`** HTML file (main artifact): scenario d
 | `steps` | yes* | One entry per turn, in deck order (*leer bei `deckFrom`) |
 | `deckFrom` | no | `base-game` — kanonischer 79-Kachel-Nachziehstapel |
 | `padding` | no | Extra deck tiles after the last step so the game stays mid-game |
+| `autoPlay` | no | `{ seed }` — deterministischer Komplettdurchlauf bis `GAME_OVER` nach den `steps` (für Vollpartie-Tests; `steps` darf leer sein) |
 | `endGame` | no | If `true`, runner calls `endGame()` before asserting |
 | `expect` | yes | Final state to verify |
 
@@ -71,6 +73,7 @@ The deck dealt to the engine is `steps[].tile` followed by `padding`, unless `de
 
 | Field | Description |
 |-------|-------------|
+| `phase` | Expected game phase (z. B. `GAME_OVER` für Vollpartien) |
 | `scores` | Player name → final score |
 | `meeplesAvailable` | Player name → meeples in hand (proves return on completion) |
 | `completedFeatures` | Multiset of `{ kind, points?, tiles?, shieldCount? }` |
@@ -95,6 +98,25 @@ expect:
   completedFeatures:
     - { kind: MONASTERY, points: 9 }
 ```
+
+### Vollpartie (Auto-Play)
+
+```yaml
+name: full-game-playthrough
+players: [Alice, Bob]
+deckFrom: base-game     # 79-Kachel-Stapel, ungemischt → deterministisch
+steps: []               # alle Züge erzeugt der geseedete Auto-Play
+autoPlay: { seed: 1 }   # gleicher Seed → exakt gleiche Partie
+expect:
+  phase: GAME_OVER
+  placedTiles: 80
+  deckRemaining: 0
+  scores: { Alice: 25, Bob: 17 }
+```
+
+> Der Auto-Play routet jeden Zug durch die echte Engine; eine abgelehnte Aktion
+> bricht den Lauf ab (Regelbruch/Absturz → Test rot). Endpunktstände sind bei
+> festem Seed reproduzierbar — neue Werte einmalig per Testlauf ermitteln.
 
 ## Adding a scenario
 

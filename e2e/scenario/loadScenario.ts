@@ -20,8 +20,14 @@ export function loadScenario(file: string): Scenario {
     fail(file, '"players" must list 2..5 names');
   }
   const deckOnly = s.deckFrom === 'base-game';
+  const autoPlay = s.autoPlay !== undefined;
   if (!Array.isArray(s.steps)) fail(file, '"steps" must be a list');
-  if (!deckOnly && s.steps.length === 0) fail(file, '"steps" must be a non-empty list (or use deckFrom: base-game)');
+  if (!deckOnly && !autoPlay && s.steps.length === 0) {
+    fail(file, '"steps" must be a non-empty list (or use deckFrom: base-game / autoPlay)');
+  }
+  if (autoPlay && (typeof s.autoPlay!.seed !== 'number' || !Number.isFinite(s.autoPlay!.seed))) {
+    fail(file, '"autoPlay.seed" must be a finite number');
+  }
 
   s.steps.forEach((step: ScenarioStep, i) => {
     const ctx = `step ${i}`;

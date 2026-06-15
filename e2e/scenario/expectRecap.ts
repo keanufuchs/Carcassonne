@@ -30,6 +30,15 @@ export function evaluateExpectations(scenario: Scenario, summary: ScenarioSummar
   const e = scenario.expect;
   const byName = new Map(summary.players.map(p => [p.name, p]));
 
+  if (e.phase) {
+    checks.push({
+      field: 'phase',
+      expected: e.phase,
+      actual: summary.phase,
+      ok: summary.phase === e.phase,
+    });
+  }
+
   if (e.scores) {
     for (const [name, exp] of Object.entries(e.scores)) {
       const p = byName.get(name);
