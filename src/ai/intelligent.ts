@@ -18,10 +18,51 @@ const MAX_TOOL_ROUNDS = 6;
 
 // ── Credentials ────────────────────────────────────────────────────────────
 
-function getConfig(): { apiKey: string; model: string } | null {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY ?? '';
-  const model  = import.meta.env.VITE_AI_MODEL ?? DEFAULT_MODEL;
-  return apiKey ? { apiKey, model } : null;
+interface AIProviderConfig {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+  /** Hostname for error messages */
+  label: string;
+}
+
+/** Accepts base URL or full …/v1/chat/completions endpoint from env. */
+function normalizeBaseUrl(raw: string): string {
+  let url = raw.trim().replace(/\/+$/, '');
+  if (url.endsWith('/chat/completions')) {
+    url = url.slice(0, -'/chat/completions'.length).replace(/\/+$/, '');
+  }
+  return url;
+}
+
+function getConfig(): AIProviderConfig | null {
+  const model = import.meta.env.VITE_AI_MODEL ?? DEFAULT_MODEL;
+  const customBase = import.meta.env.VITE_AI_BASE_URL?.trim();
+  const customKey  = import.meta.env.VITE_AI_API_KEY ?? '';
+  const orKey      = import.meta.env.VITE_OPENROUTER_API_KEY ?? '';
+
+  if (customBase && customKey) {
+    const baseUrl = normalizeBaseUrl(customBase);
+    let label = 'LLM API';
+    try { label = new URL(baseUrl).hostname; } catch { /* keep default */ }
+    return { apiKey: customKey, model, baseUrl, label };
+  }
+  if (orKey) {
+    return { apiKey: orKey, model, baseUrl: OPENROUTER_BASE, label: 'OpenRouter' };
+  }
+  return null;
+}
+
+function buildRequestHeaders(apiKey: string, baseUrl: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+  };
+  if (baseUrl.includes('openrouter.ai')) {
+    headers['HTTP-Referer'] = 'https://github.com/carcassonne-game';
+    headers['X-Title'] = 'Carcassonne AI';
+  }
+  return headers;
 }
 
 // ── OpenAI-compatible tool definitions ────────────────────────────────────
@@ -285,10 +326,10 @@ interface OAIMessage {
 
 async function _callWithTools(
   state: GameState,
-  apiKey: string,
-  model: string,
+  config: AIProviderConfig,
   onStatus?: (e: AIStatusEvent) => void,
 ): Promise<AIDecision | null> {
+  const { apiKey, model, baseUrl, label } = config;
   const stateJson = serializeState(state);
   let mcpStatusReported = false;
   const playerName = state.players[state.currentPlayerIndex].name;
@@ -309,14 +350,9 @@ async function _callWithTools(
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     roundsCompleted = round + 1;
-    const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://github.com/carcassonne-game',
-        'X-Title': 'Carcassonne AI',
-      },
+      headers: buildRequestHeaders(apiKey, baseUrl),
       body: JSON.stringify({
         model,
         tools: TOOLS,
@@ -326,8 +362,14 @@ async function _callWithTools(
     });
 
     if (!response.ok) {
-      onStatus?.({ type: 'error', message: `OpenRouter ${response.status}: ${response.statusText}` });
-      return done(null);
+      let detail = response.statusText;
+      try {
+        const errBody = await response.json() as { message?: string; error?: string };
+        detail = errBody.message ?? errBody.error ?? detail;
+      } catch { /* non-JSON body */ }
+      const msg = `${label} ${response.status}: ${detail}`;
+      onStatus?.({ type: 'error', message: msg });
+      throw new Error(msg);
     }
 
     const data = await response.json() as {
@@ -435,12 +477,14 @@ function _parseDecisionFromText(text: string, state: GameState): AIDecision | nu
 // ── Public API ─────────────────────────────────────────────────────────────
 
 /**
- * Intelligent AI via OpenRouter (OpenAI-compatible API).
+ * Intelligent AI via an OpenAI-compatible chat/completions API.
  *
- * Supports any model available on openrouter.ai — Claude, GPT-4o, Llama,
- * Mistral, Gemini and more. Defaults to anthropic/claude-sonnet-4-6.
+ * Provider A — custom endpoint (e.g. RH Köln, OpenAI, Ollama):
+ *   VITE_AI_BASE_URL=https://api.ai.rh-koeln.de/v1
+ *   VITE_AI_API_KEY=...
+ *   VITE_AI_MODEL=...                           (optional)
  *
- * Set env vars:
+ * Provider B — OpenRouter (fallback when A is not set):
  *   VITE_OPENROUTER_API_KEY=sk-or-...
  *   VITE_AI_MODEL=anthropic/claude-sonnet-4-6   (optional override)
  *
@@ -460,7 +504,7 @@ export async function computeIntelligentMove(
   try {
     let timedOut = false;
     const result = await Promise.race([
-      _callWithTools(state, config.apiKey, config.model, onStatus),
+      _callWithTools(state, config, onStatus),
       new Promise<null>(resolve => setTimeout(() => { timedOut = true; resolve(null); }, MOVE_TIMEOUT_MS)),
     ]);
     if (result) return result;
