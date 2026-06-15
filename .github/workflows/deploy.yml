@@ -29,6 +29,10 @@ jobs:
           VITE_WS_URL: wss://carcassonne.spelk.de/ws
           VITE_API_URL: https://carcassonne.spelk.de
 
+          VITE_AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
+          VITE_AI_MODELS: ${{ vars.VITE_AI_MODELS }}
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
         with:
