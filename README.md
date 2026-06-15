@@ -28,19 +28,26 @@ When starting a local game, each player can be set to one of four modes:
 
 ---
 
-## Claude AI Setup (OpenRouter)
+## Claude AI Setup
 
-The Claude AI mode uses [OpenRouter](https://openrouter.ai) — one API key that works with Claude, GPT-4o, Llama, Mistral, Gemini and hundreds of other models.
+The Claude AI mode calls any **OpenAI-compatible** `/v1/chat/completions` API with tool use. Two providers are supported — set one in `.env`:
 
-### 1. Get an OpenRouter API key
+### Option A — Custom endpoint (RH Köln, OpenAI, Ollama, …)
 
-Sign up at [openrouter.ai](https://openrouter.ai) and create an API key (`sk-or-...`).
+Takes priority when both base URL and API key are set:
 
-> OpenRouter has a generous free tier and pay-as-you-go pricing. `anthropic/claude-sonnet-4-6` costs ~$3/M tokens.
+```bash
+# .env
+VITE_AI_BASE_URL=https://api.ai.rh-koeln.de/v1
+VITE_AI_API_KEY=your-key-here
+VITE_AI_MODEL=your-model-id
+```
 
-### 2. Set the key
+The full URL `https://api.ai.rh-koeln.de/v1/chat/completions` also works as `VITE_AI_BASE_URL` — the `/chat/completions` suffix is stripped automatically.
 
-Create a `.env` file in the project root:
+### Option B — OpenRouter
+
+[OpenRouter](https://openrouter.ai) — one API key for Claude, GPT-4o, Llama, Mistral, Gemini and hundreds of other models.
 
 ```bash
 # .env
@@ -50,9 +57,11 @@ VITE_OPENROUTER_API_KEY=sk-or-v1-...
 VITE_AI_MODEL=anthropic/claude-sonnet-4-6
 ```
 
-### 3. Use a different model (optional)
+> OpenRouter has a generous free tier and pay-as-you-go pricing. `anthropic/claude-sonnet-4-6` costs ~$3/M tokens.
 
-Any model on openrouter.ai that supports **tool use / function calling** works:
+### Use a different model (optional)
+
+Any model that supports **tool use / function calling** works. OpenRouter examples:
 
 | Model | ID |
 |-------|----|
@@ -63,7 +72,7 @@ Any model on openrouter.ai that supports **tool use / function calling** works:
 | Mistral Large | `mistralai/mistral-large` |
 | Gemini 2.0 Flash | `google/gemini-2.0-flash-001` |
 
-### 4. Start the app
+### Start the app
 
 ```bash
 npm run dev:full
@@ -166,7 +175,9 @@ docs/           — Test system documentation, meeting prep
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_OPENROUTER_API_KEY` | For Claude AI | OpenRouter API key (prefix `sk-or-`) |
-| `VITE_AI_MODEL` | No | Model ID on OpenRouter (default: `anthropic/claude-sonnet-4-6`) |
+| `VITE_AI_BASE_URL` | For custom LLM | OpenAI-compatible base URL, e.g. `https://api.ai.rh-koeln.de/v1` |
+| `VITE_AI_API_KEY` | With `VITE_AI_BASE_URL` | API key for the custom endpoint |
+| `VITE_OPENROUTER_API_KEY` | For OpenRouter | OpenRouter API key (prefix `sk-or-`); used when custom URL/key are not set |
+| `VITE_AI_MODEL` | No | Model ID for the active provider (default: `anthropic/claude-sonnet-4-6`) |
 | `PORT` | No | Game server port (default: 3001) |
 | `MCP_PORT` | No | MCP AI server port (default: 3002) |
