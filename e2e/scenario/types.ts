@@ -28,6 +28,8 @@ export interface ExpectedFeature {
 }
 
 export interface ScenarioExpect {
+  /** Expected game phase (e.g. `GAME_OVER` for a full-game playthrough). */
+  phase?: 'NOT_STARTED' | 'PLACING_TILE' | 'PLACING_MEEPLE' | 'GAME_OVER';
   /** Expected final score, keyed by player name. */
   scores?: Record<string, number>;
   /** Expected meeples in hand, keyed by player name (proves meeple return). */
@@ -51,6 +53,12 @@ export interface Scenario {
   steps: ScenarioStep[];
   /** Use the canonical 72-tile base-game draw pile (ignores step-derived deck). */
   deckFrom?: 'base-game';
+  /**
+   * Drive a complete, deterministic playthrough to GAME_OVER after the (usually
+   * empty) `steps`. The seed makes the whole game reproducible — see the
+   * full-game-playthrough scenario.
+   */
+  autoPlay?: { seed: number };
   /** Filler tiles kept in the deck so the game stays mid-game after the last step. */
   padding?: string[];
   /** If true, the runner triggers end-game scoring before asserting. */

@@ -52,6 +52,12 @@ export interface ScenarioBridge {
   getSummary(): ScenarioSummary;
   /** Force end-game scoring (for incomplete-feature / farmer scenarios). */
   endGame(): void;
+  /**
+   * Play the current game to its natural end with deterministic, rule-compliant
+   * moves seeded by `seed` (full-game playthrough scenario). Throws on any rule
+   * violation or if the game fails to terminate.
+   */
+  autoPlayToEnd(seed: number): void;
   /** Pan/zoom the 2D board so all placed tiles are centered (for screenshots). */
   fitBoardView(): void;
   /** Place a meeple on the last-placed tile (avoids focus-animation click issues in Playwright). */

@@ -72,6 +72,13 @@ export async function runScenario(page: Page, scenario: Scenario): Promise<Scena
     }
   }
 
+  if (scenario.autoPlay) {
+    await page.evaluate(
+      (seed) => window.__carcTest!.autoPlayToEnd(seed),
+      scenario.autoPlay.seed,
+    );
+  }
+
   if (scenario.endGame) {
     await page.evaluate(() => window.__carcTest!.endGame());
   }
