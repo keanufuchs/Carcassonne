@@ -13,11 +13,13 @@ export default defineConfig({
   // ✅ Use HTML reporter instead of line (or combine both)
   reporter: [
     ['line'],
-    ['html', { outputFolder: 'playwright-report/', open: 'never' }],
+    ['html', { outputFolder: 'playwright-report/', open: 'never', noSnippets: true }],
+    ...(process.env.CI ? [['json', { outputFile: 'playwright-report/results.json' }] as const] : []),
   ],
 
   use: {
     baseURL: 'http://localhost:5173',
+    viewport: { width: 1400, height: 900 },
 
     // ✅ Ensure artifacts are actually created
     screenshot: 'only-on-failure',   // or 'on'
@@ -35,7 +37,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:5173',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 10_000,
   },
 });

@@ -1,0 +1,21 @@
+name: edge-matching-legality
+description: >
+  Kanten müssen regelkonform zusammenpassen. Nach einer gültigen Nachbarkachel
+  wird dieselbe Kachel an einer ungültigen Position (Stadt/Feld-Konflikt) und an
+  einer gültigen Position geprüft; nur die regelkonforme Platzierung wird akzeptiert.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-B, at: { x: 0, y: 1 }, rotation: 0, skip: true }
+  - tile: TILE-D
+    placementChecks:
+      - { at: { x: 0, y: -1 }, rotation: 0, legal: false }
+    at: { x: 1, y: 0 }
+    rotation: 0
+    skip: true
+
+padding: [TILE-B]
+
+expect:
+  placedTiles: 3

@@ -16,6 +16,10 @@ export function PlayerPanel({ players, currentPlayerIndex }: Props) {
           <div
             key={p.id}
             className={`player-chip${active ? ' active' : ''}`}
+            data-testid="player-chip"
+            data-player-id={p.id}
+            data-score={p.score}
+            data-meeples={p.meeplesAvailable}
             style={active ? { borderColor: p.color, background: `color-mix(in srgb, ${p.color} 12%, var(--cream))` } : undefined}
           >
             <MeepleIcon color={p.color} size={18} />

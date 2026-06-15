@@ -13,7 +13,7 @@ import { featureHighlightColor } from './board3d';
 interface Props {
   state: GameState;
   controller: GameController;
-  isAiTurn?: boolean;
+  canInteract?: boolean;
 }
 
 const POLAR = Math.PI / 3; // ~60° — locked, no orbit
@@ -50,7 +50,7 @@ function SceneLighting() {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, isAiTurn = false }: Props) {
+export function Board3DView({ state, controller, canInteract = true }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -58,7 +58,7 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
     [state.board.tiles, state.version], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  const placing = state.phase === 'PLACING_TILE' && !!state.pendingTile && !isAiTurn;
+  const placing = state.phase === 'PLACING_TILE' && !!state.pendingTile && canInteract;
 
   // The grid cell under the cursor, snapped from the hover plane (or null).
   const [hoverCoord, setHoverCoord] = useState<Coord | null>(null);
@@ -74,7 +74,7 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
   }, [placing, hoverCoord, state.board, state.pendingRotation, state.version]);
 
   const isMeeplePhase = state.phase === 'PLACING_MEEPLE';
-  const meepleTargets = isMeeplePhase && !isAiTurn ? controller.getMeepleTargetsForLastTile() : [];
+  const meepleTargets = isMeeplePhase && canInteract ? controller.getMeepleTargetsForLastTile() : [];
 
   const [hover, setHover] = useState<BoardHover | null>(null);
   // Nullify hover outside meeple phase so stale state never leaks into highlights.
@@ -126,7 +126,7 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
       <Canvas
-        shadows
+        shadows="percentage"
         camera={{ position: [12, 14, 12], fov: 40 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
@@ -144,7 +144,7 @@ export function Board3DView({ state, controller, isAiTurn = false }: Props) {
             hover={effectiveHover}
             onHoverFeature={handleHoverFeature}
             targets={tile.tileId === state.lastPlacedTileId ? meepleTargets : undefined}
-            interactive={isMeeplePhase && tile.tileId === state.lastPlacedTileId}
+            interactive={canInteract && isMeeplePhase && tile.tileId === state.lastPlacedTileId}
           />
         ))}
 

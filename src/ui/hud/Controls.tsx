@@ -5,9 +5,10 @@ interface Props {
   phase: GamePhase;
   currentPlayerName: string;
   controller: GameController;
+  canInteract?: boolean;
 }
 
-export function Controls({ phase, currentPlayerName, controller }: Props) {
+export function Controls({ phase, currentPlayerName, controller, canInteract = true }: Props) {
   const active = phase === 'PLACING_TILE' || phase === 'PLACING_MEEPLE';
   return (
     <div className="hud-pad controls">
@@ -20,7 +21,7 @@ export function Controls({ phase, currentPlayerName, controller }: Props) {
         )}
         {phase === 'GAME_OVER' && <div className="who">Game Over</div>}
       </div>
-      {phase === 'PLACING_MEEPLE' && (
+      {phase === 'PLACING_MEEPLE' && canInteract && (
         <button data-testid="skip-meeple-btn" className="btn btn-sm btn-ghost btn-block" onClick={() => controller.skipMeeple()}>
           Skip Meeple
         </button>

@@ -1,0 +1,16 @@
+name: road-incomplete-endgame
+description: >
+  Unvollständige Straße wird in der Endwertung mit 1 Punkt pro Kachel bewertet
+  (2 Punkte gesamt); der Meeple bleibt auf dem offenen Feature.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-W, at: { x: -1, y: 0 }, rotation: 0, meeple: { segment: 1 } }
+
+endGame: true
+
+expect:
+  scores: { Alice: 2, Bob: 0 }
+  meeplesAvailable: { Alice: 6, Bob: 7 }
+  placedTiles: 2

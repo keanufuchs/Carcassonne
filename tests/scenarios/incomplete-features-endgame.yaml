@@ -1,0 +1,19 @@
+name: incomplete-features-endgame
+description: >
+  Unvollständige Features werden erst in der Endwertung bewertet. Offene Straße
+  (2 Kacheln): 2 Punkte für Alice. Unvollständiges Kloster mit einem Nachbarfeld:
+  2 Punkte für Bob.
+
+players: [Alice, Bob]
+
+steps:
+  - { tile: TILE-B, at: { x: 0, y: 1 }, rotation: 0, skip: true }
+  - { tile: TILE-B, at: { x: 0, y: 2 }, rotation: 0, meeple: { segment: 0 } }
+  - { tile: TILE-W, at: { x: -1, y: 0 }, rotation: 0, meeple: { segment: 1 } }
+
+endGame: true
+
+expect:
+  scores: { Alice: 2, Bob: 2 }
+  meeplesAvailable: { Alice: 6, Bob: 6 }
+  placedTiles: 4

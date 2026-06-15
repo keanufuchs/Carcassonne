@@ -22,7 +22,7 @@ const MAX_TILES = 50;
 /** Target cadence: one tile placed per second (the wait absorbs turn compute). */
 const TURN_INTERVAL_MS = 250;
 /** Hold a finished board briefly before dealing a fresh one. */
-const RESTART_HOLD_MS = 1000;
+const RESTART_HOLD_MS = 5000;
 
 const delay = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
@@ -68,7 +68,7 @@ export function GameShowcase() {
 
   return (
     <div className="showcase" aria-hidden="true">
-      <Board3DView state={controller.getState()} controller={controller} isAiTurn />
+      <Board3DView state={controller.getState()} controller={controller} canInteract={false} />
     </div>
   );
 }

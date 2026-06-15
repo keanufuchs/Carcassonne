@@ -2,6 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
+import { startGame as startGameCore } from './core/game/Game';
+import { getPrototype } from './core/deck/baseGameTiles';
+import { buildSummary } from './test-bridge/scenarioBridge';
+import { autoPlayToEnd as runAutoPlay } from './test-bridge/autoPlay';
 import { serializeState, deserializeState } from './core/serialize';
 import {
   createGame,
@@ -20,6 +24,7 @@ import type { MoveRecord } from './ui/hud/TurnTimeline';
 import { SetupScreen } from './ui/SetupScreen';
 import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
+import type { GameState } from './core/game/GameState';
 import { executeAITurn } from './ai';
 import type { AIMode as RuntimeAIMode } from './ai';
 import type { AIMode as PlayerAIMode } from './ui/SetupScreen';
@@ -89,10 +94,24 @@ function pushUrl(gameId: string): void {
 
 // ── Game view ──────────────────────────────────────────────────────────────
 
+/** Local hot-seat / AI: human at the table. Network: this client's assigned seat. */
+function canInteract(
+  controller: GameController,
+  state: GameState,
+  aiModes?: PlayerAIMode[],
+): boolean {
+  const isHumanTurn = !aiModes || aiModes[state.currentPlayerIndex] === 'human';
+  if (!isHumanTurn) return false;
+  if ('playerIndex' in controller) {
+    return (controller as NetworkController).playerIndex === state.currentPlayerIndex;
+  }
+  return true;
+}
+
 function GameApp({ controller, aiModes }: { controller: GameController; aiModes?: PlayerAIMode[] }) {
   const state = useGameState();
   const currentPlayer = state.players[state.currentPlayerIndex];
-  const isHumanTurn = !aiModes || aiModes[state.currentPlayerIndex] === 'human';
+  const interactive = canInteract(controller, state, aiModes);
   const aiRunning = useRef(false);
   const activeAiRunRef = useRef(0);
   const pendingReasoningRef = useRef<string | null>(null);
@@ -124,17 +143,18 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
     }, 3000);
   }
 
-  // Auto-draw tile at the start of every turn
+  // Auto-draw tile at the start of every turn (active player only in network games)
   useEffect(() => {
+    if (!interactive) return;
     if (state.phase === 'PLACING_TILE' && state.pendingTile === null) {
       controller.drawTile();
     }
-  }, [state.phase, state.pendingTile, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [interactive, state.phase, state.pendingTile, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard shortcuts (A/D rotate, Esc skip meeple)
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (!isHumanTurn) return;
+      if (!interactive) return;
       const target = event.target as HTMLElement | null;
       if (target?.isContentEditable) return;
       const tag = target?.tagName?.toLowerCase();
@@ -165,7 +185,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [controller, isHumanTurn, state.phase, state.pendingTile]);
+  }, [controller, interactive, state.phase, state.pendingTile]);
 
   // Track move history via direct controller subscription so we never miss a
   // placement that _advanceTurn() resolves inline (before publish() fires).
@@ -263,7 +283,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="game-layout">
+    <div className="game-layout" data-testid="game-layout">
       <div className="game-sidebar">
         <div className="game-brand">
           <span className="mark">C</span>
@@ -278,6 +298,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
             rotation={state.pendingRotation}
             controller={controller}
             deckSize={state.deck.remaining.length}
+            canInteract={interactive}
           />
         </div>
         <div className="sidebar-section">
@@ -285,6 +306,7 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
             phase={state.phase}
             currentPlayerName={currentPlayer?.name ?? ''}
             controller={controller}
+            canInteract={interactive}
           />
         </div>
 
@@ -301,9 +323,9 @@ function GameApp({ controller, aiModes }: { controller: GameController; aiModes?
           <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
         </button>
         {boardView === '3d' ? (
-          <Board3DView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} />
+          <Board3DView state={state} controller={controller} canInteract={interactive} />
         ) : (
-          <BoardView state={state} controller={controller} isAiTurn={!!aiModes && aiModes[state.currentPlayerIndex] !== 'human'} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
+          <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
       </div>
       <div className="game-timeline">
@@ -418,6 +440,75 @@ export default function App() {
   }
 
   const [aiModes, setAiModes] = useState<PlayerAIMode[] | undefined>();
+
+  // DEV-only scenario test bridge (see src/test-bridge/scenarioBridge.ts).
+  // Lets the Playwright/YAML runner start a deterministic game and read an
+  // assertable summary. Stripped from production builds via import.meta.env.DEV.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    window.__carcTest = {
+      startScenario({ players, deck }) {
+        clearLocalGame();
+        aiRef.current?.stop?.();
+        aiRef.current = null;
+        const ctrl = createGameController(
+          startGameCore(players, undefined, deck.map(getPrototype)),
+        );
+        localRef.current = ctrl;
+        setAiModes(players.map(() => 'human' as PlayerAIMode));
+        setMode('game');
+      },
+      getSummary() {
+        if (!localRef.current) throw new Error('No active game');
+        return buildSummary(localRef.current.getState());
+      },
+      endGame() {
+        localRef.current?.endGame();
+      },
+      autoPlayToEnd(seed) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        runAutoPlay(ctrl, seed);
+      },
+      fitBoardView() {
+        window.dispatchEvent(new Event('carc:fit-board-view'));
+      },
+      placeMeepleOnLastTile(localId) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const ref = ctrl.getMeepleTargetsForLastTile().find(r => r.localId === localId);
+        if (!ref) throw new Error(`Segment ${localId} is not a meeple target on the last placed tile`);
+        const result = ctrl.placeMeeple(ref);
+        if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
+      skipMeepleTurn() {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const result = ctrl.skipMeeple();
+        if (result.ok === false) throw new Error(`${result.error}: ${result.message}`);
+      },
+      previewPlacement(coord, rotation) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        return ctrl.previewPlacement(coord, rotation as 0 | 90 | 180 | 270);
+      },
+      tryPlaceMeepleOnLastTile(localId) {
+        const ctrl = localRef.current;
+        if (!ctrl) throw new Error('No active game');
+        const ref = ctrl.getMeepleTargetsForLastTile().find(r => r.localId === localId)
+          ?? (() => {
+            const lastId = ctrl.getState().lastPlacedTileId;
+            if (!lastId) return undefined;
+            return { tileId: lastId, localId };
+          })();
+        if (!ref) return { ok: false as const, error: 'SEGMENT_NOT_FOUND' };
+        const result = ctrl.placeMeeple(ref);
+        if (result.ok === false) return { ok: false as const, error: result.error };
+        return { ok: true as const };
+      },
+    };
+    return () => { delete window.__carcTest; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleStartNetworkGame(): void {
     networkRef.current?.startGame([]);

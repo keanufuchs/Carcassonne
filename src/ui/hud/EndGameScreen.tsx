@@ -37,7 +37,14 @@ export function EndGameScreen({ players, onRestart }: Props) {
           ))}
         </div>
         <div className="endgame-actions">
-          <button className="btn btn-ghost btn-block" onClick={() => setShowMap(true)}>View Map</button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-block"
+            data-testid="view-map-btn"
+            onClick={() => setShowMap(true)}
+          >
+            View Map
+          </button>
           <button className="btn btn-primary btn-block" onClick={onRestart}>Play Again</button>
         </div>
       </div>

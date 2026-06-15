@@ -28,6 +28,11 @@ function basePlate(): THREE.Mesh {
   return mesh;
 }
 
+/** Adds meshes without `group.add(...items)` — spreading an empty array calls `add()` with no args, which Three r184 rejects. */
+function addAll(group: THREE.Object3D, objects: THREE.Object3D[]): void {
+  for (const obj of objects) group.add(obj);
+}
+
 /** Adds one shield banner per shielded city (parts of a city share a localId). */
 function addShieldBanners(group: THREE.Group, proto: TilePrototype, regions: TileRegions): void {
   const done = new Set<number>();
@@ -59,7 +64,7 @@ export function generateTile(proto: TilePrototype, regions: TileRegions, seed: s
     const objects = region.kind === 'CITY'
       ? generateCity(poly, rng, cityPolys)
       : generateField(poly, rng, cityPolys);
-    group.add(...objects);
+    addAll(group, objects);
   }
 
   addShieldBanners(group, proto, regions);
@@ -69,11 +74,11 @@ export function generateTile(proto: TilePrototype, regions: TileRegions, seed: s
   // carries no claim tag and is never recoloured.
   const roadCenterlines: World2[][] = regions.roads.map((road) => road.centerline.map(svgToWorld));
   for (let i = 0; i < regions.roads.length; i++) {
-    group.add(...generateRoad(roadCenterlines[i], regions.roads[i].width / 100));
+    addAll(group, generateRoad(roadCenterlines[i], regions.roads[i].width / 100));
   }
 
   // GATEHOUSE → where a road meets a city wall, straddling the boundary.
-  group.add(...generateGates(cityPolys, roadCenterlines, DETAIL.cityBaseHeight));
+  addAll(group, generateGates(cityPolys, roadCenterlines, DETAIL.cityBaseHeight));
 
   // MONASTERY → cloister building at the marker point.
   for (const marker of regions.markers) {

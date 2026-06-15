@@ -7,6 +7,7 @@ import { createEmptyBoard } from '../board/Board';
 import { canPlace, placeTileInternal, hasAnyLegalPlacement } from '../board/placement';
 import { buildRemainingTiles, START_TILE } from '../deck/baseGameTiles';
 import { shuffle, drawPlaceable } from '../deck/Deck';
+import type { TilePrototype } from '../types/tile';
 import { lookupBySegment } from '../feature/segments';
 import { scoreCompletedMidGame } from '../scoring/midGame';
 import { scoreIncompleteEndGame } from '../scoring/endGame';
@@ -17,6 +18,7 @@ import type { GameState } from './GameState';
 export function startGame(
   playerNames: string[],
   rng: () => number = Math.random,
+  deckOverride?: TilePrototype[],
 ): GameState {
   if (playerNames.length < 2 || playerNames.length > 5) {
     throw new Error('playerCount must be 2..5');
@@ -30,8 +32,13 @@ export function startGame(
     meeplesAvailable: MEEPLES_PER_PLAYER,
   }));
 
-  const deck = { startTile: START_TILE, remaining: buildRemainingTiles() };
-  shuffle(deck, rng);
+  // A deckOverride (used by the scenario test harness) deals tiles in exactly
+  // the given order — no shuffle — so scenarios are fully deterministic.
+  const deck = {
+    startTile: START_TILE,
+    remaining: deckOverride ? [...deckOverride] : buildRemainingTiles(),
+  };
+  if (!deckOverride) shuffle(deck, rng);
 
   const state: GameState = {
     gameId: crypto.randomUUID(),

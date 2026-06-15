@@ -51,14 +51,34 @@ export function useBoardTransform(
   }, []);
 
   const prevFocusRef = useRef<BoardFocusTarget | null>(null);
+  const hasInitialCenterRef = useRef(false);
 
-  // Center start tile (0,0) in viewport after mount
+  const recenter = useCallback((cx: number, cy: number, scale = 1) => {
+    const el = containerRef.current;
+    if (!el || el.clientWidth === 0 || el.clientHeight === 0) return;
+    setTransform(createTransform(el, scale, cx, cy));
+    stopPan();
+  }, [stopPan]);
+
+  // Center the board once the scroll container has a real layout size. On first
+  // paint clientWidth/Height are often 0, which would pin the start tile to (0,0).
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    setTransform(createTransform(el, 1, centerX, centerY));
+
+    const tryInitialCenter = () => {
+      if (hasInitialCenterRef.current || focusTarget) return;
+      if (el.clientWidth === 0 || el.clientHeight === 0) return;
+      setTransform(createTransform(el, 1, centerX, centerY));
+      hasInitialCenterRef.current = true;
+    };
+
+    tryInitialCenter();
+    const ro = new ResizeObserver(tryInitialCenter);
+    ro.observe(el);
+    return () => ro.disconnect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [centerX, centerY, focusTarget]);
 
   // Handle focus-in / focus-out transitions only — never re-center on boundary changes
   useEffect(() => {
@@ -154,5 +174,5 @@ export function useBoardTransform(
     }));
   }, []);
 
-  return { transform, isPanning, onMouseDown, onMouseMove, stopPan };
+  return { transform, isPanning, onMouseDown, onMouseMove, stopPan, recenter };
 }

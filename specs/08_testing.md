@@ -30,6 +30,7 @@ Offen → In Bearbeitung → Review → Erledigt
 ### E2E-Automatisierung (QS-03)
 
 - Playwright-Tests mit zufälligem KI-Gegner (MH-05) für automatisierte vollständige Partien
+- **YAML-Szenario-Framework** (`tests/scenarios/*.yaml`) — deterministische Spielregel-Szenarien gegen echte Engine + 2D-UI (siehe §8.6.1)
 - Testet: vollständige 2-Spieler-Partie vom Start bis Spielende
 - Deckt ab: Kachelplatzierung, Meeple-Platzierung, Scoring, Spielende
 
@@ -367,6 +368,7 @@ Run locally before every PR merge to develop:
 ```bash
 npm test              # Vitest unit + integration
 npm run test:e2e      # Playwright E2E (dev server auto-starts)
+npm run test:scenarios # YAML game-logic scenarios (Playwright)
 npm run lint          # ESLint incl. complexity plugin
 ```
 
@@ -398,6 +400,58 @@ test('random AI plays a full game without crash', async ({ page }) => {
 - Hot-seat player switch works correctly
 
 **Not in E2E scope:** pixel-perfect UI assertions, network multiplayer (covered by integration tests).
+
+### 8.6.1 YAML Scenario Framework (QS-03)
+
+Individual game-rule scenarios are declared as YAML (`tests/scenarios/*.yaml`) and verified in a real Chromium session against the **real engine and 2D BoardView** — no AI, no mocked state. Each file is one reproducible scenario: fixed deck order, DOM-driven tile/meeple clicks, and assertions on a JSON-safe summary from `window.__carcTest` (dev-only; see `src/test-bridge/scenarioBridge.ts`).
+
+```mermaid
+flowchart TD
+  A[Load YAML] --> B[Seed localStorage 2D view]
+  B --> C["startScenario(players, deck)"]
+  C --> D{For each step}
+  D --> E[Assert drawn tile]
+  E --> F[Click rotate-cw]
+  F --> G[Click ghost-tile at coord]
+  G --> H[Click segment or skip meeple]
+  H --> D
+  D --> I{endGame?}
+  I -->|yes| J[endGame hook]
+  I -->|no| K[getSummary]
+  J --> K
+  K --> L[Assert expect block]
+  L --> M[Screenshot final board]
+```
+
+**Runner layout:**
+
+| Path | Role |
+|---|---|
+| `e2e/scenarios.spec.ts` | Globs `tests/scenarios/*.yaml` → one `test(name)` per file |
+| `e2e/scenario/loadScenario.ts` | Parse + validate YAML |
+| `e2e/scenario/runScenario.ts` | Browser automation (clicks + hook calls) |
+| `e2e/scenario/assertions.ts` | Compare `getSummary()` vs `expect` |
+
+**Run:**
+
+```bash
+npm run test:scenarios                              # full suite
+npx playwright test -g "monastery-completion"       # single scenario
+npx playwright show-report                          # HTML report
+```
+
+Each scenario test attaches a **`scenario-report`** HTML artifact (primary): expect field × expected × actual × ✓/✗ table beside the final-board screenshot; placement steps are folded in a `<details>` block. A plain-text **`expect-recap`** is attached for copy/paste.
+
+**Bundled scenarios:**
+
+| File | Rule under test |
+|---|---|
+| `monastery-completion.yaml` | Monastery scores 9 only with all 8 neighbours; meeple returned |
+| `city-shield-scoring.yaml` | Closed city with shield → `2 × (tiles + shields)` |
+| `road-closed-endpoints.yaml` | Closed road → 1 pt/tile, meeple returned |
+| `road-incomplete-endgame.yaml` | Open road at end-game → 1 pt/tile, meeple stays |
+
+Authoring guide: `tests/scenarios/README.md`.
 
 ## 8.7 Code-Metriken (Vorgaben §3 — Analytische QS)
 
