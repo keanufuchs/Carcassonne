@@ -44,7 +44,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            # Install dependencies (production only for server)
+            rm -rf node_modules
             npm ci
 
             # Restart backend via PM2
