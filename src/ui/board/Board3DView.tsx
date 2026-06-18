@@ -16,10 +16,8 @@ interface Props {
   canInteract?: boolean;
 }
 
-const POLAR = Math.PI / 3;       // ~60° — locked isometric pitch
-const AZIMUTH = -Math.PI / 4;    // fixed isometric diagonal
-const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit in rotate mode
-const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit in rotate mode
+const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
+const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit
 
 /** Lab-matched lighting + a directional light whose shadow frustum covers a board. */
 function SceneLighting() {
@@ -199,10 +197,10 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
           makeDefault
           target={[0, 0, 0]}
           enableRotate={shiftHeld}
-          minPolarAngle={shiftHeld ? POLAR_MIN_FREE : POLAR}
-          maxPolarAngle={shiftHeld ? POLAR_MAX_FREE : POLAR}
-          minAzimuthAngle={shiftHeld ? -Infinity : AZIMUTH}
-          maxAzimuthAngle={shiftHeld ? Infinity : AZIMUTH}
+          minPolarAngle={POLAR_MIN_FREE}
+          maxPolarAngle={POLAR_MAX_FREE}
+          minAzimuthAngle={-Infinity}
+          maxAzimuthAngle={Infinity}
           minDistance={2}
           maxDistance={30}
         />
