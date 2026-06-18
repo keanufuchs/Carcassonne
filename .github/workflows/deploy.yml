@@ -1,14 +1,18 @@
-name: Deploy to Production
+name: Deploy
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Build & Deploy
+  deploy-production:
+    name: Build & Deploy (Production)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -31,16 +35,15 @@ jobs:
           VITE_API_URL: https://carcassonne.spelk.de
           # Intelligent AI agent (EW-02) — baked into the client bundle.
           # NOTE: VITE_* vars are exposed in the public JS bundle.
-          # Using hardcoded values instead of secrets to eliminate secret-resolution failures.
-          VITE_AI_API_KEY: "95cd5d95-faa4-4c19-89da-3c955878686d"
-          VITE_AI_BASE_URL: "https://api.ai.rh-koeln.de/v1"
-          VITE_AI_MODELS: "openai-gpt-oss-120b,gemma-4-31b-it,qwen3.6-35b-a3b"
+          VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
+          VITE_AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          VITE_AI_MODELS: ${{ vars.VITE_AI_MODELS }}
           VITE_BUILD_ID: ${{ github.sha }}
 
       - name: Write build ID
         run: echo "${{ github.sha }}" > dist/build-id.txt
 
-      - name: Deploy to VPS
+      - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -50,14 +53,12 @@ jobs:
             set -e
             cd /var/www/carcassonne-app
 
-            # Pull latest code
             git fetch origin main
             git reset --hard origin/main
 
             rm -rf node_modules
             npm ci
 
-            # Restart backend via PM2
             pm2 restart ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs
             pm2 save
 
@@ -73,3 +74,45 @@ jobs:
             -e "ssh -i ~/.ssh/deploy_key" \
             dist/ \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/carcassonne.spelk.de/"
+
+  deploy-staging:
+    name: Build & Deploy (Staging)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build -- --mode production
+        env:
+          VITE_WS_URL: wss://carcassonne.dev.spelk.de/ws
+          VITE_API_URL: https://carcassonne.dev.spelk.de
+          VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
+          VITE_AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          VITE_AI_MODELS: ${{ vars.VITE_AI_MODELS }}
+          VITE_BUILD_ID: ${{ github.sha }}
+
+      - name: Write build ID
+        run: echo "${{ github.sha }}" > dist/build-id.txt
+
+      - name: Deploy frontend to staging webroot
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            dist/ \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/carcassonne.dev.spelk.de/"
