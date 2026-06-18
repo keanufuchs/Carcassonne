@@ -114,6 +114,8 @@ export const TOWN = {
 export const BANNER = {
   /** White used for the meeple emblem and cloth/shield trim. */
   meepleWhite: '#f4f1ea',
+  /** Gold used for the meeple emblem on the tile where the meeple was placed. */
+  meepleGold: '#d4a520',
   /** Weathered timber for poles, crossbars and shield staves. */
   pole: '#6a543a',
   /** Gold cap/finial atop poles. */

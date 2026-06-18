@@ -81,7 +81,11 @@ export function tileClaims(placed: PlacedTile, registry: FeatureRegistry, player
     if (!feature || feature.meeples.length === 0) continue;
     const playerIndex = controllingPlayerIndex(feature, players);
     if (playerIndex < 0) continue;
-    map.set(seg.ref.localId, { localId: seg.ref.localId, kind: seg.kind, playerIndex });
+    const controllerPlayerId = players[playerIndex]?.id;
+    const meepleHere = feature.meeples.some(
+      (m) => m.playerId === controllerPlayerId && m.segmentRef.tileId === placed.tileId,
+    );
+    map.set(seg.ref.localId, { localId: seg.ref.localId, kind: seg.kind, playerIndex, meepleHere: meepleHere || undefined });
   }
   return map;
 }
