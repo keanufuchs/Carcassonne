@@ -3,6 +3,11 @@ import type { TilePrototype } from '../../core/types/tile';
 import type { Rotation } from '../../core/types';
 import type { GameController } from '../../controller/GameController';
 import { TilePreview3D } from './TilePreview3D';
+import tileDistribution from '../../core/deck/tileDistribution.json';
+
+const tileImageMap: Record<string, string> = Object.fromEntries(
+  (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
+);
 
 interface Props {
   tile: TilePrototype | null;
@@ -11,9 +16,10 @@ interface Props {
   deckSize: number;
   canInteract?: boolean;
   canRotate?: boolean;
+  viewMode?: '2d' | '3d';
 }
 
-export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true }: Props) {
+export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true, viewMode = '3d' }: Props) {
   // Mirror the A/D keyboard shortcuts with a visual "pressed" state on the
   // matching button. Purely cosmetic — the actual rotation is handled in App.
   const [pressed, setPressed] = useState<'CCW' | 'CW' | null>(null);
@@ -79,7 +85,16 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
             data-testid="tile-preview-img"
             data-rotation={rotation}
           >
-            <TilePreview3D proto={tile} rotation={rotation} />
+            {viewMode === '3d' ? (
+              <TilePreview3D proto={tile} rotation={rotation} />
+            ) : (
+              <img
+                src={tileImageMap[tile.id] ?? ''}
+                alt={tile.id}
+                draggable={false}
+                style={{ width: '100%', height: '100%', transform: `rotate(${rotation}deg)`, display: 'block' }}
+              />
+            )}
           </div>
           <div className="rotate-row">
             <button data-testid="rotate-ccw-btn" className={`rotate-btn${pressed === 'CCW' ? ' pressed' : ''}`} disabled={!canInteract || !canRotate} onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">

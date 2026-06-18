@@ -361,6 +361,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             deckSize={state.deck.remaining.length}
             canInteract={interactive}
             canRotate={canRotatePreview}
+            viewMode={effectiveBoardView}
           />
         </div>
         <div className="sidebar-section">
@@ -369,6 +370,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             currentPlayerName={currentPlayer?.name ?? ''}
             controller={controller}
             canInteract={interactive}
+            viewMode={effectiveBoardView}
           />
         </div>
         {state.phase === 'GAME_OVER' && showMap && (
@@ -405,7 +407,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       </div>
       {!isMobile && (
         <div className="game-timeline">
-          <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
+          <TurnTimeline moves={moveLog} onHighlight={handleHighlight} viewMode={effectiveBoardView} />
         </div>
       )}
       {isMobile && (
@@ -417,6 +419,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             deckSize={state.deck.remaining.length}
             canInteract={interactive}
             canRotate={canRotatePreview}
+            viewMode={effectiveBoardView}
           />
           {state.phase === 'PLACING_MEEPLE' && interactive && (
             <button

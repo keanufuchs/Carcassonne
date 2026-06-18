@@ -7,6 +7,7 @@ interface Props {
   currentPlayerName: string;
   controller: GameController;
   canInteract?: boolean;
+  viewMode?: '2d' | '3d';
 }
 
 /** How long the player may sit idle in the meeple phase before we nudge them. */
@@ -64,7 +65,7 @@ function useMeepleIdleReminder(armed: boolean): ReminderState {
   return state;
 }
 
-export function Controls({ phase, currentPlayerName, controller, canInteract = true }: Props) {
+export function Controls({ phase, currentPlayerName, controller, canInteract = true, viewMode = '3d' }: Props) {
   const active = phase === 'PLACING_TILE' || phase === 'PLACING_MEEPLE';
   const [showHints, setShowHints] = useState(false);
   const meepleReminder = useMeepleIdleReminder(phase === 'PLACING_MEEPLE' && canInteract);
@@ -115,10 +116,16 @@ export function Controls({ phase, currentPlayerName, controller, canInteract = t
           <div className="control-hints__row"><kbd>A</kbd><kbd>D</kbd> Rotate tile</div>
           <div className="control-hints__row"><kbd>Esc</kbd> Skip meeple</div>
           <div className="control-hints__row"><kbd>LClick</kbd> Place tile</div>
-          <div className="control-hints__row"><kbd>LClick</kbd><kbd>Drag</kbd> Move camera</div>
-          <div className="control-hints__row"><kbd>Shift</kbd><kbd>LClick</kbd><kbd>Drag</kbd> Rotate camera</div>
-          <div className="control-hints__row"><kbd>R</kbd> Reset camera</div>
-          <div className="control-hints__row"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> N / E / S / W</div>
+          <div className="control-hints__row"><kbd>LClick</kbd><kbd>Drag</kbd> Move board</div>
+          {viewMode === '2d' ? (
+            <div className="control-hints__row"><kbd>Wheel</kbd> Zoom board</div>
+          ) : (
+            <>
+              <div className="control-hints__row"><kbd>Shift</kbd><kbd>LClick</kbd><kbd>Drag</kbd> Rotate camera</div>
+              <div className="control-hints__row"><kbd>R</kbd> Reset camera</div>
+              <div className="control-hints__row"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> N / E / S / W</div>
+            </>
+          )}
         </div>
       </div>
     </div>
