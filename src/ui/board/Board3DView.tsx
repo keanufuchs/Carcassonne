@@ -19,16 +19,17 @@ interface Props {
 const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
 const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit
 
-// Initial camera position and orbit constants — shared with CameraHotkeys
-const INIT_POS    = new THREE.Vector3(12, 14, 12);
-const INIT_TARGET = new THREE.Vector3(0, 0, 0);
-const CAM_H = 14; // height above target for cardinal presets
-const CAM_R = 17; // horizontal radius for cardinal presets
+// Derive initial azimuth + pitch from the starting camera position so R resets
+// to exactly those angles regardless of the current zoom level.
+const _initOffset = new THREE.Vector3(12, 14, 12); // INIT_POS - origin
+const _initSph    = new THREE.Spherical().setFromVector3(_initOffset);
+const INIT_THETA  = _initSph.theta; // azimuth  ≈ π/4
+const INIT_PHI    = _initSph.phi;   // polar    ≈ 50°
 
 /**
- * Keyboard shortcuts for camera presets (must live inside Canvas to use useThree).
- *   R          — reset to initial isometric view
- *   1/2/3/4    — snap to North / East / South / West
+ * Keyboard shortcuts for camera angle presets (inside Canvas to access useThree).
+ *   R       — reset azimuth + pitch to initial isometric angles, zoom unchanged
+ *   1/2/3/4 — rotate to North / East / South / West, zoom + pitch unchanged
  */
 function CameraHotkeys() {
   const { camera, controls } = useThree();
@@ -39,25 +40,24 @@ function CameraHotkeys() {
       const ctrl = controls as any;
       if (!ctrl?.update) return;
 
-      const tx = ctrl.target?.x ?? 0;
-      const ty = ctrl.target?.y ?? 0;
-      const tz = ctrl.target?.z ?? 0;
-
-      const fly = (dx: number, dz: number) => {
-        camera.position.set(tx + dx, ty + CAM_H, tz + dz);
+      // Reorient to a new azimuth (and optionally pitch), preserving distance.
+      const applyAngle = (theta: number, phi?: number) => {
+        const offset = new THREE.Vector3().subVectors(camera.position, ctrl.target);
+        const sph = new THREE.Spherical().setFromVector3(offset);
+        sph.theta = theta;
+        if (phi !== undefined) sph.phi = phi;
+        sph.makeSafe();
+        offset.setFromSpherical(sph);
+        camera.position.copy(ctrl.target).add(offset);
         ctrl.update();
       };
 
       switch (e.key) {
-        case 'r': case 'R':
-          camera.position.copy(INIT_POS);
-          ctrl.target.copy(INIT_TARGET);
-          ctrl.update();
-          break;
-        case '1': fly(0,      -CAM_R); break; // North
-        case '2': fly(CAM_R,  0);      break; // East
-        case '3': fly(0,       CAM_R); break; // South
-        case '4': fly(-CAM_R, 0);      break; // West
+        case 'r': case 'R': applyAngle(INIT_THETA, INIT_PHI); break;
+        case '1': applyAngle(Math.PI);        break; // North
+        case '2': applyAngle(Math.PI / 2);    break; // East
+        case '3': applyAngle(0);              break; // South
+        case '4': applyAngle(-Math.PI / 2);   break; // West
       }
     };
 
