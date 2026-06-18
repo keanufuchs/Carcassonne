@@ -205,10 +205,11 @@
 .rotate-btn {
   width: 46px;
   height: 40px;
-  font-size: 22px;
   line-height: 1;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -217,8 +218,12 @@
   box-shadow: 0 3px 0 var(--parchment-deep), var(--shadow-sm);
   transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
+.rotate-key { font-size: 18px; font-weight: 700; }
+.rotate-arrow { font-size: 14px; opacity: 0.7; }
 .rotate-btn:hover { filter: brightness(1.04); }
-.rotate-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--parchment-deep); }
+.rotate-btn:active,
+.rotate-btn.pressed { transform: translateY(2px); box-shadow: 0 1px 0 var(--parchment-deep); }
+.rotate-btn.pressed { filter: brightness(0.96); }
 
 /* ── Controls ───────────────────────────────────────────────────────────── */
 .controls { display: flex; flex-direction: column; gap: 10px; }
@@ -500,6 +505,8 @@
   .mobile-bottombar .deck-pill { display: none; }
   .mobile-bottombar .tile-frame { width: 76px; height: 76px; padding: 4px; }
   .mobile-bottombar .rotate-row { gap: 10px; }
-  .mobile-bottombar .rotate-btn { width: 52px; height: 52px; font-size: 26px; }
+  .mobile-bottombar .rotate-btn { width: 52px; height: 52px; }
+  .mobile-bottombar .rotate-key { font-size: 22px; }
+  .mobile-bottombar .rotate-arrow { font-size: 16px; }
   .mobile-skip-btn { flex-shrink: 0; padding: 10px 14px; }
 }
