@@ -1,11 +1,20 @@
 .board-scroll {
   overflow: hidden;
   flex: 1;
-  background: #2d5016;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   position: relative;
+  /* Aged-map surface: warm sage radial + paper grain + soft vignette.
+     Desaturated so the saturated grass-green of the field tiles still pops,
+     and warm enough to sit naturally next to the parchment UI chrome. */
+  background-color: #9da787;
+  background-image:
+    radial-gradient(140% 110% at 50% 8%, rgba(255, 249, 224, 0.18) 0%, rgba(255, 249, 224, 0) 55%),
+    radial-gradient(100% 90% at 50% 100%, rgba(40, 36, 22, 0.35) 0%, rgba(40, 36, 22, 0) 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.16  0 0 0 0 0.10  0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #b1bb9c 0%, #98a283 55%, #7d876b 100%);
+  background-blend-mode: normal, normal, multiply, normal;
 }
 
 .board-scroll[data-meeple-focus='true']::after {

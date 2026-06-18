@@ -67,6 +67,7 @@ function clearLocalGame(): void {
   localStorage.removeItem(LOCAL_SAVE_MOVELOG_KEY);
   try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
   try { localStorage.removeItem(LOCAL_SAVE_AI_MODELS_KEY); } catch {}
+  try { localStorage.removeItem(BOARD_VIEW_KEY); } catch {}
 }
 
 // ── Board view-mode (2D / 3D) persistence ───────────────────────────────────
@@ -136,6 +137,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const [moveLog, setMoveLog] = useState<MoveRecord[]>(loadLocalMoveLog);
   useEffect(() => { saveLocalMoveLog(moveLog); }, [moveLog]);
   const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
+  const [showMap, setShowMap] = useState(false);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
@@ -325,7 +327,17 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             canInteract={interactive}
           />
         </div>
-
+        {state.phase === 'GAME_OVER' && showMap && (
+          <div className="sidebar-exit">
+            <button
+              type="button"
+              className="btn btn-gold btn-block"
+              onClick={() => { clearLocalGame(); window.location.reload(); }}
+            >
+              Exit
+            </button>
+          </div>
+        )}
       </div>
       <div className="board-area">
         <button
@@ -348,7 +360,12 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
         <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
       </div>
       {state.phase === 'GAME_OVER' && (
-        <EndGameScreen players={state.players} onRestart={() => { clearLocalGame(); window.location.reload(); }} />
+        <EndGameScreen
+          players={state.players}
+          onRestart={() => { clearLocalGame(); window.location.reload(); }}
+          showMap={showMap}
+          onShowMap={() => setShowMap(true)}
+        />
       )}
     </div>
   );
@@ -422,6 +439,7 @@ export default function App() {
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   async function handleCreateGame(playerName: string): Promise<void> {
+    try { localStorage.removeItem(BOARD_VIEW_KEY); } catch {}
     const session = await createGame(playerName);
     saveSession(session);
     pushUrl(session.gameId);

@@ -1,22 +1,18 @@
-import { useState } from 'react';
 import type { Player } from '../../core/types';
 
 interface Props {
   players: Player[];
   onRestart: () => void;
+  showMap: boolean;
+  onShowMap: () => void;
 }
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-export function EndGameScreen({ players, onRestart }: Props) {
-  const [showMap, setShowMap] = useState(false);
+export function EndGameScreen({ players, onRestart, showMap, onShowMap }: Props) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
 
-  if (showMap) {
-    return (
-      <button className="btn btn-gold exit-fab" onClick={onRestart}>Exit</button>
-    );
-  }
+  if (showMap) return null;
 
   return (
     <div className="endgame-overlay">
@@ -41,7 +37,7 @@ export function EndGameScreen({ players, onRestart }: Props) {
             type="button"
             className="btn btn-ghost btn-block"
             data-testid="view-map-btn"
-            onClick={() => setShowMap(true)}
+            onClick={onShowMap}
           >
             View Map
           </button>

@@ -22,16 +22,18 @@
 
 .board-view-toggle {
   position: absolute;
-  top: 14px;
+  /* Sit below the 20px coord ruler with breathing room, so the ruler stays
+     edge-to-edge and the toggle never overlaps the X-axis tick labels. */
+  top: 32px;
   right: 14px;
-  z-index: 5;
+  z-index: 21;
   display: flex;
   gap: 2px;
   padding: 3px;
   border-radius: 999px;
   border: 1px solid var(--panel-edge);
   background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
-  box-shadow: var(--shadow-sm), 0 2px 10px rgba(40, 30, 18, 0.18);
+  box-shadow: var(--shadow-sm), 0 4px 14px rgba(40, 30, 18, 0.22);
   cursor: pointer;
   font-family: var(--font-display);
   font-weight: 900;
@@ -387,9 +389,8 @@
 .score-row .sname { flex: 1; text-align: left; font-weight: 700; color: var(--ink); }
 .score-row .sscore { font-family: var(--font-display); font-weight: 900; font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .endgame-actions { display: flex; gap: 10px; width: 100%; }
-.exit-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 100;
+.sidebar-exit {
+  margin-top: auto;
+  padding: 14px;
+  border-top: 1px solid var(--panel-edge);
 }
