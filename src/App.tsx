@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
@@ -17,6 +17,7 @@ import { Board3DView } from './ui/board/Board3DView';
 import { BoardView } from './ui/board/BoardView';
 import { PlayerPanel } from './ui/hud/PlayerPanel';
 import { TilePreview } from './ui/hud/TilePreview';
+import { getTilePreviewDisplay } from './ui/hud/tilePreviewDisplay';
 import { Controls } from './ui/hud/Controls';
 import { EndGameScreen } from './ui/hud/EndGameScreen';
 import { TurnTimeline } from './ui/hud/TurnTimeline';
@@ -158,6 +159,14 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
   const prevTileKeysRef = useRef<Set<string>>(new Set());
+  const tilePreview = useMemo(() => getTilePreviewDisplay(state), [
+    state.pendingTile,
+    state.pendingRotation,
+    state.phase,
+    state.lastPlacedTileId,
+    state.version,
+  ]);
+  const canRotatePreview = state.phase === 'PLACING_TILE' && tilePreview.tile !== null;
 
   function toggleBoardView() {
     setBoardView(prev => {
@@ -346,11 +355,12 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
         </div>
         <div className="sidebar-section">
           <TilePreview
-            tile={state.pendingTile}
-            rotation={state.pendingRotation}
+            tile={tilePreview.tile}
+            rotation={tilePreview.rotation}
             controller={controller}
             deckSize={state.deck.remaining.length}
             canInteract={interactive}
+            canRotate={canRotatePreview}
           />
         </div>
         <div className="sidebar-section">
@@ -401,11 +411,12 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       {isMobile && (
         <div className="mobile-bottombar">
           <TilePreview
-            tile={state.pendingTile}
-            rotation={state.pendingRotation}
+            tile={tilePreview.tile}
+            rotation={tilePreview.rotation}
             controller={controller}
             deckSize={state.deck.remaining.length}
             canInteract={interactive}
+            canRotate={canRotatePreview}
           />
           {state.phase === 'PLACING_MEEPLE' && interactive && (
             <button

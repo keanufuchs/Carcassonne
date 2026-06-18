@@ -37,6 +37,9 @@ test.describe('Carcassonne MVP', () => {
     await expect(legal.first()).toBeVisible();
     await legal.first().click();
 
+    // Preview stays visible while choosing a meeple
+    await expect(page.locator('[data-testid="tile-preview-img"]')).toBeVisible();
+
     // After placement we enter PLACING_MEEPLE — skip it to confirm board updated
     await page.click('[data-testid="skip-meeple-btn"]');
 

@@ -10,15 +10,16 @@ interface Props {
   controller: GameController;
   deckSize: number;
   canInteract?: boolean;
+  canRotate?: boolean;
 }
 
-export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true }: Props) {
+export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true }: Props) {
   // Mirror the A/D keyboard shortcuts with a visual "pressed" state on the
   // matching button. Purely cosmetic — the actual rotation is handled in App.
   const [pressed, setPressed] = useState<'CCW' | 'CW' | null>(null);
 
   useEffect(() => {
-    if (!canInteract || !tile) return;
+    if (!canInteract || !canRotate || !tile) return;
 
     function dirFor(event: KeyboardEvent): 'CCW' | 'CW' | null {
       const target = event.target as HTMLElement | null;
@@ -47,7 +48,7 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [canInteract, tile]);
+  }, [canInteract, canRotate, tile]);
 
   return (
     <div className="hud-pad tile-preview">
@@ -62,11 +63,11 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
             <TilePreview3D proto={tile} rotation={rotation} />
           </div>
           <div className="rotate-row">
-            <button data-testid="rotate-ccw-btn" className={`rotate-btn${pressed === 'CCW' ? ' pressed' : ''}`} disabled={!canInteract} onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">
+            <button data-testid="rotate-ccw-btn" className={`rotate-btn${pressed === 'CCW' ? ' pressed' : ''}`} disabled={!canInteract || !canRotate} onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">
               <span className="rotate-key">A</span>
               <span className="rotate-arrow">↺</span>
             </button>
-            <button data-testid="rotate-cw-btn"  className={`rotate-btn${pressed === 'CW' ? ' pressed' : ''}`} disabled={!canInteract} onClick={() => controller.rotatePending('CW')}  title="Rotate clockwise (D)">
+            <button data-testid="rotate-cw-btn"  className={`rotate-btn${pressed === 'CW' ? ' pressed' : ''}`} disabled={!canInteract || !canRotate} onClick={() => controller.rotatePending('CW')}  title="Rotate clockwise (D)">
               <span className="rotate-key">D</span>
               <span className="rotate-arrow">↻</span>
             </button>
