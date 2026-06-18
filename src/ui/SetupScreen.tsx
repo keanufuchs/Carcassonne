@@ -81,6 +81,31 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
     return () => window.removeEventListener('resize', updateIndicator);
   }, [tab]);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | 'auto'>('auto');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const newHeight = entry.contentRect.height;
+        setHeight(newHeight);
+        if (isMounted.current) {
+          setIsTransitioning(true);
+        }
+      }
+    });
+    observer.observe(contentRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const [localPlayers, setLocalPlayers] = useState<PlayerSetup[]>([
     { name: 'Player 1', aiMode: 'human' },
     { name: 'Random AI', aiMode: 'random' },
@@ -129,8 +154,17 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
           <p className="hero-sub">Build cities, claim roads, outwit your rivals.</p>
         </header>
 
-        <div className="card menu-card">
-          <div className="seg" role="tablist">
+        <div
+          className="card menu-card"
+          style={{
+            height: height === 'auto' ? 'auto' : `${height + 56}px`,
+            transition: isTransitioning ? 'height 0.28s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+            overflow: isTransitioning ? 'hidden' : 'visible',
+          }}
+          onTransitionEnd={() => setIsTransitioning(false)}
+        >
+          <div ref={contentRef}>
+            <div className="seg" role="tablist">
             <div className="seg-indicator" style={indicatorStyle} />
             {tabs.map(t => (
               <button
@@ -252,6 +286,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
           )}
 
           {error && <div className="error-banner">{error}</div>}
+          </div>
         </div>
       </div>
     </div>
