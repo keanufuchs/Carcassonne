@@ -85,6 +85,20 @@ function saveBoardViewMode(mode: BoardViewMode): void {
   try { localStorage.setItem(BOARD_VIEW_KEY, mode); } catch { /* quota */ }
 }
 
+// Mobile breakpoint mirrors the CSS @media block in game.css.
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  );
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 768px)');
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
+}
+
 // ── Network session persistence ────────────────────────────────────────────
 
 function getGameIdFromUrl(): string | null {
@@ -136,7 +150,9 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
   const [moveLog, setMoveLog] = useState<MoveRecord[]>(loadLocalMoveLog);
   useEffect(() => { saveLocalMoveLog(moveLog); }, [moveLog]);
+  const isMobile = useIsMobile();
   const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
+  const effectiveBoardView: BoardViewMode = isMobile ? '3d' : boardView;
   const [showMap, setShowMap] = useState(false);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
@@ -300,8 +316,26 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const canEndGame = state.phase === 'PLACING_TILE' || state.phase === 'PLACING_MEEPLE';
+
   return (
-    <div className="game-layout" data-testid="game-layout">
+    <div className={`game-layout${isMobile ? ' is-mobile' : ''}`} data-testid="game-layout">
+      {isMobile ? (
+        <div className="mobile-topbar">
+          <PlayerPanel players={state.players} currentPlayerIndex={state.currentPlayerIndex} />
+          {canEndGame && (
+            <button
+              type="button"
+              data-testid="end-game-btn"
+              className="btn btn-sm btn-danger mobile-endgame-btn"
+              onClick={() => controller.endGame()}
+              aria-label="End Game"
+            >
+              End Game
+            </button>
+          )}
+        </div>
+      ) : (
       <div className="game-sidebar">
         <div className="game-brand">
           <span className="mark">C</span>
@@ -339,26 +373,51 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           </div>
         )}
       </div>
+      )}
       <div className="board-area">
-        <button
-          type="button"
-          className="board-view-toggle"
-          onClick={toggleBoardView}
-          aria-label={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
-          title={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
-        >
-          <span className={boardView === '2d' ? 'is-active' : ''}>2D</span>
-          <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
-        </button>
-        {boardView === '3d' ? (
+        {!isMobile && (
+          <button
+            type="button"
+            className="board-view-toggle"
+            onClick={toggleBoardView}
+            aria-label={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
+            title={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
+          >
+            <span className={boardView === '2d' ? 'is-active' : ''}>2D</span>
+            <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
+          </button>
+        )}
+        {effectiveBoardView === '3d' ? (
           <Board3DView state={state} controller={controller} canInteract={interactive} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
       </div>
-      <div className="game-timeline">
-        <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
-      </div>
+      {!isMobile && (
+        <div className="game-timeline">
+          <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
+        </div>
+      )}
+      {isMobile && (
+        <div className="mobile-bottombar">
+          <TilePreview
+            tile={state.pendingTile}
+            rotation={state.pendingRotation}
+            controller={controller}
+            deckSize={state.deck.remaining.length}
+            canInteract={interactive}
+          />
+          {state.phase === 'PLACING_MEEPLE' && interactive && (
+            <button
+              data-testid="skip-meeple-btn"
+              className="btn btn-sm btn-ghost mobile-skip-btn"
+              onClick={() => controller.skipMeeple()}
+            >
+              Skip Meeple
+            </button>
+          )}
+        </div>
+      )}
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen
           players={state.players}
