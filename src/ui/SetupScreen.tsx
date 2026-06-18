@@ -95,10 +95,6 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
 
       <div className="menu-stage">
         <header className="hero-head">
-          <span className="hero-crest">
-            <span className="dot" />
-            <span className="eyebrow">The Classic Tile-Laying Game</span>
-          </span>
           <h1 className="hero-title">Carcas<span className="accent">sonne</span></h1>
           <p className="hero-sub">Build cities, claim roads, outwit your rivals.</p>
         </header>
