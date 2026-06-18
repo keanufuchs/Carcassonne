@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
+import { useAnimatedDisclosure } from './hooks/useAnimatedDisclosure';
 
 interface Option {
   value: string;
@@ -13,7 +14,7 @@ interface SimpleSelectProps {
 }
 
 export function SimpleSelect({ value, options, onChange, title }: SimpleSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, isClosing, expanded, close, toggle } = useAnimatedDisclosure();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find(o => o.value === value) ?? options[0];
@@ -21,16 +22,16 @@ export function SimpleSelect({ value, options, onChange, title }: SimpleSelectPr
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        close();
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [close]);
 
   return (
     <div
-      className="custom-select-container"
+      className={`custom-select-container${expanded ? ' is-open' : ''}`}
       ref={containerRef}
       style={{
         position: 'relative',
@@ -42,7 +43,7 @@ export function SimpleSelect({ value, options, onChange, title }: SimpleSelectPr
         type="button"
         className="select custom-select-trigger"
         title={title}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggle}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -51,8 +52,6 @@ export function SimpleSelect({ value, options, onChange, title }: SimpleSelectPr
           textAlign: 'left',
           padding: '9px 10px',
           justifyContent: 'space-between',
-          background: 'var(--cream)',
-          border: '2px solid var(--panel-edge)',
           borderRadius: 'var(--radius-sm)',
           cursor: 'pointer',
           color: 'var(--ink)',
@@ -70,7 +69,7 @@ export function SimpleSelect({ value, options, onChange, title }: SimpleSelectPr
           style={{
             fontSize: '9px',
             opacity: 0.6,
-            transform: isOpen ? 'rotate(180deg)' : 'none',
+            transform: expanded ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.15s ease',
             flexShrink: 0,
           }}
@@ -81,7 +80,7 @@ export function SimpleSelect({ value, options, onChange, title }: SimpleSelectPr
 
       {isOpen && (
         <div
-          className="custom-select-dropdown"
+          className={`custom-select-dropdown${isClosing ? ' is-closing' : ''}`}
           style={{
             position: 'absolute',
             top: 'calc(100% + 4px)',
@@ -107,7 +106,7 @@ export function SimpleSelect({ value, options, onChange, title }: SimpleSelectPr
               className="custom-select-option"
               onClick={() => {
                 onChange(o.value);
-                setIsOpen(false);
+                close();
               }}
               style={{
                 display: 'flex',

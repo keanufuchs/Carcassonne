@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { HumanIcon, DiceIcon, BrainIcon, RobotIcon } from './icons/Icons';
+import { useAnimatedDisclosure } from './hooks/useAnimatedDisclosure';
 import type { AIMode } from './SetupScreen';
 
 interface Option {
@@ -14,7 +15,7 @@ interface CustomSelectProps {
 }
 
 export function CustomSelect({ value, onChange }: CustomSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, isClosing, expanded, close, toggle } = useAnimatedDisclosure();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const options: Option[] = [
@@ -29,16 +30,16 @@ export function CustomSelect({ value, onChange }: CustomSelectProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        close();
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [close]);
 
   return (
     <div
-      className="custom-select-container"
+      className={`custom-select-container${expanded ? ' is-open' : ''}`}
       ref={containerRef}
       style={{
         position: 'relative',
@@ -49,7 +50,7 @@ export function CustomSelect({ value, onChange }: CustomSelectProps) {
       <button
         type="button"
         className="select custom-select-trigger"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggle}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -58,8 +59,6 @@ export function CustomSelect({ value, onChange }: CustomSelectProps) {
           textAlign: 'left',
           padding: '9px 10px',
           justifyContent: 'space-between',
-          background: 'var(--cream)',
-          border: '2px solid var(--panel-edge)',
           borderRadius: 'var(--radius-sm)',
           cursor: 'pointer',
           color: 'var(--ink)',
@@ -74,12 +73,12 @@ export function CustomSelect({ value, onChange }: CustomSelectProps) {
           {selectedOption.icon}
           <span style={{ whiteSpace: 'nowrap' }}>{selectedOption.label}</span>
         </div>
-        <span style={{ fontSize: '9px', opacity: 0.6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease', flexShrink: 0 }}>▼</span>
+        <span style={{ fontSize: '9px', opacity: 0.6, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease', flexShrink: 0 }}>▼</span>
       </button>
 
       {isOpen && (
         <div
-          className="custom-select-dropdown"
+          className={`custom-select-dropdown${isClosing ? ' is-closing' : ''}`}
           style={{
             position: 'absolute',
             top: 'calc(100% + 4px)',
@@ -104,7 +103,7 @@ export function CustomSelect({ value, onChange }: CustomSelectProps) {
               className="custom-select-option"
               onClick={() => {
                 onChange(o.value);
-                setIsOpen(false);
+                close();
               }}
               style={{
                 display: 'flex',
