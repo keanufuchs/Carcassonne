@@ -123,6 +123,16 @@ function pushUrl(gameId: string): void {
   window.history.pushState({}, '', url.toString());
 }
 
+function clearUrl(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('game');
+  window.history.pushState({}, '', url.toString());
+}
+
+function removeSession(gameId: string): void {
+  try { localStorage.removeItem(`carc_session_${gameId}`); } catch { /* ignore */ }
+}
+
 // ── Game view ──────────────────────────────────────────────────────────────
 
 /** Local hot-seat / AI: human at the table. Network: this client's assigned seat. */
@@ -537,6 +547,16 @@ export default function App() {
     setMode('connecting');
   }
 
+  function handleLeaveLobby(): void {
+    const nc = networkRef.current;
+    nc?.leave();
+    networkRef.current = null;
+    if (lobbyInfo) removeSession(lobbyInfo.gameId);
+    clearUrl();
+    setLobbyInfo(null);
+    setMode('setup');
+  }
+
   function handleStartLocal(players: import('./ui/SetupScreen').PlayerSetup[]): void {
     clearLocalGame();
     aiRef.current?.stop?.();
@@ -664,6 +684,7 @@ export default function App() {
         lobbyInfo={lobbyInfo}
         gameId={lobbyInfo.gameId}
         onStart={handleStartNetworkGame}
+        onLeave={handleLeaveLobby}
       />
     );
   }

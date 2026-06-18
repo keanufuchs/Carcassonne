@@ -62,6 +62,8 @@ export interface LobbyInfo {
 export interface NetworkController extends GameController {
   readonly playerIndex: number;
   subscribeLobby(listener: (info: LobbyInfo) => void): Unsubscribe;
+  /** Tear down the transport (stops polling / closes the socket). */
+  leave(): void;
 }
 
 // ── HTTP helpers ───────────────────────────────────────────────────────────
@@ -276,6 +278,8 @@ export function createNetworkController(session: NetworkSession): NetworkControl
 
     subscribe(listener)      { return pubsub.subscribe(listener); },
     subscribeLobby(listener) { return lobbyPubsub.subscribe(listener); },
+
+    leave() { transport.stop(); },
   };
 
   return controller;

@@ -8,10 +8,11 @@ const COLORS = ['#c4583a', '#5f9444', '#d8a93f', '#4d6275', '#8a6fa0'];
 interface Props {
   lobbyInfo: LobbyInfo;
   onStart: () => void;
+  onLeave: () => void;
   gameId: string;
 }
 
-export function LobbyScreen({ lobbyInfo, onStart, gameId }: Props) {
+export function LobbyScreen({ lobbyInfo, onStart, onLeave, gameId }: Props) {
   const inviteUrl = `${window.location.origin}${window.location.pathname}?game=${gameId}`;
   const canStart = lobbyInfo.isHost && lobbyInfo.players.length >= 2;
 
@@ -68,6 +69,10 @@ export function LobbyScreen({ lobbyInfo, onStart, gameId }: Props) {
             ) : (
               <div className="waiting-note">Waiting for the host to start…</div>
             )}
+
+            <button className="btn btn-ghost btn-block" onClick={onLeave}>
+              {lobbyInfo.isHost ? 'Close Lobby' : 'Leave Lobby'}
+            </button>
           </div>
         </div>
       </div>
