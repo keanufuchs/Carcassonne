@@ -93,8 +93,11 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
 
   const pendingProto = state.pendingTile;
 
-  // Camera rotation via Shift + left-drag
-  const controlsRef = useRef<any>(null);
+  // Camera rotation via Shift + left-drag.
+  // three-stdlib OrbitControls already inverts LEFT when a modifier key is held:
+  //   LEFT=PAN + shift → rotate (if enableRotate)
+  //   LEFT=PAN + no modifier → pan
+  // So we only need to gate enableRotate on shiftHeld — no mouseButtons override needed.
   const [shiftHeld, setShiftHeld] = useState(false);
 
   useEffect(() => {
@@ -107,14 +110,6 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
       window.removeEventListener('keyup',   onKeyUp);
     };
   }, []);
-
-  // Switch left mouse button between pan ↔ rotate imperatively;
-  // the angle constraints are handled declaratively on MapControls below.
-  useEffect(() => {
-    const controls = controlsRef.current;
-    if (!controls) return;
-    controls.mouseButtons.LEFT = shiftHeld ? THREE.MOUSE.ROTATE : THREE.MOUSE.PAN;
-  }, [shiftHeld]);
 
   // Track the last cell + the pointer-down position so we only re-render on a
   // cell change and don't place a tile at the end of a camera drag.
@@ -201,7 +196,6 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
         )}
 
         <MapControls
-          ref={controlsRef}
           makeDefault
           target={[0, 0, 0]}
           enableRotate={shiftHeld}
