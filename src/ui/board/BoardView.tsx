@@ -255,7 +255,7 @@ export function BoardView({ state, controller, canInteract = true, highlightedCo
     containerRef,
     CENTER_X,
     CENTER_Y,
-    meepleFocusTarget,
+    null,
   );
 
   // DEV/scenario hook: frame every placed tile in the viewport (see __carcTest.fitBoardView).
@@ -383,9 +383,7 @@ export function BoardView({ state, controller, canInteract = true, highlightedCo
             // scale 1 (term vanishes), but the screenshot fit zooms out — pin the
             // origin to the top-left there so boardTransformFor's offset is exact.
             transformOrigin: screenshotFit ? '0 0' : undefined,
-            transition: screenshotFit
-              ? undefined
-              : showMeepleFocus ? 'transform 260ms cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
+            transition: undefined,
           }}
         >
           {placedTiles.map(tile => {
