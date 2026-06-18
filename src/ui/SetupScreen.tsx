@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { GameShowcase } from './GameShowcase';
 import { MeepleIcon } from './board/MeepleIcon';
 import { getAvailableModels, getDefaultModel } from '../ai/models';
@@ -53,6 +53,34 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [createName, setCreateName] = useState('');
   const [joinCode, setJoinCode]     = useState(initialGameId ?? '');
   const [joinName, setJoinName]     = useState('');
+  const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
+    local: null,
+    create: null,
+    join: null,
+  });
+  const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+
+  useEffect(() => {
+    function updateIndicator() {
+      const activeBtn = tabRefs.current[tab];
+      if (activeBtn) {
+        setIndicatorStyle({
+          left: activeBtn.offsetLeft,
+          width: activeBtn.offsetWidth,
+          opacity: 1,
+        });
+      }
+    }
+
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [tab]);
+
   const [localPlayers, setLocalPlayers] = useState<PlayerSetup[]>([
     { name: 'Player 1', aiMode: 'human' },
     { name: 'Random AI', aiMode: 'random' },
@@ -103,9 +131,11 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
 
         <div className="card menu-card">
           <div className="seg" role="tablist">
+            <div className="seg-indicator" style={indicatorStyle} />
             {tabs.map(t => (
               <button
                 key={t.id}
+                ref={el => { tabRefs.current[t.id] = el; }}
                 role="tab"
                 aria-selected={tab === t.id}
                 className="seg-btn"
