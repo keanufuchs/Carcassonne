@@ -6,6 +6,8 @@ import {
   polygonBounds, pointInPolygon, distToPolygonEdge,
 } from './util';
 
+const CLOTH_ROUGHNESS = 0.75;
+
 /**
  * Banner-based ownership markers. Pure Three.js geometry primitives plus the
  * anchor maths that decides where each marker stands. Orchestration (which
@@ -148,53 +150,105 @@ export function meepleEmblem(height: number, color = BANNER.meepleWhite): THREE.
 
 // ── Markers ──────────────────────────────────────────────────────────────────
 
+/** Round-arch tombstone silhouette (Shape in local XY, hem at y=0, crest at y=h). */
+function tombstoneSilhouette(w: number, h: number): THREE.Shape {
+  const shape = new THREE.Shape();
+  const hw = w / 2;
+  shape.moveTo(-hw, 0);
+  shape.lineTo(-hw, h * 0.55);
+  shape.quadraticCurveTo(-hw, h, 0, h);
+  shape.quadraticCurveTo(hw, h, hw, h * 0.55);
+  shape.lineTo(hw, 0);
+  shape.closePath();
+  return shape;
+}
+
 /**
- * A gonfalon: timber pole + crossbar + hanging cloth (swallowtail hem) in the
- * player colour, with a white meeple emblem on the cloth. Built around the
- * origin, then positioned/scaled by the caller via the returned group.
+ * Cloth hood that drapes over the tombstone crest: a slightly expanded copy of
+ * the upper silhouette with a gently scalloped hem. The hood is extruded across
+ * the stone's depth plus an overhang on both sides so it visually wraps the top.
+ */
+function hoodSilhouette(stoneW: number, stoneH: number, hemFraction: number, crestFraction: number, widthFactor: number): { shape: THREE.Shape; hemY: number; topY: number } {
+  const hemY = stoneH * hemFraction;
+  const topY = stoneH * crestFraction;
+  const hw = (stoneW * widthFactor) / 2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw, hemY + 0.012);
+  shape.lineTo(-hw, stoneH * 0.62);
+  shape.quadraticCurveTo(-hw, topY, 0, topY);
+  shape.quadraticCurveTo(hw, topY, hw, stoneH * 0.62);
+  shape.lineTo(hw, hemY + 0.012);
+  shape.quadraticCurveTo(hw * 0.55, hemY - 0.012, hw * 0.25, hemY + 0.005);
+  shape.quadraticCurveTo(0, hemY + 0.018, -hw * 0.25, hemY + 0.005);
+  shape.quadraticCurveTo(-hw * 0.55, hemY - 0.012, -hw, hemY + 0.012);
+  shape.closePath();
+  return { shape, hemY, topY };
+}
+
+/** Soil mound + two flanking rubble stones + a small pebble + two grass tufts. */
+function addTombstoneBase(group: THREE.Group, w: number, d: number): void {
+  const mound = shadowMesh(roundedBox(w + 0.10, 0.022, d + 0.08, 0.4), standard(BANNER.tombstoneMound));
+  mound.position.y = 0.011;
+  group.add(mound);
+
+  const rubbleL = shadowMesh(roundedBox(0.045, 0.038, 0.04, 0.5), standard(BANNER.tombstoneRubble));
+  rubbleL.position.set(-w * 0.62, 0.019, d * 0.45);
+  rubbleL.rotation.y = 0.4;
+  group.add(rubbleL);
+
+  const rubbleR = shadowMesh(roundedBox(0.05, 0.032, 0.044, 0.5), standard('#a59c89'));
+  rubbleR.position.set(w * 0.62, 0.016, d * 0.55);
+  rubbleR.rotation.y = -0.6;
+  group.add(rubbleR);
+
+  const pebble = shadowMesh(new THREE.SphereGeometry(0.011, 8, 6), standard('#bfb6a3'));
+  pebble.position.set(-w * 0.15, 0.011, d * 0.7);
+  pebble.scale.set(1, 0.6, 1.2);
+  group.add(pebble);
+
+  const grassMat = new THREE.MeshStandardMaterial({ color: BANNER.tombstoneGrass, roughness: 0.95, flatShading: true });
+  for (const [x, z, s] of [[-w * 0.4, d * 0.6, 1] as const, [w * 0.4, d * 0.7, 0.85] as const]) {
+    const tuft = shadowMesh(new THREE.ConeGeometry(0.011 * s, 0.028 * s, 5), grassMat);
+    tuft.position.set(x, 0.014 * s, z);
+    group.add(tuft);
+  }
+}
+
+/**
+ * City/field ownership marker: a weathered round-arched tombstone with a player-
+ * coloured fabric hood draped over the crest and a meeple emblem on the front
+ * of the hood. The hood is one continuous extruded solid (not a flat banner),
+ * which reads as fabric thickness instead of a paper-thin pennant. Built around
+ * the origin, then positioned/scaled by the caller via the returned group.
  */
 export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
-  const g = BANNER.gonfalon;
+  const t = BANNER.tombstone;
   const group = new THREE.Group();
-  const poleMat = standard(BANNER.pole);
 
-  const pole = shadowMesh(
-    new THREE.CylinderGeometry(g.poleRadius, g.poleRadius, g.poleHeight, 6), poleMat,
-  );
-  pole.position.y = g.poleHeight / 2;
-  group.add(pole);
+  // Tombstone slab.
+  const stoneGeo = new THREE.ExtrudeGeometry(tombstoneSilhouette(t.stoneW, t.stoneH), {
+    depth: t.stoneD, bevelEnabled: true, bevelSize: 0.005, bevelThickness: 0.005, bevelSegments: 2, curveSegments: 18,
+  });
+  stoneGeo.translate(0, 0, -t.stoneD / 2);
+  const stone = shadowMesh(stoneGeo, standard(BANNER.tombstoneStone));
+  group.add(stone);
 
-  const finial = shadowMesh(new THREE.SphereGeometry(g.poleRadius * 1.8, 6, 5), standard(BANNER.finial));
-  finial.position.y = g.poleHeight;
-  group.add(finial);
+  addTombstoneBase(group, t.stoneW, t.stoneD);
 
-  const crossbar = shadowMesh(
-    roundedBox(g.crossbarWidth, g.crossbarThickness, g.crossbarThickness, 0.3), poleMat,
-  );
-  crossbar.position.y = g.poleHeight - 0.01;
-  group.add(crossbar);
+  // Hood: one solid 3D cap wrapping the upper portion of the stone.
+  const hood = hoodSilhouette(t.stoneW, t.stoneH, t.hemFraction, t.crestFraction, t.hoodWidthFactor);
+  const hoodDepth = t.stoneD + 2 * t.hoodOverhangDepth;
+  const hoodGeo = new THREE.ExtrudeGeometry(hood.shape, {
+    depth: hoodDepth, bevelEnabled: true, bevelSize: t.hoodBevel, bevelThickness: t.hoodBevel, bevelSegments: 3, curveSegments: 24,
+  });
+  hoodGeo.translate(0, 0, -hoodDepth / 2);
+  const hoodMat = new THREE.MeshStandardMaterial({ color, roughness: CLOTH_ROUGHNESS, metalness: 0 });
+  const hoodMesh = shadowMesh(hoodGeo, hoodMat);
+  group.add(hoodMesh);
 
-  // Hanging cloth: a thin box with a swallowtail notch cut from the bottom.
-  const clothTop = g.poleHeight - 0.02;
-  const notch = g.clothHeight * g.tailNotch;
-  const clothShape = new THREE.Shape();
-  const hw = g.clothWidth / 2;
-  clothShape.moveTo(-hw, 0);
-  clothShape.lineTo(-hw, -g.clothHeight);
-  clothShape.lineTo(-hw / 2, -g.clothHeight + notch);
-  clothShape.lineTo(0, -g.clothHeight);
-  clothShape.lineTo(hw / 2, -g.clothHeight + notch);
-  clothShape.lineTo(hw, -g.clothHeight);
-  clothShape.lineTo(hw, 0);
-  clothShape.closePath();
-  const clothGeo = new THREE.ExtrudeGeometry(clothShape, { depth: g.clothThickness, bevelEnabled: false });
-  const cloth = new THREE.Mesh(clothGeo, standard(color));
-  cloth.castShadow = true;
-  cloth.position.set(0, clothTop, g.clothThickness / 2);
-  group.add(cloth);
-
-  const emblem = meepleEmblem(g.clothHeight * g.emblemFraction, emblemColor);
-  emblem.position.set(0, clothTop - g.clothHeight * 0.5, g.clothThickness + 0.001);
+  // Meeple emblem inset on the hood's front face.
+  const emblem = meepleEmblem((hood.topY - hood.hemY) * t.emblemFraction, emblemColor);
+  emblem.position.set(0, (hood.topY + hood.hemY) / 2, hoodDepth / 2 + t.hoodBevel + 0.001);
   group.add(emblem);
 
   group.scale.setScalar(scale);

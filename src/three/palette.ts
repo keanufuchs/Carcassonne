@@ -120,19 +120,34 @@ export const BANNER = {
   pole: '#6a543a',
   /** Gold cap/finial atop poles. */
   finial: '#caa94a',
-  /** Gonfalon (city/field) base geometry, in world units before per-use scaling. */
-  gonfalon: {
-    poleHeight: 0.34,
-    poleRadius: 0.007,
-    crossbarWidth: 0.16,
-    crossbarThickness: 0.008,
-    /** Hanging cloth size; the swallowtail notch is `tailNotch` of clothHeight. */
-    clothWidth: 0.14,
-    clothHeight: 0.17,
-    clothThickness: 0.006,
-    tailNotch: 0.16,
-    /** Emblem (meeple) height as a fraction of clothHeight. */
-    emblemFraction: 0.55,
+  /** Weathered stone colour for the tombstone slab. */
+  tombstoneStone: '#b7afa0',
+  /** Soil/grass colour at the foot of the tombstone. */
+  tombstoneMound: '#6b8a52',
+  /** Tone of the rubble stones flanking the tombstone. */
+  tombstoneRubble: '#b1a895',
+  /** Tone of the grass tufts around the tombstone base. */
+  tombstoneGrass: '#7aa85a',
+  /**
+   * City/field claim marker: a weathered round-arched tombstone with a player-
+   * coloured fabric hood draped over the upper half. Geometry is in world units
+   * before per-use scaling.
+   */
+  tombstone: {
+    /** Stone slab dimensions (width × height × depth). */
+    stoneW: 0.18,
+    stoneH: 0.22,
+    stoneD: 0.05,
+    /** Hood overhang relative to the stone (width +12%, depth +2 × 0.011). */
+    hoodWidthFactor: 1.12,
+    hoodOverhangDepth: 0.011,
+    /** Hood vertical extent on the stone: hem at hemFraction·H, crest at crestFraction·H. */
+    hemFraction: 0.38,
+    crestFraction: 1.03,
+    /** Soft bevel on the hood (size = thickness in world units). */
+    hoodBevel: 0.012,
+    /** Meeple emblem height as a fraction of the hood's visible height. */
+    emblemFraction: 0.45,
     /** Multipliers applied to the whole marker per feature. */
     cityScale: 1.4,
     fieldScale: 0.82,
