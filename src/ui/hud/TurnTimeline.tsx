@@ -1,10 +1,23 @@
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import type { ToolCallEntry } from './toolCallAccumulator';
 import type { HeuristicAnalysis } from '../../ai/heuristic';
+import type { Rotation } from '../../core/types';
+import { prototypeById } from '../../core/deck/baseGameTiles';
+import { getTileSnapshot } from '../../three/tileSnapshot';
 
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
 );
+
+/** The move thumbnail: 3D snapshots in 3D mode, original SVG tiles in 2D mode. */
+function MoveThumb({ prototypeId, rotation, viewMode }: { prototypeId: string; rotation: number; viewMode: '2d' | '3d' }) {
+  const proto = prototypeById.get(prototypeId);
+  const snapshot = viewMode === '3d' && proto ? getTileSnapshot(proto, rotation as Rotation) : null;
+  if (snapshot) {
+    return <img src={snapshot} alt={prototypeId} />;
+  }
+  return <img src={tileImageMap[prototypeId] ?? ''} alt={prototypeId} style={{ transform: `rotate(${rotation}deg)` }} />;
+}
 
 export interface MoveRecord {
   turn: number;
@@ -46,7 +59,7 @@ function HeuristicRow({ label, value, positive, dim }: { label: string; value: s
   );
 }
 
-function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x: number; y: number }) => void }) {
+function MoveCard({ m, onHighlight, viewMode }: { m: MoveRecord; onHighlight?: (coord: { x: number; y: number }) => void; viewMode: '2d' | '3d' }) {
   const isReasoningAiMove = m.aiMode === 'intelligent' || !!m.reasoning || !!m.reasoningUnavailableReason;
   const reasoningText = m.reasoning?.trim();
 
@@ -58,11 +71,7 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div className="thumb">
-          <img
-            src={tileImageMap[m.prototypeId] ?? ''}
-            alt={m.prototypeId}
-            style={{ transform: `rotate(${m.rotation}deg)` }}
-          />
+          <MoveThumb prototypeId={m.prototypeId} rotation={m.rotation} viewMode={viewMode} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="move-pname" style={{ color: m.playerColor }}>{m.playerName}</div>
@@ -111,9 +120,10 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
 interface Props {
   moves: MoveRecord[];
   onHighlight?: (coord: { x: number; y: number }) => void;
+  viewMode?: '2d' | '3d';
 }
 
-export function TurnTimeline({ moves, onHighlight }: Props) {
+export function TurnTimeline({ moves, onHighlight, viewMode = '3d' }: Props) {
   const reversed = [...moves].reverse();
 
   return (
@@ -126,7 +136,7 @@ export function TurnTimeline({ moves, onHighlight }: Props) {
         {moves.length === 0 ? (
           <div className="timeline-empty">No moves yet</div>
         ) : (
-          reversed.map((m) => <MoveCard key={m.turn} m={m} onHighlight={onHighlight} />)
+          reversed.map((m) => <MoveCard key={m.turn} m={m} onHighlight={onHighlight} viewMode={viewMode} />)
         )}
       </div>
     </>

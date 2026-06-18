@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { GameShowcase } from './GameShowcase';
 import { MeepleIcon } from './board/MeepleIcon';
 import { getAvailableModels, getDefaultModel } from '../ai/models';
+import { CustomSelect } from './CustomSelect';
+import { SimpleSelect } from './SimpleSelect';
 import './styles/menu.css';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
@@ -51,6 +53,59 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [createName, setCreateName] = useState('');
   const [joinCode, setJoinCode]     = useState(initialGameId ?? '');
   const [joinName, setJoinName]     = useState('');
+  const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
+    local: null,
+    create: null,
+    join: null,
+  });
+  const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+
+  useEffect(() => {
+    function updateIndicator() {
+      const activeBtn = tabRefs.current[tab];
+      if (activeBtn) {
+        setIndicatorStyle({
+          left: activeBtn.offsetLeft,
+          width: activeBtn.offsetWidth,
+          opacity: 1,
+        });
+      }
+    }
+
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [tab]);
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | 'auto'>('auto');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const newHeight = entry.contentRect.height;
+        setHeight(newHeight);
+        if (isMounted.current) {
+          setIsTransitioning(true);
+        }
+      }
+    });
+    observer.observe(contentRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const [localPlayers, setLocalPlayers] = useState<PlayerSetup[]>([
     { name: 'Player 1', aiMode: 'human' },
     { name: 'Random AI', aiMode: 'random' },
@@ -95,19 +150,26 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
 
       <div className="menu-stage">
         <header className="hero-head">
-          <span className="hero-crest">
-            <span className="dot" />
-            <span className="eyebrow">The Classic Tile-Laying Game</span>
-          </span>
           <h1 className="hero-title">Carcas<span className="accent">sonne</span></h1>
           <p className="hero-sub">Build cities, claim roads, outwit your rivals.</p>
         </header>
 
-        <div className="card menu-card">
-          <div className="seg" role="tablist">
+        <div
+          className="card menu-card"
+          style={{
+            height: height === 'auto' ? 'auto' : `${height + 56}px`,
+            transition: isTransitioning ? 'height 0.28s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+            overflow: isTransitioning ? 'hidden' : 'visible',
+          }}
+          onTransitionEnd={() => setIsTransitioning(false)}
+        >
+          <div ref={contentRef}>
+            <div className="seg" role="tablist">
+            <div className="seg-indicator" style={indicatorStyle} />
             {tabs.map(t => (
               <button
                 key={t.id}
+                ref={el => { tabRefs.current[t.id] = el; }}
                 role="tab"
                 aria-selected={tab === t.id}
                 className="seg-btn"
@@ -159,54 +221,52 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
               <label className="field-label">Players ({localPlayers.length}/5)</label>
               <div className="player-rows">
                 {localPlayers.map((p, i) => (
-                  <div key={i} className="player-row">
-                    <span style={{ flexShrink: 0 }}>
-                      <MeepleIcon color={MEEPLE_COLORS[i] ?? '#888'} size={22} />
-                    </span>
-                    <input className="input" value={p.name} placeholder={`Player ${i + 1}`}
-                      onChange={e => {
-                        const n = [...localPlayers];
-                        n[i] = { ...n[i], name: e.target.value };
-                        setLocalPlayers(n);
-                      }} />
-                    <select
-                      className="select"
-                      value={p.aiMode}
-                      onChange={e => {
-                        const n = [...localPlayers];
-                        const newMode = e.target.value as AIMode;
-                        const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
-                        const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
-                          : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
-                        const aiModel = newMode === 'intelligent' ? (n[i].aiModel ?? getDefaultModel()) : undefined;
-                        n[i] = { ...n[i], aiMode: newMode, name, aiModel };
-                        setLocalPlayers(n);
-                      }}
-                    >
-                      <option value="human">👤 Human</option>
-                      <option value="random">🎲 Random AI</option>
-                      <option value="heuristic">🧠 Heuristic AI</option>
-                      <option value="intelligent">🤖 Reasoning AI</option>
-                    </select>
-                    {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
-                      <select
-                        className="select"
-                        title="Reasoning-AI model"
-                        value={p.aiModel ?? getDefaultModel()}
+                  <div key={i} className="player-entry">
+                    <div className="player-row">
+                      <span style={{ flexShrink: 0 }}>
+                        <MeepleIcon color={MEEPLE_COLORS[i] ?? '#888'} size={22} />
+                      </span>
+                      <input className="input" value={p.name} placeholder={`Player ${i + 1}`}
                         onChange={e => {
                           const n = [...localPlayers];
-                          n[i] = { ...n[i], aiModel: e.target.value };
+                          n[i] = { ...n[i], name: e.target.value };
+                          setLocalPlayers(n);
+                        }} />
+                      <CustomSelect
+                        value={p.aiMode}
+                        onChange={newMode => {
+                          const n = [...localPlayers];
+                          const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
+                          const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
+                            : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
+                          const aiModel = newMode === 'intelligent' ? (n[i].aiModel ?? getDefaultModel()) : undefined;
+                          n[i] = { ...n[i], aiMode: newMode, name, aiModel };
                           setLocalPlayers(n);
                         }}
-                      >
-                        {AI_MODELS.map(m => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                    )}
-                    {localPlayers.length > 2 && (
-                      <button className="row-remove" title="Remove player"
-                        onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}>✕</button>
+                      />
+                      {localPlayers.length > 2 && (
+                        <button className="row-remove" title="Remove player"
+                          onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}>✕</button>
+                      )}
+                    </div>
+                    {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
+                      <div className="player-row player-model-row">
+                        <span style={{ flexShrink: 0, width: 22 }} aria-hidden="true" />
+                        <label className="model-label">Model</label>
+                        <SimpleSelect
+                          title="Reasoning-AI model"
+                          value={p.aiModel ?? getDefaultModel()}
+                          options={AI_MODELS.map(m => ({ value: m, label: m }))}
+                          onChange={model => {
+                            const n = [...localPlayers];
+                            n[i] = { ...n[i], aiModel: model };
+                            setLocalPlayers(n);
+                          }}
+                        />
+                        {localPlayers.length > 2 && (
+                          <span className="row-remove-spacer" aria-hidden="true" />
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -226,6 +286,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
           )}
 
           {error && <div className="error-banner">{error}</div>}
+          </div>
         </div>
       </div>
     </div>

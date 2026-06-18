@@ -12,6 +12,7 @@ import { buildClaimMarkers } from '../../three/claimMarkers';
 import {
   buildRegionHighlightShells,
   disableTileContentRaycast,
+  setTileMeepleTargets,
   setTileRegionHighlight,
   type RegionHighlightShell,
 } from '../../three/regionHighlight';
@@ -165,10 +166,17 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
   const highlightShells = useMemo(() => buildRegionHighlightShells(regions), [regions]);
 
   // Drive the shell visibility + emissive highlight whenever the active set or
-  // colour changes. Runs on every tile so the whole feature lights up.
+  // colour changes. On the tile being claimed (it has meeple `targets`), every
+  // placeable segment keeps a subtle persistent glow and the hovered feature is
+  // emphasised; all other tiles just light up the hovered feature.
   useEffect(() => {
-    setTileRegionHighlight(tileGroup, highlightShells, activeLocalIds, hover?.color ?? SEGMENT_HIGHLIGHT.glowColor);
-  }, [tileGroup, highlightShells, activeLocalIds, hover?.color]);
+    const hoverColor = hover?.color ?? SEGMENT_HIGHLIGHT.glowColor;
+    if (clickableLocalIds) {
+      setTileMeepleTargets(tileGroup, highlightShells, clickableLocalIds, activeLocalIds, hoverColor);
+    } else {
+      setTileRegionHighlight(tileGroup, highlightShells, activeLocalIds, hoverColor);
+    }
+  }, [tileGroup, highlightShells, clickableLocalIds, activeLocalIds, hover?.color]);
 
   // Clean up shells on unmount.
   useEffect(() => () => {

@@ -9,6 +9,7 @@ import { coordKey } from '../../core/types';
 import { PlacedTile3D, type BoardHover } from './PlacedTile3D';
 import { GhostTile3D } from './GhostTile3D';
 import { featureHighlightColor } from './board3d';
+import { playTilePlacementSound } from '../sound/tileSound';
 
 interface Props {
   state: GameState;
@@ -107,6 +108,17 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
     [state.board.tiles, state.version], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
+  // Play the same wooden placement click as the 2D view whenever a new tile
+  // lands on the board (matches the drop animation keyed on lastPlacedTileId).
+  const previousPlacedTileIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentTileId = state.lastPlacedTileId;
+    const previousTileId = previousPlacedTileIdRef.current;
+    previousPlacedTileIdRef.current = currentTileId ?? null;
+    if (!currentTileId || currentTileId === previousTileId) return;
+    playTilePlacementSound();
+  }, [state.lastPlacedTileId]);
+
   const placing = state.phase === 'PLACING_TILE' && !!state.pendingTile && canInteract;
 
   // The grid cell under the cursor, snapped from the hover plane (or null).
@@ -148,6 +160,8 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
   const [shiftHeld, setShiftHeld] = useState(false);
 
   useEffect(() => {
+    if (!canInteract) return;
+
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(true); };
     const onKeyUp   = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(false); };
     window.addEventListener('keydown', onKeyDown);
@@ -156,7 +170,7 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup',   onKeyUp);
     };
-  }, []);
+  }, [canInteract]);
 
   // Track the last cell + the pointer-down position so we only re-render on a
   // cell change and don't place a tile at the end of a camera drag.
@@ -191,14 +205,14 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
   }, [ghost, controller]);
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: shiftHeld ? 'crosshair' : undefined }}>
+    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: canInteract && shiftHeld ? 'crosshair' : undefined }}>
       <Canvas
         shadows="percentage"
         camera={{ position: [12, 14, 12], fov: 40 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
         <SceneLighting />
-        <CameraHotkeys />
+        {canInteract && <CameraHotkeys />}
         {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
         <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
 
@@ -245,8 +259,11 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
 
         <MapControls
           makeDefault
+          enabled={canInteract}
           target={[0, 0, 0]}
-          enableRotate={shiftHeld}
+          enablePan={canInteract}
+          enableZoom={canInteract}
+          enableRotate={canInteract && shiftHeld}
           minPolarAngle={POLAR_MIN_FREE}
           maxPolarAngle={POLAR_MAX_FREE}
           minAzimuthAngle={-Infinity}

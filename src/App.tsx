@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
@@ -17,6 +17,7 @@ import { Board3DView } from './ui/board/Board3DView';
 import { BoardView } from './ui/board/BoardView';
 import { PlayerPanel } from './ui/hud/PlayerPanel';
 import { TilePreview } from './ui/hud/TilePreview';
+import { getTilePreviewDisplay } from './ui/hud/tilePreviewDisplay';
 import { Controls } from './ui/hud/Controls';
 import { EndGameScreen } from './ui/hud/EndGameScreen';
 import { TurnTimeline } from './ui/hud/TurnTimeline';
@@ -122,6 +123,16 @@ function pushUrl(gameId: string): void {
   window.history.pushState({}, '', url.toString());
 }
 
+function clearUrl(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('game');
+  window.history.pushState({}, '', url.toString());
+}
+
+function removeSession(gameId: string): void {
+  try { localStorage.removeItem(`carc_session_${gameId}`); } catch { /* ignore */ }
+}
+
 // ── Game view ──────────────────────────────────────────────────────────────
 
 /** Local hot-seat / AI: human at the table. Network: this client's assigned seat. */
@@ -158,6 +169,14 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
   const prevTileKeysRef = useRef<Set<string>>(new Set());
+  const tilePreview = useMemo(() => getTilePreviewDisplay(state), [
+    state.pendingTile,
+    state.pendingRotation,
+    state.phase,
+    state.lastPlacedTileId,
+    state.version,
+  ]);
+  const canRotatePreview = state.phase === 'PLACING_TILE' && tilePreview.tile !== null;
 
   function toggleBoardView() {
     setBoardView(prev => {
@@ -338,7 +357,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       ) : (
       <div className="game-sidebar">
         <div className="game-brand">
-          <span className="mark">C</span>
+          <img src="/favicon.svg" className="mark" alt="Carcassonne Logo" />
           <span className="name">Carcassonne</span>
         </div>
         <div className="sidebar-section">
@@ -346,11 +365,13 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
         </div>
         <div className="sidebar-section">
           <TilePreview
-            tile={state.pendingTile}
-            rotation={state.pendingRotation}
+            tile={tilePreview.tile}
+            rotation={tilePreview.rotation}
             controller={controller}
             deckSize={state.deck.remaining.length}
             canInteract={interactive}
+            canRotate={canRotatePreview}
+            viewMode={effectiveBoardView}
           />
         </div>
         <div className="sidebar-section">
@@ -359,6 +380,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             currentPlayerName={currentPlayer?.name ?? ''}
             controller={controller}
             canInteract={interactive}
+            viewMode={effectiveBoardView}
           />
         </div>
         {state.phase === 'GAME_OVER' && showMap && (
@@ -395,17 +417,19 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       </div>
       {!isMobile && (
         <div className="game-timeline">
-          <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
+          <TurnTimeline moves={moveLog} onHighlight={handleHighlight} viewMode={effectiveBoardView} />
         </div>
       )}
       {isMobile && (
         <div className="mobile-bottombar">
           <TilePreview
-            tile={state.pendingTile}
-            rotation={state.pendingRotation}
+            tile={tilePreview.tile}
+            rotation={tilePreview.rotation}
             controller={controller}
             deckSize={state.deck.remaining.length}
             canInteract={interactive}
+            canRotate={canRotatePreview}
+            viewMode={effectiveBoardView}
           />
           {state.phase === 'PLACING_MEEPLE' && interactive && (
             <button
@@ -521,6 +545,16 @@ export default function App() {
     nc.subscribeLobby(info => { setLobbyInfo(info); setMode('lobby'); });
     nc.subscribe(() => setMode('game'));
     setMode('connecting');
+  }
+
+  function handleLeaveLobby(): void {
+    const nc = networkRef.current;
+    nc?.leave();
+    networkRef.current = null;
+    if (lobbyInfo) removeSession(lobbyInfo.gameId);
+    clearUrl();
+    setLobbyInfo(null);
+    setMode('setup');
   }
 
   function handleStartLocal(players: import('./ui/SetupScreen').PlayerSetup[]): void {
@@ -650,6 +684,7 @@ export default function App() {
         lobbyInfo={lobbyInfo}
         gameId={lobbyInfo.gameId}
         onStart={handleStartNetworkGame}
+        onLeave={handleLeaveLobby}
       />
     );
   }

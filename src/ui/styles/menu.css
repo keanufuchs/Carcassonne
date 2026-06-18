@@ -113,13 +113,27 @@
 
 /* ── Player rows (local setup) ──────────────────────────────────────────── */
 .player-rows { display: flex; flex-direction: column; gap: 9px; }
+.player-entry { display: flex; flex-direction: column; gap: 6px; }
 .player-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-.player-row .input { flex: 2; }
+.player-row .input { flex: 2; min-width: 0; }
 .player-row .select { flex: 1.4; }
+.player-model-row .model-label {
+  flex: 2;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink-soft, var(--ink));
+  opacity: 0.7;
+}
+.row-remove-spacer {
+  flex-shrink: 0;
+  width: 38px;
+}
 .row-remove {
   flex-shrink: 0;
   width: 38px;
@@ -147,6 +161,45 @@
   transition: all 0.15s ease;
 }
 .add-player:hover { border-color: var(--gold); color: var(--gold-deep); background: rgba(216, 169, 63, 0.06); }
+
+/* ── Custom dropdowns (CustomSelect / SimpleSelect) ─────────────────────── */
+.custom-select-trigger {
+  background: var(--cream);
+  border: 2px solid var(--panel-edge);
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.custom-select-trigger:hover {
+  border-color: var(--gold);
+  background: var(--parchment);
+}
+.custom-select-trigger:focus-visible {
+  border-color: var(--gold);
+  box-shadow: var(--ring);
+}
+.custom-select-container.is-open .custom-select-trigger {
+  border-color: var(--gold);
+  background: var(--parchment);
+}
+
+@keyframes selectOpen {
+  from { opacity: 0; transform: translateY(-6px) scaleY(0.96); }
+  to   { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+.custom-select-dropdown {
+  transform-origin: top center;
+  animation: selectOpen 0.16s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.custom-select-dropdown.is-closing {
+  animation: selectOpen 0.13s cubic-bezier(0.4, 0, 1, 1) reverse both;
+  pointer-events: none;
+}
+
+.custom-select-option { transition: background 0.12s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-select-dropdown,
+  .custom-select-dropdown.is-closing { animation: none; }
+}
 
 /* ── Lobby ──────────────────────────────────────────────────────────────── */
 .code-stamp {

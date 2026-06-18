@@ -137,8 +137,11 @@ export function tagSegmentMeshes(root: THREE.Object3D, localId: number, kind: Se
   });
 }
 
+/** Default emissive strength of an active highlight; targets glow more subtly. */
+const HL_INTENSITY = 0.52;
+
 /** Applies or removes an emissive highlight (default gold) on a tagged mesh material. */
-export function setMeshHighlight(mesh: THREE.Mesh, on: boolean, color?: string): void {
+export function setMeshHighlight(mesh: THREE.Mesh, on: boolean, color?: string, intensity: number = HL_INTENSITY): void {
   const glow = color ? _glowScratch.set(color) : GLOW_COLOR;
   const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   for (const material of materials) {
@@ -152,7 +155,7 @@ export function setMeshHighlight(mesh: THREE.Mesh, on: boolean, color?: string):
         } satisfies SavedMaterialHighlight;
       }
       material.emissive.copy(glow);
-      material.emissiveIntensity = 0.52;
+      material.emissiveIntensity = intensity;
       const saved = material.userData[MATERIAL_HL_KEY] as SavedMaterialHighlight;
       material.color.setHex(saved.color);
       material.color.multiplyScalar(SEGMENT_HIGHLIGHT.brightness);
@@ -256,6 +259,48 @@ export function setHighlightedLocalIds(
   for (const shell of shells) {
     const on = activeLocalIds.has(shell.localId);
     shell.mesh.visible = on;
-    if (on) (shell.mesh.material as THREE.MeshBasicMaterial).color.set(color);
+    if (on) {
+      const mat = shell.mesh.material as THREE.MeshBasicMaterial;
+      mat.color.set(color);
+      mat.opacity = SEGMENT_HIGHLIGHT.glowOpacity;
+    }
   }
+}
+
+/** Subtle persistent glow for placeable (but un-hovered) meeple targets. */
+const TARGET_GLOW_OPACITY = 0.24;
+const TARGET_GLOW_INTENSITY = 0.3;
+
+/**
+ * Meeple-placement highlight for the last placed tile: every placeable segment
+ * gets a subtle persistent glow so the player can see where a meeple may go,
+ * and the feature currently under the pointer is emphasised in `hoverColor`.
+ * Segments that are neither a target nor hovered are cleared.
+ */
+export function setTileMeepleTargets(
+  tileGroup: THREE.Object3D,
+  shells: readonly RegionHighlightShell[],
+  targetLocalIds: ReadonlySet<number>,
+  hoveredLocalIds: ReadonlySet<number>,
+  hoverColor: string = SEGMENT_HIGHLIGHT.glowColor,
+): void {
+  for (const shell of shells) {
+    const hovered = hoveredLocalIds.has(shell.localId);
+    const target = targetLocalIds.has(shell.localId);
+    shell.mesh.visible = hovered || target;
+    if (!shell.mesh.visible) continue;
+    const mat = shell.mesh.material as THREE.MeshBasicMaterial;
+    mat.color.set(hovered ? hoverColor : SEGMENT_HIGHLIGHT.glowColor);
+    mat.opacity = hovered ? SEGMENT_HIGHLIGHT.glowOpacity : TARGET_GLOW_OPACITY;
+  }
+  tileGroup.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const segId = obj.userData[SEGMENT_MESH_TAG] as number | undefined;
+    if (segId === undefined) return;
+    const hovered = hoveredLocalIds.has(segId);
+    const target = targetLocalIds.has(segId);
+    if (hovered) setMeshHighlight(obj, true, hoverColor);
+    else if (target) setMeshHighlight(obj, true, SEGMENT_HIGHLIGHT.glowColor, TARGET_GLOW_INTENSITY);
+    else setMeshHighlight(obj, false);
+  });
 }

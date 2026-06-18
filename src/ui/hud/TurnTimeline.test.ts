@@ -48,4 +48,11 @@ describe('TurnTimeline reasoning display', () => {
 
     expect(html).not.toContain('move-section-label');
   });
+
+  it('uses the original SVG tile image in 2D mode', () => {
+    const html = renderToStaticMarkup(React.createElement(TurnTimeline, { moves: [baseMove], viewMode: '2d' }));
+
+    expect(html).toContain('/tiles/tile-a.svg');
+    expect(html).not.toContain('data:image/');
+  });
 });

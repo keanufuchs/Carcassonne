@@ -77,15 +77,7 @@
 .game-brand .mark {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, var(--terracotta), var(--terracotta-deep));
-  box-shadow: 0 3px 0 #7f3420, var(--shadow-sm);
-  display: grid;
-  place-items: center;
-  color: #fff5ec;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 20px;
+  display: block;
 }
 .game-brand .name {
   font-family: var(--font-display);
@@ -205,10 +197,11 @@
 .rotate-btn {
   width: 46px;
   height: 40px;
-  font-size: 22px;
   line-height: 1;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -217,11 +210,87 @@
   box-shadow: 0 3px 0 var(--parchment-deep), var(--shadow-sm);
   transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
+.rotate-key { font-size: 18px; font-weight: 700; }
+.rotate-arrow { font-size: 14px; opacity: 0.7; }
 .rotate-btn:hover { filter: brightness(1.04); }
-.rotate-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--parchment-deep); }
+.rotate-btn:active,
+.rotate-btn.pressed { transform: translateY(2px); box-shadow: 0 1px 0 var(--parchment-deep); }
+.rotate-btn.pressed { filter: brightness(0.96); }
+
+/* ── Opponent's turn (waiting indicator) ───────────────────────────────────── */
+.tile-preview.opponent-turn { min-height: 140px; justify-content: center; }
+.opponent-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+.opponent-waiting-label {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.loading-dots { display: flex; gap: 7px; }
+.loading-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  opacity: 0.4;
+  animation: loading-dot-bounce 1.2s ease-in-out infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.loading-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes loading-dot-bounce {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-5px); }
+}
 
 /* ── Controls ───────────────────────────────────────────────────────────── */
 .controls { display: flex; flex-direction: column; gap: 10px; }
+.meeple-reminder {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--terracotta-deep);
+  background: rgba(196, 88, 58, 0.1);
+  /* Steady resting border — the calm state once blinking stops. */
+  box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0.5);
+  /* Smooth one-shot entrance; `both` holds the start frame before it plays. */
+  animation: meeple-reminder-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.meeple-reminder__icon { font-size: 15px; line-height: 1; flex-shrink: 0; }
+/* Pulsing glow lives on an overlay so toggling it on/off never restarts the
+   entrance animation on the element itself. */
+.meeple-reminder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.meeple-reminder.is-blinking::after {
+  animation: meeple-reminder-pulse 1.4s ease-in-out infinite;
+}
+@keyframes meeple-reminder-in {
+  from { opacity: 0; transform: translateY(-7px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes meeple-reminder-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0); }
+  50% { box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0.85), 0 0 9px rgba(196, 88, 58, 0.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meeple-reminder { animation: none; }
+  .meeple-reminder.is-blinking::after { animation: none; }
+}
 .prompt {
   text-align: center;
   border-radius: var(--radius-sm);
@@ -242,12 +311,43 @@
   box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0.3);
 }
 .btn-danger:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0.3); }
+.control-hints__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 4px;
+  border: none;
+  border-top: 1px solid var(--panel-edge);
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.control-hints__toggle:hover { color: var(--ink); }
+.control-hints__toggle:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+.control-hints__chevron {
+  font-size: 9px;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.control-hints__chevron.is-open { transform: rotate(180deg); }
+.control-hints__collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.control-hints__collapse.is-open { grid-template-rows: 1fr; }
+.control-hints__collapse > .control-hints { overflow: hidden; min-height: 0; }
 .control-hints {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding-top: 4px;
-  border-top: 1px solid var(--panel-edge);
 }
 .control-hints__row {
   display: flex;
@@ -469,6 +569,8 @@
   .mobile-bottombar .deck-pill { display: none; }
   .mobile-bottombar .tile-frame { width: 76px; height: 76px; padding: 4px; }
   .mobile-bottombar .rotate-row { gap: 10px; }
-  .mobile-bottombar .rotate-btn { width: 52px; height: 52px; font-size: 26px; }
+  .mobile-bottombar .rotate-btn { width: 52px; height: 52px; }
+  .mobile-bottombar .rotate-key { font-size: 22px; }
+  .mobile-bottombar .rotate-arrow { font-size: 16px; }
   .mobile-skip-btn { flex-shrink: 0; padding: 10px 14px; }
 }
