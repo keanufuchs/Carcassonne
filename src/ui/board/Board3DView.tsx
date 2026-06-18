@@ -9,6 +9,7 @@ import { coordKey } from '../../core/types';
 import { PlacedTile3D, type BoardHover } from './PlacedTile3D';
 import { GhostTile3D } from './GhostTile3D';
 import { featureHighlightColor } from './board3d';
+import { playTilePlacementSound } from '../sound/tileSound';
 
 interface Props {
   state: GameState;
@@ -106,6 +107,17 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
     () => [...state.board.tiles.values()],
     [state.board.tiles, state.version], // eslint-disable-line react-hooks/exhaustive-deps
   );
+
+  // Play the same wooden placement click as the 2D view whenever a new tile
+  // lands on the board (matches the drop animation keyed on lastPlacedTileId).
+  const previousPlacedTileIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentTileId = state.lastPlacedTileId;
+    const previousTileId = previousPlacedTileIdRef.current;
+    previousPlacedTileIdRef.current = currentTileId ?? null;
+    if (!currentTileId || currentTileId === previousTileId) return;
+    playTilePlacementSound();
+  }, [state.lastPlacedTileId]);
 
   const placing = state.phase === 'PLACING_TILE' && !!state.pendingTile && canInteract;
 
