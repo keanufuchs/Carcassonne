@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { GameShowcase } from './GameShowcase';
 import { MeepleIcon } from './board/MeepleIcon';
 import { getAvailableModels, getDefaultModel } from '../ai/models';
+import { CustomSelect } from './CustomSelect';
 import './styles/menu.css';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
@@ -165,12 +166,10 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                         n[i] = { ...n[i], name: e.target.value };
                         setLocalPlayers(n);
                       }} />
-                    <select
-                      className="select"
+                    <CustomSelect
                       value={p.aiMode}
-                      onChange={e => {
+                      onChange={newMode => {
                         const n = [...localPlayers];
-                        const newMode = e.target.value as AIMode;
                         const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
                         const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
                           : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
@@ -178,12 +177,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                         n[i] = { ...n[i], aiMode: newMode, name, aiModel };
                         setLocalPlayers(n);
                       }}
-                    >
-                      <option value="human">👤 Human</option>
-                      <option value="random">🎲 Random AI</option>
-                      <option value="heuristic">🧠 Heuristic AI</option>
-                      <option value="intelligent">🤖 Reasoning AI</option>
-                    </select>
+                    />
                     {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
                       <select
                         className="select"

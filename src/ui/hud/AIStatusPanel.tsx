@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AIStatusEvent } from '../../ai';
+import { RobotIcon } from '../icons/Icons';
 
 interface Props {
   events: AIStatusEvent[];
@@ -83,7 +84,7 @@ function TurnEntry({ turnEvents, isLatest }: { turnEvents: AIStatusEvent[]; isLa
     <div style={{ paddingBottom: 4 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <span style={{ fontSize: 14 }}>🤖</span>
+        <RobotIcon size={16} style={{ stroke: '#4ade80' }} />
         <span style={{ color: '#4ade80', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           AI {isDone ? 'done' : 'thinking'}
         </span>
