@@ -215,13 +215,13 @@ function addTombstoneBase(group: THREE.Group, w: number, d: number): void {
 }
 
 /**
- * City/field ownership marker: a weathered round-arched tombstone with a player-
+ * Field ownership marker: a weathered round-arched tombstone with a player-
  * coloured fabric hood draped over the crest and a meeple emblem on the front
  * of the hood. The hood is one continuous extruded solid (not a flat banner),
- * which reads as fabric thickness instead of a paper-thin pennant. Built around
- * the origin, then positioned/scaled by the caller via the returned group.
+ * which reads as fabric thickness instead of a paper-thin pennant. Cities
+ * still use the pole-and-cloth `playerGonfalon` below.
  */
-export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
+export function playerTombstone([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
   const t = BANNER.tombstone;
   const group = new THREE.Group();
 
@@ -249,6 +249,60 @@ export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string,
   // Meeple emblem inset on the hood's front face.
   const emblem = meepleEmblem((hood.topY - hood.hemY) * t.emblemFraction, emblemColor);
   emblem.position.set(0, (hood.topY + hood.hemY) / 2, hoodDepth / 2 + t.hoodBevel + 0.001);
+  group.add(emblem);
+
+  group.scale.setScalar(scale);
+  group.position.set(cx, baseTop, cz);
+  return group;
+}
+
+/**
+ * City ownership marker: a gonfalon — timber pole + crossbar + hanging cloth
+ * (swallowtail hem) in the player colour, with a meeple emblem on the cloth.
+ * Built around the origin, then positioned/scaled by the caller via the
+ * returned group.
+ */
+export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
+  const g = BANNER.gonfalon;
+  const group = new THREE.Group();
+  const poleMat = standard(BANNER.pole);
+
+  const pole = shadowMesh(
+    new THREE.CylinderGeometry(g.poleRadius, g.poleRadius, g.poleHeight, 6), poleMat,
+  );
+  pole.position.y = g.poleHeight / 2;
+  group.add(pole);
+
+  const finial = shadowMesh(new THREE.SphereGeometry(g.poleRadius * 1.8, 6, 5), standard(BANNER.finial));
+  finial.position.y = g.poleHeight;
+  group.add(finial);
+
+  const crossbar = shadowMesh(
+    roundedBox(g.crossbarWidth, g.crossbarThickness, g.crossbarThickness, 0.3), poleMat,
+  );
+  crossbar.position.y = g.poleHeight - 0.01;
+  group.add(crossbar);
+
+  const clothTop = g.poleHeight - 0.02;
+  const notch = g.clothHeight * g.tailNotch;
+  const clothShape = new THREE.Shape();
+  const hw = g.clothWidth / 2;
+  clothShape.moveTo(-hw, 0);
+  clothShape.lineTo(-hw, -g.clothHeight);
+  clothShape.lineTo(-hw / 2, -g.clothHeight + notch);
+  clothShape.lineTo(0, -g.clothHeight);
+  clothShape.lineTo(hw / 2, -g.clothHeight + notch);
+  clothShape.lineTo(hw, -g.clothHeight);
+  clothShape.lineTo(hw, 0);
+  clothShape.closePath();
+  const clothGeo = new THREE.ExtrudeGeometry(clothShape, { depth: g.clothThickness, bevelEnabled: false });
+  const cloth = new THREE.Mesh(clothGeo, standard(color));
+  cloth.castShadow = true;
+  cloth.position.set(0, clothTop, g.clothThickness / 2);
+  group.add(cloth);
+
+  const emblem = meepleEmblem(g.clothHeight * g.emblemFraction, emblemColor);
+  emblem.position.set(0, clothTop - g.clothHeight * 0.5, g.clothThickness + 0.001);
   group.add(emblem);
 
   group.scale.setScalar(scale);

@@ -128,8 +128,24 @@ export const BANNER = {
   tombstoneRubble: '#b1a895',
   /** Tone of the grass tufts around the tombstone base. */
   tombstoneGrass: '#7aa85a',
+  /** City claim marker (gonfalon: pole + crossbar + hanging cloth). */
+  gonfalon: {
+    poleHeight: 0.34,
+    poleRadius: 0.007,
+    crossbarWidth: 0.16,
+    crossbarThickness: 0.008,
+    /** Hanging cloth size; the swallowtail notch is `tailNotch` of clothHeight. */
+    clothWidth: 0.14,
+    clothHeight: 0.17,
+    clothThickness: 0.006,
+    tailNotch: 0.16,
+    /** Emblem (meeple) height as a fraction of clothHeight. */
+    emblemFraction: 0.55,
+    /** Multiplier applied to the whole marker for city features. */
+    cityScale: 1.4,
+  },
   /**
-   * City/field claim marker: a weathered round-arched tombstone with a player-
+   * Field claim marker: a weathered round-arched tombstone with a player-
    * coloured fabric hood draped over the upper half. Geometry is in world units
    * before per-use scaling.
    */
@@ -148,8 +164,7 @@ export const BANNER = {
     hoodBevel: 0.012,
     /** Meeple emblem height as a fraction of the hood's visible height. */
     emblemFraction: 0.45,
-    /** Multipliers applied to the whole marker per feature. */
-    cityScale: 1.4,
+    /** Multiplier applied to the whole marker for field features. */
     fieldScale: 0.82,
   },
   /** Heraldic shield (monastery), mounted at the roof apex. */
