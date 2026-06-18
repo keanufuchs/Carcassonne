@@ -7,6 +7,7 @@ import {
   SEGMENT_MESH_TAG,
   setHighlightedLocalIds,
   setMeshHighlight,
+  setTileMeepleTargets,
   setTileRegionHighlight,
   tagSegmentMeshes,
 } from '../../src/three/regionHighlight';
@@ -103,6 +104,32 @@ describe('setMeshHighlight', () => {
     setMeshHighlight(mesh, false);
     expect(mat.emissive.getHex()).toBe(originalEmissive);
     expect(mat.emissiveIntensity).toBe(originalIntensity);
+  });
+});
+
+describe('setTileMeepleTargets', () => {
+  it('shows every placeable target with a subtle persistent glow', () => {
+    const shells = buildRegionHighlightShells(sampleRegions);
+    setTileMeepleTargets(new THREE.Group(), shells, new Set([1, 2]), new Set());
+    const visible = shells.filter((s) => s.mesh.visible);
+    expect(visible.map((s) => s.localId).sort()).toEqual([1, 2]);
+  });
+
+  it('emphasises the hovered target more strongly than the others', () => {
+    const shells = buildRegionHighlightShells(sampleRegions);
+    setTileMeepleTargets(new THREE.Group(), shells, new Set([1, 2]), new Set([1]), '#2a9d8f');
+    const hovered = shells.find((s) => s.localId === 1)!;
+    const plain = shells.find((s) => s.localId === 2)!;
+    const hoveredMat = hovered.mesh.material as THREE.MeshBasicMaterial;
+    const plainMat = plain.mesh.material as THREE.MeshBasicMaterial;
+    expect(hoveredMat.opacity).toBeGreaterThan(plainMat.opacity);
+    expect(hoveredMat.color.getHexString()).toBe('2a9d8f');
+  });
+
+  it('hides segments that are neither target nor hovered', () => {
+    const shells = buildRegionHighlightShells(sampleRegions);
+    setTileMeepleTargets(new THREE.Group(), shells, new Set([1]), new Set());
+    expect(shells.find((s) => s.localId === 2)!.mesh.visible).toBe(false);
   });
 });
 
