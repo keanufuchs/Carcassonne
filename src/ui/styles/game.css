@@ -225,6 +225,37 @@
 .rotate-btn.pressed { transform: translateY(2px); box-shadow: 0 1px 0 var(--parchment-deep); }
 .rotate-btn.pressed { filter: brightness(0.96); }
 
+/* ── Opponent's turn (waiting indicator) ───────────────────────────────────── */
+.tile-preview.opponent-turn { min-height: 140px; justify-content: center; }
+.opponent-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+.opponent-waiting-label {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.loading-dots { display: flex; gap: 7px; }
+.loading-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  opacity: 0.4;
+  animation: loading-dot-bounce 1.2s ease-in-out infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.loading-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes loading-dot-bounce {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-5px); }
+}
+
 /* ── Controls ───────────────────────────────────────────────────────────── */
 .controls { display: flex; flex-direction: column; gap: 10px; }
 .prompt {

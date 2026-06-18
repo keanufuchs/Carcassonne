@@ -50,6 +50,25 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
     };
   }, [canInteract, canRotate, tile]);
 
+  // When it's the opponent's turn we hide the tile and rotation controls and
+  // show a waiting indicator instead — there is nothing for the local player
+  // to interact with.
+  if (!canInteract) {
+    return (
+      <div className="hud-pad tile-preview opponent-turn" data-testid="opponent-turn">
+        <div className="deck-pill">{deckSize} tiles in deck</div>
+        <div className="opponent-waiting">
+          <span className="opponent-waiting-label">Der Gegner ist dran</span>
+          <span className="loading-dots" aria-hidden="true">
+            <span className="loading-dot" />
+            <span className="loading-dot" />
+            <span className="loading-dot" />
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="hud-pad tile-preview">
       <div className="deck-pill">{deckSize} tiles in deck</div>
