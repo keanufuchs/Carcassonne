@@ -31,6 +31,14 @@ export function Controls({ phase, currentPlayerName, controller, canInteract = t
           End Game
         </button>
       )}
+
+      <div className="control-hints">
+        <div className="control-hints__row"><kbd>A</kbd><kbd>D</kbd> Rotate tile</div>
+        <div className="control-hints__row"><kbd>Esc</kbd> Skip meeple</div>
+        <div className="control-hints__row"><kbd>Click</kbd> Place tile</div>
+        <div className="control-hints__row"><kbd>Drag</kbd> Move camera</div>
+        <div className="control-hints__row"><kbd>Shift</kbd><kbd>Drag</kbd> Rotate camera</div>
+      </div>
     </div>
   );
 }
