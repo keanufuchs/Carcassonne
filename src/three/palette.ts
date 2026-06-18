@@ -165,7 +165,7 @@ export const BANNER = {
     /** Meeple emblem height as a fraction of the hood's visible height. */
     emblemFraction: 0.45,
     /** Multiplier applied to the whole marker for field features. */
-    fieldScale: 0.6,
+    fieldScale: 0.4,
   },
   /** Heraldic shield (monastery), mounted at the roof apex. */
   shield: {
