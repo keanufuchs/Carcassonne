@@ -1,11 +1,7 @@
 import type { TilePrototype } from '../../core/types/tile';
 import type { Rotation } from '../../core/types';
 import type { GameController } from '../../controller/GameController';
-import tileDistribution from '../../core/deck/tileDistribution.json';
-
-const tileImageMap: Record<string, string> = Object.fromEntries(
-  (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
-);
+import { TilePreview3D } from './TilePreview3D';
 
 interface Props {
   tile: TilePrototype | null;
@@ -21,15 +17,12 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
       <div className="deck-pill">{deckSize} tiles in deck</div>
       {tile ? (
         <>
-          <div className="tile-frame">
-            <img
-              data-testid="tile-preview-img"
-              data-rotation={rotation}
-              draggable={false}
-              src={tileImageMap[tile.id] ?? ''}
-              alt={tile.id}
-              style={{ transform: `rotate(${rotation}deg)` }}
-            />
+          <div
+            className="tile-frame"
+            data-testid="tile-preview-img"
+            data-rotation={rotation}
+          >
+            <TilePreview3D proto={tile} rotation={rotation} />
           </div>
           <div className="rotate-row">
             <button data-testid="rotate-ccw-btn" className="rotate-btn" disabled={!canInteract} onClick={() => controller.rotatePending('CCW')} title="Rotate counter-clockwise (A)">↺</button>
