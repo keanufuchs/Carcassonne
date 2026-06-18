@@ -378,12 +378,9 @@ export function BoardView({ state, controller, canInteract = true, highlightedCo
             width: CANVAS_SIZE,
             height: CANVAS_SIZE,
             transform: `translate(${activeTransform.offsetX}px, ${activeTransform.offsetY}px) scale(${activeTransform.scale})`,
-            // The board-canvas defaults to transform-origin: center, so a scaled
-            // transform also shifts by canvasSize/2*(1-scale). Live play stays at
-            // scale 1 (term vanishes), but the screenshot fit zooms out — pin the
-            // origin to the top-left there so boardTransformFor's offset is exact.
-            transformOrigin: screenshotFit ? '0 0' : undefined,
-            transition: undefined,
+            // Pin transform-origin to top-left so the wheel zoom math in
+            // useBoardTransform (which assumes origin 0 0) stays exact at all scales.
+            transformOrigin: '0 0',
           }}
         >
           {placedTiles.map(tile => {
