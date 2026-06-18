@@ -491,7 +491,11 @@ export default function App() {
     if (!import.meta.env.DEV) return;
     window.__carcTest = {
       startScenario({ players, deck }) {
+        // Preserve the board-view preference (set by the scenario runner's
+        // addInitScript) because clearLocalGame() now clears it too.
+        const savedView = localStorage.getItem(BOARD_VIEW_KEY);
         clearLocalGame();
+        if (savedView) localStorage.setItem(BOARD_VIEW_KEY, savedView);
         aiRef.current?.stop?.();
         aiRef.current = null;
         const ctrl = createGameController(
