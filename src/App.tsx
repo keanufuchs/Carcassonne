@@ -347,7 +347,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       ) : (
       <div className="game-sidebar">
         <div className="game-brand">
-          <span className="mark">C</span>
+          <img src="/favicon.svg" className="mark" alt="Carcassonne Logo" />
           <span className="name">Carcassonne</span>
         </div>
         <div className="sidebar-section">
