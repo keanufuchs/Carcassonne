@@ -113,13 +113,31 @@
 
 /* ── Player rows (local setup) ──────────────────────────────────────────── */
 .player-rows { display: flex; flex-direction: column; gap: 9px; }
+.player-entry { display: flex; flex-direction: column; gap: 6px; }
 .player-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-.player-row .input { flex: 2; }
+.player-row .input { flex: 2; min-width: 0; }
 .player-row .select { flex: 1.4; }
+.player-model-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Indent under the meeple icon (22px) + row gap (8px) so the dropdown
+     lines up with the name/mode controls above. */
+  padding-left: 30px;
+}
+.player-model-row .model-label {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink-soft, var(--ink));
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.player-model-row .select { flex: 1; min-width: 0; }
 .row-remove {
   flex-shrink: 0;
   width: 38px;

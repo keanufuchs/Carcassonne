@@ -156,47 +156,52 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
               <label className="field-label">Players ({localPlayers.length}/5)</label>
               <div className="player-rows">
                 {localPlayers.map((p, i) => (
-                  <div key={i} className="player-row">
-                    <span style={{ flexShrink: 0 }}>
-                      <MeepleIcon color={MEEPLE_COLORS[i] ?? '#888'} size={22} />
-                    </span>
-                    <input className="input" value={p.name} placeholder={`Player ${i + 1}`}
-                      onChange={e => {
-                        const n = [...localPlayers];
-                        n[i] = { ...n[i], name: e.target.value };
-                        setLocalPlayers(n);
-                      }} />
-                    <CustomSelect
-                      value={p.aiMode}
-                      onChange={newMode => {
-                        const n = [...localPlayers];
-                        const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
-                        const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
-                          : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
-                        const aiModel = newMode === 'intelligent' ? (n[i].aiModel ?? getDefaultModel()) : undefined;
-                        n[i] = { ...n[i], aiMode: newMode, name, aiModel };
-                        setLocalPlayers(n);
-                      }}
-                    />
-                    {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
-                      <select
-                        className="select"
-                        title="Reasoning-AI model"
-                        value={p.aiModel ?? getDefaultModel()}
+                  <div key={i} className="player-entry">
+                    <div className="player-row">
+                      <span style={{ flexShrink: 0 }}>
+                        <MeepleIcon color={MEEPLE_COLORS[i] ?? '#888'} size={22} />
+                      </span>
+                      <input className="input" value={p.name} placeholder={`Player ${i + 1}`}
                         onChange={e => {
                           const n = [...localPlayers];
-                          n[i] = { ...n[i], aiModel: e.target.value };
+                          n[i] = { ...n[i], name: e.target.value };
+                          setLocalPlayers(n);
+                        }} />
+                      <CustomSelect
+                        value={p.aiMode}
+                        onChange={newMode => {
+                          const n = [...localPlayers];
+                          const isDefaultName = Object.values(AI_DEFAULT_NAMES).includes(n[i].name) || n[i].name === `Player ${i + 1}`;
+                          const name = newMode === 'human' ? (isDefaultName ? `Player ${i + 1}` : n[i].name)
+                            : (isDefaultName ? aiDefaultName(newMode) : n[i].name);
+                          const aiModel = newMode === 'intelligent' ? (n[i].aiModel ?? getDefaultModel()) : undefined;
+                          n[i] = { ...n[i], aiMode: newMode, name, aiModel };
                           setLocalPlayers(n);
                         }}
-                      >
-                        {AI_MODELS.map(m => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                    )}
-                    {localPlayers.length > 2 && (
-                      <button className="row-remove" title="Remove player"
-                        onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}>✕</button>
+                      />
+                      {localPlayers.length > 2 && (
+                        <button className="row-remove" title="Remove player"
+                          onClick={() => setLocalPlayers(localPlayers.filter((_, idx) => idx !== i))}>✕</button>
+                      )}
+                    </div>
+                    {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
+                      <div className="player-model-row">
+                        <label className="model-label">Model</label>
+                        <select
+                          className="select"
+                          title="Reasoning-AI model"
+                          value={p.aiModel ?? getDefaultModel()}
+                          onChange={e => {
+                            const n = [...localPlayers];
+                            n[i] = { ...n[i], aiModel: e.target.value };
+                            setLocalPlayers(n);
+                          }}
+                        >
+                          {AI_MODELS.map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
                     )}
                   </div>
                 ))}
