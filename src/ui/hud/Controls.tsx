@@ -38,6 +38,8 @@ export function Controls({ phase, currentPlayerName, controller, canInteract = t
         <div className="control-hints__row"><kbd>LClick</kbd> Place tile</div>
         <div className="control-hints__row"><kbd>LClick</kbd><kbd>Drag</kbd> Move camera</div>
         <div className="control-hints__row"><kbd>Shift</kbd><kbd>LClick</kbd><kbd>Drag</kbd> Rotate camera</div>
+        <div className="control-hints__row"><kbd>R</kbd> Reset camera</div>
+        <div className="control-hints__row"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> N / E / S / W</div>
       </div>
     </div>
   );
