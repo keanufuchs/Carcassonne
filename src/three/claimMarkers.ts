@@ -35,22 +35,23 @@ function markerFor(regions: TileRegions, claim: FeatureClaim): THREE.Group | nul
 
 function buildMarker(regions: TileRegions, claim: FeatureClaim): THREE.Group | null {
   const color = playerColor(claim.playerIndex);
+  const emblemColor = claim.meepleHere ? BANNER.meepleGold : BANNER.meepleWhite;
   if (claim.kind === 'CITY') {
     const parts = cityParts(regions, claim.localId);
     if (parts.length === 0) return null;
-    return playerGonfalon(cityAnchor(parts), DETAIL.cityBaseHeight, color, BANNER.gonfalon.cityScale);
+    return playerGonfalon(cityAnchor(parts), DETAIL.cityBaseHeight, color, BANNER.gonfalon.cityScale, emblemColor);
   }
   if (claim.kind === 'FIELD') {
     const region = regions.polygons.find((r) => r.kind === 'FIELD' && r.localId === claim.localId);
     if (!region) return null;
     // Monastery buildings sit inside the field polygon — keep the banner away from them.
     const obstacles = regions.markers.map((m) => svgToWorld(m.pos));
-    return playerGonfalon(fieldAnchor(region.points.map(svgToWorld), obstacles), PALETTE.FIELD.height, color, BANNER.gonfalon.fieldScale);
+    return playerGonfalon(fieldAnchor(region.points.map(svgToWorld), obstacles), PALETTE.FIELD.height, color, BANNER.gonfalon.fieldScale, emblemColor);
   }
   if (claim.kind === 'MONASTERY') {
     const marker = regions.markers.find((m) => m.localId === claim.localId);
     if (!marker) return null;
-    return playerShield(svgToWorld(marker.pos), MONASTERY_APEX_Y, color);
+    return playerShield(svgToWorld(marker.pos), MONASTERY_APEX_Y, color, emblemColor);
   }
   return null; // ROAD → handled by buildRoadLanterns
 }
@@ -64,7 +65,8 @@ function buildRoadLanterns(group: THREE.Group, regions: TileRegions, claims: Cla
     const anchor = roadLanternAnchor(road.centerline.map(svgToWorld));
     const claim = claims.get(road.localId);
     const color = claim && claim.kind === 'ROAD' ? playerColor(claim.playerIndex) : null;
-    const lantern = roadLantern(anchor, color);
+    const emblemColor = claim?.meepleHere ? BANNER.meepleGold : BANNER.meepleWhite;
+    const lantern = roadLantern(anchor, color, emblemColor);
     lantern.name = `road-lantern-${road.localId}`;
     // Only a claimed lantern carries a pennant worth billboarding; neutral stays fixed.
     if (color) lantern.userData.billboard = true;
