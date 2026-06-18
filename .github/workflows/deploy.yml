@@ -31,9 +31,14 @@ jobs:
           VITE_API_URL: https://carcassonne.spelk.de
           # Intelligent AI agent (EW-02) — baked into the client bundle.
           # NOTE: VITE_* vars are exposed in the public JS bundle.
-          VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
-          VITE_AI_BASE_URL: ${{ secrets.VITE_AI_BASE_URL }}
-          VITE_AI_MODELS: ${{ secrets.VITE_AI_MODELS }}
+          # Using hardcoded values instead of secrets to eliminate secret-resolution failures.
+          VITE_AI_API_KEY: "95cd5d95-faa4-4c19-89da-3c955878686d"
+          VITE_AI_BASE_URL: "https://api.ai.rh-koeln.de/v1"
+          VITE_AI_MODELS: "openai-gpt-oss-120b,gemma-4-31b-it,qwen3.6-35b-a3b"
+          VITE_BUILD_ID: ${{ github.sha }}
+
+      - name: Write build ID
+        run: echo "${{ github.sha }}" > dist/build-id.txt
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
