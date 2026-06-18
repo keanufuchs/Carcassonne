@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
@@ -16,8 +16,10 @@ interface Props {
   canInteract?: boolean;
 }
 
-const POLAR = Math.PI / 3; // ~60° — locked, no orbit
-const AZIMUTH = -Math.PI / 4; // fixed isometric diagonal
+const POLAR = Math.PI / 3;       // ~60° — locked isometric pitch
+const AZIMUTH = -Math.PI / 4;    // fixed isometric diagonal
+const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit in rotate mode
+const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit in rotate mode
 
 /** Lab-matched lighting + a directional light whose shadow frustum covers a board. */
 function SceneLighting() {
@@ -91,6 +93,29 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
 
   const pendingProto = state.pendingTile;
 
+  // Camera rotation via Shift + left-drag
+  const controlsRef = useRef<any>(null);
+  const [shiftHeld, setShiftHeld] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(true); };
+    const onKeyUp   = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(false); };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup',   onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup',   onKeyUp);
+    };
+  }, []);
+
+  // Switch left mouse button between pan ↔ rotate imperatively;
+  // the angle constraints are handled declaratively on MapControls below.
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    controls.mouseButtons.LEFT = shiftHeld ? THREE.MOUSE.ROTATE : THREE.MOUSE.PAN;
+  }, [shiftHeld]);
+
   // Track the last cell + the pointer-down position so we only re-render on a
   // cell change and don't place a tile at the end of a camera drag.
   const lastCellRef = useRef('');
@@ -124,7 +149,7 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
   }, [ghost, controller]);
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
+    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: shiftHeld ? 'crosshair' : undefined }}>
       <Canvas
         shadows="percentage"
         camera={{ position: [12, 14, 12], fov: 40 }}
@@ -176,17 +201,37 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
         )}
 
         <MapControls
+          ref={controlsRef}
           makeDefault
           target={[0, 0, 0]}
-          enableRotate={false}
-          minPolarAngle={POLAR}
-          maxPolarAngle={POLAR}
-          minAzimuthAngle={AZIMUTH}
-          maxAzimuthAngle={AZIMUTH}
+          enableRotate={shiftHeld}
+          minPolarAngle={shiftHeld ? POLAR_MIN_FREE : POLAR}
+          maxPolarAngle={shiftHeld ? POLAR_MAX_FREE : POLAR}
+          minAzimuthAngle={shiftHeld ? -Infinity : AZIMUTH}
+          maxAzimuthAngle={shiftHeld ? Infinity : AZIMUTH}
           minDistance={2}
           maxDistance={30}
         />
       </Canvas>
+
+      {/* Rotation-mode hint */}
+      <div style={{
+        position: 'absolute',
+        bottom: 10,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        pointerEvents: 'none',
+        padding: '3px 10px',
+        borderRadius: 6,
+        fontSize: 12,
+        fontFamily: 'sans-serif',
+        transition: 'opacity 0.2s',
+        opacity: shiftHeld ? 1 : 0.45,
+        background: shiftHeld ? 'rgba(255,200,60,0.85)' : 'rgba(0,0,0,0.45)',
+        color: shiftHeld ? '#1a0e00' : '#fff',
+      }}>
+        {shiftHeld ? 'Rotating — release Shift to pan' : 'Shift + drag to rotate'}
+      </div>
     </div>
   );
 }
