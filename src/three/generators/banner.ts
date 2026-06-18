@@ -6,6 +6,8 @@ import {
   polygonBounds, pointInPolygon, distToPolygonEdge,
 } from './util';
 
+const CLOTH_ROUGHNESS = 0.75;
+
 /**
  * Banner-based ownership markers. Pure Three.js geometry primitives plus the
  * anchor maths that decides where each marker stands. Orchestration (which
@@ -124,8 +126,8 @@ const MEEPLE_OUTLINE: ReadonlyArray<readonly [number, number]> = [
   [90, 35], [95, 50], [78, 60], [85, 90], [65, 90], [50, 70],
 ];
 
-/** A thin extruded white meeple silhouette, `height` tall, centred on the origin. */
-export function meepleEmblem(height: number): THREE.Mesh {
+/** A thin extruded meeple silhouette, `height` tall, centred on the origin. Uses meepleWhite by default. */
+export function meepleEmblem(height: number, color = BANNER.meepleWhite): THREE.Mesh {
   const shape = new THREE.Shape();
   // Map SVG (0..100, y-down) → centred local XY (y-up), unit-ish then scaled.
   const toLocal = ([sx, sy]: readonly [number, number]): [number, number] => [
@@ -141,19 +143,126 @@ export function meepleEmblem(height: number): THREE.Mesh {
   shape.closePath();
   const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.5, bevelEnabled: false });
   geo.scale(height, height, 0.012);
-  const mesh = new THREE.Mesh(geo, standard(BANNER.meepleWhite));
+  const mesh = new THREE.Mesh(geo, standard(color));
   mesh.castShadow = true;
   return mesh;
 }
 
 // ── Markers ──────────────────────────────────────────────────────────────────
 
+/** Round-arch tombstone silhouette (Shape in local XY, hem at y=0, crest at y=h). */
+function tombstoneSilhouette(w: number, h: number): THREE.Shape {
+  const shape = new THREE.Shape();
+  const hw = w / 2;
+  shape.moveTo(-hw, 0);
+  shape.lineTo(-hw, h * 0.55);
+  shape.quadraticCurveTo(-hw, h, 0, h);
+  shape.quadraticCurveTo(hw, h, hw, h * 0.55);
+  shape.lineTo(hw, 0);
+  shape.closePath();
+  return shape;
+}
+
 /**
- * A gonfalon: timber pole + crossbar + hanging cloth (swallowtail hem) in the
- * player colour, with a white meeple emblem on the cloth. Built around the
- * origin, then positioned/scaled by the caller via the returned group.
+ * Cloth hood that drapes over the tombstone crest: a slightly expanded copy of
+ * the upper silhouette with a gently scalloped hem. The hood is extruded across
+ * the stone's depth plus an overhang on both sides so it visually wraps the top.
  */
-export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number): THREE.Group {
+function hoodSilhouette(stoneW: number, stoneH: number, hemFraction: number, crestFraction: number, widthFactor: number): { shape: THREE.Shape; hemY: number; topY: number } {
+  const hemY = stoneH * hemFraction;
+  const topY = stoneH * crestFraction;
+  const hw = (stoneW * widthFactor) / 2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw, hemY + 0.012);
+  shape.lineTo(-hw, stoneH * 0.62);
+  shape.quadraticCurveTo(-hw, topY, 0, topY);
+  shape.quadraticCurveTo(hw, topY, hw, stoneH * 0.62);
+  shape.lineTo(hw, hemY + 0.012);
+  shape.quadraticCurveTo(hw * 0.55, hemY - 0.012, hw * 0.25, hemY + 0.005);
+  shape.quadraticCurveTo(0, hemY + 0.018, -hw * 0.25, hemY + 0.005);
+  shape.quadraticCurveTo(-hw * 0.55, hemY - 0.012, -hw, hemY + 0.012);
+  shape.closePath();
+  return { shape, hemY, topY };
+}
+
+/** Soil mound + two flanking rubble stones + a small pebble + two grass tufts. */
+function addTombstoneBase(group: THREE.Group, w: number, d: number): void {
+  const mound = shadowMesh(roundedBox(w + 0.10, 0.022, d + 0.08, 0.4), standard(BANNER.tombstoneMound));
+  mound.position.y = 0.011;
+  group.add(mound);
+
+  const rubbleL = shadowMesh(roundedBox(0.045, 0.038, 0.04, 0.5), standard(BANNER.tombstoneRubble));
+  rubbleL.position.set(-w * 0.62, 0.019, d * 0.45);
+  rubbleL.rotation.y = 0.4;
+  group.add(rubbleL);
+
+  const rubbleR = shadowMesh(roundedBox(0.05, 0.032, 0.044, 0.5), standard('#a59c89'));
+  rubbleR.position.set(w * 0.62, 0.016, d * 0.55);
+  rubbleR.rotation.y = -0.6;
+  group.add(rubbleR);
+
+  const pebble = shadowMesh(new THREE.SphereGeometry(0.011, 8, 6), standard('#bfb6a3'));
+  pebble.position.set(-w * 0.15, 0.011, d * 0.7);
+  pebble.scale.set(1, 0.6, 1.2);
+  group.add(pebble);
+
+  const grassMat = new THREE.MeshStandardMaterial({ color: BANNER.tombstoneGrass, roughness: 0.95, flatShading: true });
+  for (const [x, z, s] of [[-w * 0.4, d * 0.6, 1] as const, [w * 0.4, d * 0.7, 0.85] as const]) {
+    const tuft = shadowMesh(new THREE.ConeGeometry(0.011 * s, 0.028 * s, 5), grassMat);
+    tuft.position.set(x, 0.014 * s, z);
+    group.add(tuft);
+  }
+}
+
+/**
+ * Field ownership marker: a weathered round-arched tombstone with a player-
+ * coloured fabric hood draped over the crest and a meeple emblem on the front
+ * of the hood. The hood is one continuous extruded solid (not a flat banner),
+ * which reads as fabric thickness instead of a paper-thin pennant. Cities
+ * still use the pole-and-cloth `playerGonfalon` below.
+ */
+export function playerTombstone([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
+  const t = BANNER.tombstone;
+  const group = new THREE.Group();
+
+  // Tombstone slab.
+  const stoneGeo = new THREE.ExtrudeGeometry(tombstoneSilhouette(t.stoneW, t.stoneH), {
+    depth: t.stoneD, bevelEnabled: true, bevelSize: 0.005, bevelThickness: 0.005, bevelSegments: 2, curveSegments: 18,
+  });
+  stoneGeo.translate(0, 0, -t.stoneD / 2);
+  const stone = shadowMesh(stoneGeo, standard(BANNER.tombstoneStone));
+  group.add(stone);
+
+  addTombstoneBase(group, t.stoneW, t.stoneD);
+
+  // Hood: one solid 3D cap wrapping the upper portion of the stone.
+  const hood = hoodSilhouette(t.stoneW, t.stoneH, t.hemFraction, t.crestFraction, t.hoodWidthFactor);
+  const hoodDepth = t.stoneD + 2 * t.hoodOverhangDepth;
+  const hoodGeo = new THREE.ExtrudeGeometry(hood.shape, {
+    depth: hoodDepth, bevelEnabled: true, bevelSize: t.hoodBevel, bevelThickness: t.hoodBevel, bevelSegments: 3, curveSegments: 24,
+  });
+  hoodGeo.translate(0, 0, -hoodDepth / 2);
+  const hoodMat = new THREE.MeshStandardMaterial({ color, roughness: CLOTH_ROUGHNESS, metalness: 0 });
+  const hoodMesh = shadowMesh(hoodGeo, hoodMat);
+  group.add(hoodMesh);
+
+  // Meeple emblem inset on the hood's front face.
+  const emblem = meepleEmblem((hood.topY - hood.hemY) * t.emblemFraction, emblemColor);
+  emblem.position.set(0, (hood.topY + hood.hemY) / 2, hoodDepth / 2 + t.hoodBevel + 0.001);
+  group.add(emblem);
+
+  group.scale.setScalar(scale);
+  group.position.set(cx, baseTop, cz);
+  return group;
+}
+
+/**
+ * City ownership marker: a gonfalon — timber pole + crossbar + hanging cloth
+ * (swallowtail hem) in the player colour, with a meeple emblem on the cloth.
+ * Built around the origin, then positioned/scaled by the caller via the
+ * returned group.
+ */
+export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
   const g = BANNER.gonfalon;
   const group = new THREE.Group();
   const poleMat = standard(BANNER.pole);
@@ -174,7 +283,6 @@ export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string,
   crossbar.position.y = g.poleHeight - 0.01;
   group.add(crossbar);
 
-  // Hanging cloth: a thin box with a swallowtail notch cut from the bottom.
   const clothTop = g.poleHeight - 0.02;
   const notch = g.clothHeight * g.tailNotch;
   const clothShape = new THREE.Shape();
@@ -193,7 +301,7 @@ export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string,
   cloth.position.set(0, clothTop, g.clothThickness / 2);
   group.add(cloth);
 
-  const emblem = meepleEmblem(g.clothHeight * g.emblemFraction);
+  const emblem = meepleEmblem(g.clothHeight * g.emblemFraction, emblemColor);
   emblem.position.set(0, clothTop - g.clothHeight * 0.5, g.clothThickness + 0.001);
   group.add(emblem);
 
@@ -206,7 +314,7 @@ export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string,
  * A heraldic shield on a short stave: a rounded crest in the player colour with
  * a white meeple emblem. Used for monasteries, mounted at the roof apex.
  */
-export function playerShield([cx, cz]: World2, baseTop: number, color: string): THREE.Group {
+export function playerShield([cx, cz]: World2, baseTop: number, color: string, emblemColor = BANNER.meepleWhite): THREE.Group {
   const s = BANNER.shield;
   const group = new THREE.Group();
 
@@ -220,7 +328,7 @@ export function playerShield([cx, cz]: World2, baseTop: number, color: string): 
   crest.position.set(0, s.staveHeight + s.height * 0.45, 0);
   group.add(crest);
 
-  const emblem = meepleEmblem(s.height * s.emblemFraction);
+  const emblem = meepleEmblem(s.height * s.emblemFraction, emblemColor);
   emblem.position.set(0, s.staveHeight + s.height * 0.45, s.thickness / 2 + 0.001);
   group.add(emblem);
 
@@ -229,7 +337,7 @@ export function playerShield([cx, cz]: World2, baseTop: number, color: string): 
 }
 
 /** A small player pennant on a short crossarm, hung from the lantern post. */
-function lanternPennant(color: string): THREE.Group {
+function lanternPennant(color: string, emblemColor = BANNER.meepleWhite): THREE.Group {
   const L = BANNER.lantern;
   const b = L.banner;
   const group = new THREE.Group();
@@ -249,7 +357,7 @@ function lanternPennant(color: string): THREE.Group {
   cloth.position.set(clothX, topY - b.height / 2, b.thickness / 2);
   group.add(cloth);
 
-  const emblem = meepleEmblem(b.height * b.emblemFraction);
+  const emblem = meepleEmblem(b.height * b.emblemFraction, emblemColor);
   emblem.position.set(clothX, topY - b.height / 2, b.thickness + 0.001);
   group.add(emblem);
 
@@ -262,7 +370,7 @@ function lanternPennant(color: string): THREE.Group {
  * hangs a pennant on the post. Built around the origin, positioned by the
  * caller via the returned group's transform.
  */
-export function roadLantern([cx, cz]: World2, color: string | null): THREE.Group {
+export function roadLantern([cx, cz]: World2, color: string | null, emblemColor = BANNER.meepleWhite): THREE.Group {
   const L = BANNER.lantern;
   const group = new THREE.Group();
 
@@ -293,7 +401,7 @@ export function roadLantern([cx, cz]: World2, color: string | null): THREE.Group
   cap.position.y = L.postHeight + L.bodySize * 1.15 + L.capHeight / 2;
   group.add(cap);
 
-  if (color) group.add(lanternPennant(color));
+  if (color) group.add(lanternPennant(color, emblemColor));
 
   group.position.set(cx, 0, cz);
   return group;

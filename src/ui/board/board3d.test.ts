@@ -113,4 +113,30 @@ describe('tileClaims', () => {
     const claims = tileClaims(placed('T1', [{ localId: 2, kind: 'ROAD' }]), reg, players);
     expect(claims.size).toBe(0);
   });
+
+  it('sets meepleHere on the tile where the meeple was physically placed', () => {
+    const city = feature({
+      id: 'c', kind: 'CITY',
+      meeples: [{ playerId: 'p1', segmentRef: ref('T1', 0) }],
+    });
+    city.segments.add(segmentKey(ref('T1', 0)));
+    city.segments.add(segmentKey(ref('T2', 0)));
+    const reg = registryWith([city]);
+
+    const claims = tileClaims(placed('T1', [{ localId: 0, kind: 'CITY' }]), reg, players);
+    expect(claims.get(0)?.meepleHere).toBe(true);
+  });
+
+  it('does NOT set meepleHere on other tiles of the same feature', () => {
+    const city = feature({
+      id: 'c', kind: 'CITY',
+      meeples: [{ playerId: 'p1', segmentRef: ref('T1', 0) }],
+    });
+    city.segments.add(segmentKey(ref('T1', 0)));
+    city.segments.add(segmentKey(ref('T2', 0)));
+    const reg = registryWith([city]);
+
+    const claims = tileClaims(placed('T2', [{ localId: 0, kind: 'CITY' }]), reg, players);
+    expect(claims.get(0)?.meepleHere).toBeFalsy();
+  });
 });

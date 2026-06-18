@@ -5,6 +5,7 @@ import { layoutRegions } from '../../three/layoutRegions';
 import { generateTile } from '../../three/generateTile';
 import { disableTileContentRaycast } from '../../three/regionHighlight';
 import { disposeObject, setGroupOpacity, setGroupTint } from './board3d';
+import { useSmoothRotationY } from './useSmoothRotationY';
 
 const IDLE_OPACITY = 0.45;
 const ILLEGAL_COLOR = '#d23b3b';
@@ -42,14 +43,17 @@ export function GhostTile3D({ proto, rotation, coord, illegal }: Props) {
   }, [ghost, illegal]);
 
   const rotationY = -(rotation * Math.PI) / 180;
+  // Position snaps to the cursor cell; rotation eases smoothly toward the target.
+  const rotRef = useSmoothRotationY(rotationY, proto.id);
 
   return (
     <group
       visible={coord !== null}
       position={[coord?.x ?? 0, 0, coord?.y ?? 0]}
-      rotation={[0, rotationY, 0]}
     >
-      <primitive object={ghost} />
+      <group ref={rotRef}>
+        <primitive object={ghost} />
+      </group>
     </group>
   );
 }

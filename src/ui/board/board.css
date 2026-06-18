@@ -1,11 +1,17 @@
 .board-scroll {
   overflow: hidden;
   flex: 1;
-  background: #2d5016;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   position: relative;
+  /* Sky atmosphere: matches the 3D scene and game-layout background. */
+  background-color: var(--sky-bottom);
+  background-image:
+    radial-gradient(140% 110% at 50% 0%, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 100%),
+    radial-gradient(100% 90% at 50% 100%, rgba(40, 50, 65, 0.20) 0%, rgba(40, 50, 65, 0) 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12  0 0 0 0 0.15  0 0 0 0 0.20  0 0 0 0.40 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  background-blend-mode: normal, normal, multiply;
 }
 
 .board-scroll[data-meeple-focus='true']::after {

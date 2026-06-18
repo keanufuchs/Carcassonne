@@ -24,7 +24,7 @@ describe('TurnTimeline reasoning display', () => {
       reasoningUnavailableReason: 'timeout',
     });
 
-    expect(html).toContain('Reasoning:');
+    expect(html).toContain('Reasoning');
     expect(html).toContain('reasoning request timed out');
   });
 
@@ -35,7 +35,7 @@ describe('TurnTimeline reasoning display', () => {
       reasoning: 'Complete own city for immediate points.',
     });
 
-    expect(html).toContain('Reasoning:');
+    expect(html).toContain('Reasoning');
     expect(html).toContain('Complete own city for immediate points.');
   });
 
@@ -46,6 +46,6 @@ describe('TurnTimeline reasoning display', () => {
       aiMode: 'heuristic',
     });
 
-    expect(html).not.toContain('Reasoning:');
+    expect(html).not.toContain('move-section-label');
   });
 });

@@ -20,21 +20,27 @@ export function CoordRulers({ transform }: Props) {
     drawYRuler(yRef.current, transform);
   });
 
+  const rulerBg = 'linear-gradient(180deg, rgba(255, 249, 238, 0.96) 0%, rgba(246, 238, 220, 0.96) 100%)';
+  const rulerBorder = '1px solid rgba(166, 138, 92, 0.35)';
+  const rulerShadow = '0 1px 0 rgba(255, 255, 255, 0.55) inset';
+
   return (
     <>
       <div style={{
         position: 'absolute', top: 0, left: 0,
         width: RULER_SIZE, height: RULER_SIZE,
-        background: '#1a1a2e',
-        borderRight: '1px solid #2a2a4a',
-        borderBottom: '1px solid #2a2a4a',
+        background: rulerBg,
+        borderRight: rulerBorder,
+        borderBottom: rulerBorder,
+        boxShadow: rulerShadow,
         zIndex: 20,
         pointerEvents: 'none',
       }} />
       <div style={{
         position: 'absolute', top: 0, left: RULER_SIZE, right: 0, height: RULER_SIZE,
-        background: '#1a1a2e',
-        borderBottom: '1px solid #2a2a4a',
+        background: rulerBg,
+        borderBottom: rulerBorder,
+        boxShadow: rulerShadow,
         zIndex: 19,
         overflow: 'hidden',
         pointerEvents: 'none',
@@ -43,8 +49,9 @@ export function CoordRulers({ transform }: Props) {
       </div>
       <div style={{
         position: 'absolute', top: RULER_SIZE, left: 0, width: RULER_SIZE, bottom: 0,
-        background: '#1a1a2e',
-        borderRight: '1px solid #2a2a4a',
+        background: rulerBg,
+        borderRight: rulerBorder,
+        boxShadow: rulerShadow,
         zIndex: 19,
         overflow: 'hidden',
         pointerEvents: 'none',
@@ -64,7 +71,7 @@ function drawXRuler(svg: SVGSVGElement | null, transform: BoardTransform): void 
 
   for (const { gameCoord: gx, screenPos: px } of getVisibleTicks(offsetX, scale, viewportW, TILE_SIZE, COORD_OFFSET)) {
     const isOrigin = gx === 0;
-    svg.appendChild(makeLine(px, isOrigin ? 0 : 12, px, RULER_SIZE, isOrigin ? '#ffd700' : '#374151', isOrigin ? 1.5 : 1));
+    svg.appendChild(makeLine(px, isOrigin ? 0 : 12, px, RULER_SIZE, isOrigin ? '#b78525' : 'rgba(111, 91, 67, 0.5)', isOrigin ? 1.5 : 1));
     svg.appendChild(makeXLabel(px + 2, 11, String(gx), isOrigin));
   }
 }
@@ -78,7 +85,7 @@ function drawYRuler(svg: SVGSVGElement | null, transform: BoardTransform): void 
 
   for (const { gameCoord: gy, screenPos: py } of getVisibleTicks(offsetY, scale, viewportH, TILE_SIZE, COORD_OFFSET)) {
     const isOrigin = gy === 0;
-    svg.appendChild(makeLine(isOrigin ? 0 : 12, py, RULER_SIZE, py, isOrigin ? '#ffd700' : '#374151', isOrigin ? 1.5 : 1));
+    svg.appendChild(makeLine(isOrigin ? 0 : 12, py, RULER_SIZE, py, isOrigin ? '#b78525' : 'rgba(111, 91, 67, 0.5)', isOrigin ? 1.5 : 1));
     svg.appendChild(makeYLabel(10, py, String(gy), isOrigin));
   }
 }
@@ -98,7 +105,7 @@ function makeXLabel(x: number, y: number, text: string, isOrigin: boolean): SVGT
   const el = document.createElementNS(SVG_NS, 'text');
   el.setAttribute('x', String(Math.round(x)));
   el.setAttribute('y', String(y));
-  el.setAttribute('fill', isOrigin ? '#ffd700' : '#6b7280');
+  el.setAttribute('fill', isOrigin ? '#b78525' : '#9c8a72');
   el.setAttribute('font-size', '9');
   el.setAttribute('font-family', 'monospace');
   el.setAttribute('font-weight', isOrigin ? 'bold' : 'normal');
@@ -110,7 +117,7 @@ function makeYLabel(cx: number, py: number, text: string, isOrigin: boolean): SV
   const el = document.createElementNS(SVG_NS, 'text');
   el.setAttribute('x', String(cx));
   el.setAttribute('y', String(Math.round(py)));
-  el.setAttribute('fill', isOrigin ? '#ffd700' : '#6b7280');
+  el.setAttribute('fill', isOrigin ? '#b78525' : '#9c8a72');
   el.setAttribute('font-size', '9');
   el.setAttribute('font-family', 'monospace');
   el.setAttribute('font-weight', isOrigin ? 'bold' : 'normal');

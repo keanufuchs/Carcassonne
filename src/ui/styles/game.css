@@ -22,16 +22,18 @@
 
 .board-view-toggle {
   position: absolute;
-  top: 14px;
+  /* Sit below the 20px coord ruler with breathing room, so the ruler stays
+     edge-to-edge and the toggle never overlaps the X-axis tick labels. */
+  top: 32px;
   right: 14px;
-  z-index: 5;
+  z-index: 21;
   display: flex;
   gap: 2px;
   padding: 3px;
   border-radius: 999px;
   border: 1px solid var(--panel-edge);
   background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
-  box-shadow: var(--shadow-sm), 0 2px 10px rgba(40, 30, 18, 0.18);
+  box-shadow: var(--shadow-sm), 0 4px 14px rgba(40, 30, 18, 0.22);
   cursor: pointer;
   font-family: var(--font-display);
   font-weight: 900;
@@ -187,17 +189,12 @@
   width: 104px;
   height: 104px;
   position: relative;
-  border-radius: var(--radius-sm);
-  padding: 6px;
-  background: linear-gradient(180deg, var(--city), #c9ad7a);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: transparent;
 }
-.tile-frame img {
-  width: 100%;
-  height: 100%;
+.tile-frame canvas {
+  width: 100% !important;
+  height: 100% !important;
   display: block;
-  border-radius: 4px;
-  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .tile-frame.empty {
   background: var(--parchment-deep);
@@ -245,6 +242,35 @@
   box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0.3);
 }
 .btn-danger:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px rgba(196, 88, 58, 0.3); }
+.control-hints {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--panel-edge);
+}
+.control-hints__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.control-hints__row kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--cream);
+  border: 1px solid var(--panel-edge);
+  box-shadow: 0 1px 0 var(--panel-edge);
+  color: var(--ink);
+  white-space: nowrap;
+}
 
 /* ── Move timeline ──────────────────────────────────────────────────────── */
 .timeline-head {
@@ -358,9 +384,91 @@
 .score-row .sname { flex: 1; text-align: left; font-weight: 700; color: var(--ink); }
 .score-row .sscore { font-family: var(--font-display); font-weight: 900; font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .endgame-actions { display: flex; gap: 10px; width: 100%; }
-.exit-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 100;
+.sidebar-exit {
+  margin-top: auto;
+  padding: 14px;
+  border-top: 1px solid var(--panel-edge);
+}
+
+/* ── Mobile (≤768px) ─────────────────────────────────────────────────────────
+   Two thin bars frame the board: scores on top, tile + rotate on the bottom
+   (thumb reach). Move history and the 2D toggle are hidden via JSX. */
+.mobile-topbar,
+.mobile-bottombar { display: none; }
+
+@media (max-width: 768px) {
+  .game-layout.is-mobile {
+    flex-direction: column;
+  }
+
+  .game-layout.is-mobile .board-area {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── Top bar: players + End Game ───────────────────────────────────────── */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
+    border-bottom: 1px solid var(--panel-edge);
+    box-shadow: 0 3px 14px rgba(40, 30, 18, 0.14);
+    z-index: 3;
+    flex-shrink: 0;
+  }
+  .mobile-topbar .player-panel {
+    flex: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0;
+    min-width: 0;
+  }
+  .mobile-topbar .player-panel .hud-label { display: none; }
+  .mobile-topbar .player-chip {
+    padding: 6px 9px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .mobile-topbar .player-chip .pname { max-width: 72px; font-size: 12px; }
+  .mobile-topbar .player-chip .pscore { font-size: 15px; }
+  .mobile-topbar .player-chip .pmeeples { display: none; }
+  .mobile-topbar .turn-flag { display: none; }
+
+  .mobile-endgame-btn {
+    flex-shrink: 0;
+    padding: 9px 14px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Bottom bar: tile + rotate, optional Skip Meeple ───────────────────── */
+  .mobile-bottombar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 10px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
+    border-top: 1px solid var(--panel-edge);
+    box-shadow: 0 -3px 14px rgba(40, 30, 18, 0.14);
+    z-index: 3;
+    flex-shrink: 0;
+  }
+  .mobile-bottombar .tile-preview {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+  }
+  .mobile-bottombar .deck-pill { display: none; }
+  .mobile-bottombar .tile-frame { width: 76px; height: 76px; padding: 4px; }
+  .mobile-bottombar .rotate-row { gap: 10px; }
+  .mobile-bottombar .rotate-btn { width: 52px; height: 52px; font-size: 26px; }
+  .mobile-skip-btn { flex-shrink: 0; padding: 10px 14px; }
 }

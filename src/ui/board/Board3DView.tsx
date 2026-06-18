@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Canvas, type ThreeEvent } from '@react-three/fiber';
+import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
@@ -16,8 +16,57 @@ interface Props {
   canInteract?: boolean;
 }
 
-const POLAR = Math.PI / 3; // ~60° — locked, no orbit
-const AZIMUTH = -Math.PI / 4; // fixed isometric diagonal
+const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
+const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit
+
+// Derive initial azimuth + pitch from the starting camera position so R resets
+// to exactly those angles regardless of the current zoom level.
+const _initOffset = new THREE.Vector3(12, 14, 12); // INIT_POS - origin
+const _initSph    = new THREE.Spherical().setFromVector3(_initOffset);
+const INIT_THETA  = _initSph.theta; // azimuth  ≈ π/4
+const INIT_PHI    = _initSph.phi;   // polar    ≈ 50°
+
+/**
+ * Keyboard shortcuts for camera angle presets (inside Canvas to access useThree).
+ *   R       — reset azimuth + pitch to initial isometric angles, zoom unchanged
+ *   1/2/3/4 — rotate to North / East / South / West, zoom + pitch unchanged
+ */
+function CameraHotkeys() {
+  const { camera, controls } = useThree();
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const ctrl = controls as any;
+      if (!ctrl?.update) return;
+
+      // Reorient to a new azimuth (and optionally pitch), preserving distance.
+      const applyAngle = (theta: number, phi?: number) => {
+        const offset = new THREE.Vector3().subVectors(camera.position, ctrl.target);
+        const sph = new THREE.Spherical().setFromVector3(offset);
+        sph.theta = theta;
+        if (phi !== undefined) sph.phi = phi;
+        sph.makeSafe();
+        offset.setFromSpherical(sph);
+        camera.position.copy(ctrl.target).add(offset);
+        ctrl.update();
+      };
+
+      switch (e.key) {
+        case 'r': case 'R': applyAngle(INIT_THETA, INIT_PHI); break;
+        case '1': applyAngle(Math.PI);        break; // North
+        case '2': applyAngle(Math.PI / 2);    break; // East
+        case '3': applyAngle(0);              break; // South
+        case '4': applyAngle(-Math.PI / 2);   break; // West
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [camera, controls]);
+
+  return null;
+}
 
 /** Lab-matched lighting + a directional light whose shadow frustum covers a board. */
 function SceneLighting() {
@@ -91,6 +140,24 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
 
   const pendingProto = state.pendingTile;
 
+  // Camera rotation via Shift + left-drag.
+  // three-stdlib OrbitControls already inverts LEFT when a modifier key is held:
+  //   LEFT=PAN + shift → rotate (if enableRotate)
+  //   LEFT=PAN + no modifier → pan
+  // So we only need to gate enableRotate on shiftHeld — no mouseButtons override needed.
+  const [shiftHeld, setShiftHeld] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(true); };
+    const onKeyUp   = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(false); };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup',   onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup',   onKeyUp);
+    };
+  }, []);
+
   // Track the last cell + the pointer-down position so we only re-render on a
   // cell change and don't place a tile at the end of a camera drag.
   const lastCellRef = useRef('');
@@ -124,13 +191,14 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
   }, [ghost, controller]);
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}>
+    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: shiftHeld ? 'crosshair' : undefined }}>
       <Canvas
         shadows="percentage"
         camera={{ position: [12, 14, 12], fov: 40 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
         <SceneLighting />
+        <CameraHotkeys />
         {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
         <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
 
@@ -178,15 +246,16 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
         <MapControls
           makeDefault
           target={[0, 0, 0]}
-          enableRotate={false}
-          minPolarAngle={POLAR}
-          maxPolarAngle={POLAR}
-          minAzimuthAngle={AZIMUTH}
-          maxAzimuthAngle={AZIMUTH}
+          enableRotate={shiftHeld}
+          minPolarAngle={POLAR_MIN_FREE}
+          maxPolarAngle={POLAR_MAX_FREE}
+          minAzimuthAngle={-Infinity}
+          maxAzimuthAngle={Infinity}
           minDistance={2}
           maxDistance={30}
         />
       </Canvas>
+
     </div>
   );
 }

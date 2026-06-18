@@ -15,6 +15,8 @@ export interface SegmentRef {
 /** A claimed feature owned by a player (index into PLAYER_COLORS). */
 export interface FeatureClaim extends SegmentRef {
   playerIndex: number;
+  /** True when the controlling player's meeple was physically placed on this tile. */
+  meepleHere?: boolean;
 }
 
 /** Active claims on a tile, keyed by feature `localId`. */

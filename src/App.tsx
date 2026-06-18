@@ -38,6 +38,7 @@ import './ui/styles/game.css';
 const LOCAL_SAVE_KEY = 'carc_local_game';
 const LOCAL_SAVE_AI_KEY = 'carc_local_game_ai';
 const LOCAL_SAVE_AI_MODELS_KEY = 'carc_local_game_ai_models';
+const LOCAL_SAVE_MOVELOG_KEY = 'carc_local_game_movelog';
 
 function saveLocalGame(state: Readonly<import('./core/game/GameState').GameState>): void {
   try { localStorage.setItem(LOCAL_SAVE_KEY, serializeState(state)); } catch { /* quota */ }
@@ -50,10 +51,23 @@ function loadLocalGame(): import('./core/game/GameState').GameState | null {
   } catch { return null; }
 }
 
+function saveLocalMoveLog(log: import('./ui/hud/TurnTimeline').MoveRecord[]): void {
+  try { localStorage.setItem(LOCAL_SAVE_MOVELOG_KEY, JSON.stringify(log)); } catch { /* quota */ }
+}
+
+function loadLocalMoveLog(): import('./ui/hud/TurnTimeline').MoveRecord[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_SAVE_MOVELOG_KEY);
+    return raw ? (JSON.parse(raw) as import('./ui/hud/TurnTimeline').MoveRecord[]) : [];
+  } catch { return []; }
+}
+
 function clearLocalGame(): void {
   localStorage.removeItem(LOCAL_SAVE_KEY);
+  localStorage.removeItem(LOCAL_SAVE_MOVELOG_KEY);
   try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
   try { localStorage.removeItem(LOCAL_SAVE_AI_MODELS_KEY); } catch {}
+  try { localStorage.removeItem(BOARD_VIEW_KEY); } catch {}
 }
 
 // ── Board view-mode (2D / 3D) persistence ───────────────────────────────────
@@ -69,6 +83,20 @@ function loadBoardViewMode(): BoardViewMode {
 
 function saveBoardViewMode(mode: BoardViewMode): void {
   try { localStorage.setItem(BOARD_VIEW_KEY, mode); } catch { /* quota */ }
+}
+
+// Mobile breakpoint mirrors the CSS @media block in game.css.
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  );
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 768px)');
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
 }
 
 // ── Network session persistence ────────────────────────────────────────────
@@ -120,8 +148,12 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const pendingReasoningUnavailableRef = useRef<MoveRecord['reasoningUnavailableReason'] | null>(null);
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
   const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
-  const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
+  const [moveLog, setMoveLog] = useState<MoveRecord[]>(loadLocalMoveLog);
+  useEffect(() => { saveLocalMoveLog(moveLog); }, [moveLog]);
+  const isMobile = useIsMobile();
   const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
+  const effectiveBoardView: BoardViewMode = isMobile ? '3d' : boardView;
+  const [showMap, setShowMap] = useState(false);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
@@ -284,8 +316,26 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const canEndGame = state.phase === 'PLACING_TILE' || state.phase === 'PLACING_MEEPLE';
+
   return (
-    <div className="game-layout" data-testid="game-layout">
+    <div className={`game-layout${isMobile ? ' is-mobile' : ''}`} data-testid="game-layout">
+      {isMobile ? (
+        <div className="mobile-topbar">
+          <PlayerPanel players={state.players} currentPlayerIndex={state.currentPlayerIndex} />
+          {canEndGame && (
+            <button
+              type="button"
+              data-testid="end-game-btn"
+              className="btn btn-sm btn-danger mobile-endgame-btn"
+              onClick={() => controller.endGame()}
+              aria-label="End Game"
+            >
+              End Game
+            </button>
+          )}
+        </div>
+      ) : (
       <div className="game-sidebar">
         <div className="game-brand">
           <span className="mark">C</span>
@@ -311,30 +361,70 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             canInteract={interactive}
           />
         </div>
-
+        {state.phase === 'GAME_OVER' && showMap && (
+          <div className="sidebar-exit">
+            <button
+              type="button"
+              className="btn btn-gold btn-block"
+              onClick={() => { clearLocalGame(); window.location.reload(); }}
+            >
+              Exit
+            </button>
+          </div>
+        )}
       </div>
+      )}
       <div className="board-area">
-        <button
-          type="button"
-          className="board-view-toggle"
-          onClick={toggleBoardView}
-          aria-label={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
-          title={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
-        >
-          <span className={boardView === '2d' ? 'is-active' : ''}>2D</span>
-          <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
-        </button>
-        {boardView === '3d' ? (
+        {!isMobile && (
+          <button
+            type="button"
+            className="board-view-toggle"
+            onClick={toggleBoardView}
+            aria-label={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
+            title={boardView === '3d' ? 'Zur 2D-Ansicht wechseln' : 'Zur 3D-Ansicht wechseln'}
+          >
+            <span className={boardView === '2d' ? 'is-active' : ''}>2D</span>
+            <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
+          </button>
+        )}
+        {effectiveBoardView === '3d' ? (
           <Board3DView state={state} controller={controller} canInteract={interactive} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
       </div>
-      <div className="game-timeline">
-        <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
-      </div>
+      {!isMobile && (
+        <div className="game-timeline">
+          <TurnTimeline moves={moveLog} onHighlight={handleHighlight} />
+        </div>
+      )}
+      {isMobile && (
+        <div className="mobile-bottombar">
+          <TilePreview
+            tile={state.pendingTile}
+            rotation={state.pendingRotation}
+            controller={controller}
+            deckSize={state.deck.remaining.length}
+            canInteract={interactive}
+          />
+          {state.phase === 'PLACING_MEEPLE' && interactive && (
+            <button
+              data-testid="skip-meeple-btn"
+              className="btn btn-sm btn-ghost mobile-skip-btn"
+              onClick={() => controller.skipMeeple()}
+            >
+              Skip Meeple
+            </button>
+          )}
+        </div>
+      )}
       {state.phase === 'GAME_OVER' && (
-        <EndGameScreen players={state.players} onRestart={() => { clearLocalGame(); window.location.reload(); }} />
+        <EndGameScreen
+          players={state.players}
+          onRestart={() => { clearLocalGame(); window.location.reload(); }}
+          showMap={showMap}
+          onShowMap={() => setShowMap(true)}
+        />
       )}
     </div>
   );
@@ -408,6 +498,7 @@ export default function App() {
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   async function handleCreateGame(playerName: string): Promise<void> {
+    try { localStorage.removeItem(BOARD_VIEW_KEY); } catch {}
     const session = await createGame(playerName);
     saveSession(session);
     pushUrl(session.gameId);
@@ -459,7 +550,11 @@ export default function App() {
     if (!import.meta.env.DEV) return;
     window.__carcTest = {
       startScenario({ players, deck }) {
+        // Preserve the board-view preference (set by the scenario runner's
+        // addInitScript) because clearLocalGame() now clears it too.
+        const savedView = localStorage.getItem(BOARD_VIEW_KEY);
         clearLocalGame();
+        if (savedView) localStorage.setItem(BOARD_VIEW_KEY, savedView);
         aiRef.current?.stop?.();
         aiRef.current = null;
         const ctrl = createGameController(
