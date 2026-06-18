@@ -124,8 +124,8 @@ const MEEPLE_OUTLINE: ReadonlyArray<readonly [number, number]> = [
   [90, 35], [95, 50], [78, 60], [85, 90], [65, 90], [50, 70],
 ];
 
-/** A thin extruded white meeple silhouette, `height` tall, centred on the origin. */
-export function meepleEmblem(height: number): THREE.Mesh {
+/** A thin extruded meeple silhouette, `height` tall, centred on the origin. Uses meepleWhite by default. */
+export function meepleEmblem(height: number, color = BANNER.meepleWhite): THREE.Mesh {
   const shape = new THREE.Shape();
   // Map SVG (0..100, y-down) → centred local XY (y-up), unit-ish then scaled.
   const toLocal = ([sx, sy]: readonly [number, number]): [number, number] => [
@@ -141,7 +141,7 @@ export function meepleEmblem(height: number): THREE.Mesh {
   shape.closePath();
   const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.5, bevelEnabled: false });
   geo.scale(height, height, 0.012);
-  const mesh = new THREE.Mesh(geo, standard(BANNER.meepleWhite));
+  const mesh = new THREE.Mesh(geo, standard(color));
   mesh.castShadow = true;
   return mesh;
 }
@@ -153,7 +153,7 @@ export function meepleEmblem(height: number): THREE.Mesh {
  * player colour, with a white meeple emblem on the cloth. Built around the
  * origin, then positioned/scaled by the caller via the returned group.
  */
-export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number): THREE.Group {
+export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string, scale: number, emblemColor = BANNER.meepleWhite): THREE.Group {
   const g = BANNER.gonfalon;
   const group = new THREE.Group();
   const poleMat = standard(BANNER.pole);
@@ -193,7 +193,7 @@ export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string,
   cloth.position.set(0, clothTop, g.clothThickness / 2);
   group.add(cloth);
 
-  const emblem = meepleEmblem(g.clothHeight * g.emblemFraction);
+  const emblem = meepleEmblem(g.clothHeight * g.emblemFraction, emblemColor);
   emblem.position.set(0, clothTop - g.clothHeight * 0.5, g.clothThickness + 0.001);
   group.add(emblem);
 
@@ -206,7 +206,7 @@ export function playerGonfalon([cx, cz]: World2, baseTop: number, color: string,
  * A heraldic shield on a short stave: a rounded crest in the player colour with
  * a white meeple emblem. Used for monasteries, mounted at the roof apex.
  */
-export function playerShield([cx, cz]: World2, baseTop: number, color: string): THREE.Group {
+export function playerShield([cx, cz]: World2, baseTop: number, color: string, emblemColor = BANNER.meepleWhite): THREE.Group {
   const s = BANNER.shield;
   const group = new THREE.Group();
 
@@ -220,7 +220,7 @@ export function playerShield([cx, cz]: World2, baseTop: number, color: string): 
   crest.position.set(0, s.staveHeight + s.height * 0.45, 0);
   group.add(crest);
 
-  const emblem = meepleEmblem(s.height * s.emblemFraction);
+  const emblem = meepleEmblem(s.height * s.emblemFraction, emblemColor);
   emblem.position.set(0, s.staveHeight + s.height * 0.45, s.thickness / 2 + 0.001);
   group.add(emblem);
 
@@ -229,7 +229,7 @@ export function playerShield([cx, cz]: World2, baseTop: number, color: string): 
 }
 
 /** A small player pennant on a short crossarm, hung from the lantern post. */
-function lanternPennant(color: string): THREE.Group {
+function lanternPennant(color: string, emblemColor = BANNER.meepleWhite): THREE.Group {
   const L = BANNER.lantern;
   const b = L.banner;
   const group = new THREE.Group();
@@ -249,7 +249,7 @@ function lanternPennant(color: string): THREE.Group {
   cloth.position.set(clothX, topY - b.height / 2, b.thickness / 2);
   group.add(cloth);
 
-  const emblem = meepleEmblem(b.height * b.emblemFraction);
+  const emblem = meepleEmblem(b.height * b.emblemFraction, emblemColor);
   emblem.position.set(clothX, topY - b.height / 2, b.thickness + 0.001);
   group.add(emblem);
 
@@ -262,7 +262,7 @@ function lanternPennant(color: string): THREE.Group {
  * hangs a pennant on the post. Built around the origin, positioned by the
  * caller via the returned group's transform.
  */
-export function roadLantern([cx, cz]: World2, color: string | null): THREE.Group {
+export function roadLantern([cx, cz]: World2, color: string | null, emblemColor = BANNER.meepleWhite): THREE.Group {
   const L = BANNER.lantern;
   const group = new THREE.Group();
 
@@ -293,7 +293,7 @@ export function roadLantern([cx, cz]: World2, color: string | null): THREE.Group
   cap.position.y = L.postHeight + L.bodySize * 1.15 + L.capHeight / 2;
   group.add(cap);
 
-  if (color) group.add(lanternPennant(color));
+  if (color) group.add(lanternPennant(color, emblemColor));
 
   group.position.set(cx, 0, cz);
   return group;

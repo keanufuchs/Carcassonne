@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { cityAnchor, cityShieldAnchor, fieldAnchor } from './banner';
+import * as THREE from 'three';
+import { cityAnchor, cityShieldAnchor, fieldAnchor, meepleEmblem } from './banner';
 import { pointInPolygon, type World2 } from './util';
+import { BANNER } from '../palette';
 
 describe('cityAnchor', () => {
   it('returns the centroid of all city parts', () => {
@@ -46,5 +48,19 @@ describe('fieldAnchor', () => {
     // Monastery hall is ~0.2 wide → its corner reaches ~0.14 from centre.
     const distToMonastery = Math.hypot(anchor[0] - monastery[0], anchor[1] - monastery[1]);
     expect(distToMonastery).toBeGreaterThan(0.15);
+  });
+});
+
+describe('meepleEmblem', () => {
+  it('uses meepleWhite by default', () => {
+    const mesh = meepleEmblem(0.1);
+    const mat = mesh.material as THREE.MeshStandardMaterial;
+    expect(mat.color.getHexString()).toBe(new THREE.Color(BANNER.meepleWhite).getHexString());
+  });
+
+  it('uses the provided color when given', () => {
+    const mesh = meepleEmblem(0.1, BANNER.meepleGold);
+    const mat = mesh.material as THREE.MeshStandardMaterial;
+    expect(mat.color.getHexString()).toBe(new THREE.Color(BANNER.meepleGold).getHexString());
   });
 });
