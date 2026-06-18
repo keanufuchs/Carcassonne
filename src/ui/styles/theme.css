@@ -8,10 +8,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  /* ── Atmosphere (matches the 3D scene background #b6c4d0) ─────────────── */
-  --sky-top: #d2dde7;
-  --sky-mid: #c3d0dc;
-  --sky-bottom: #b6c4d0;
+  /* ── Atmosphere (matches the 3D scene background) ───────────────────── */
+  --sky-top: #f2ecdc;
+  --sky-mid: #e8deca;
+  --sky-bottom: #ddd0b8;
 
   /* ── Surfaces — warm parchment ───────────────────────────────────────── */
   --cream: #fbf6ea;
