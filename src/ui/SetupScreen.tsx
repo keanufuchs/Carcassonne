@@ -3,6 +3,7 @@ import { GameShowcase } from './GameShowcase';
 import { MeepleIcon } from './board/MeepleIcon';
 import { getAvailableModels, getDefaultModel } from '../ai/models';
 import { CustomSelect } from './CustomSelect';
+import { SimpleSelect } from './SimpleSelect';
 import './styles/menu.css';
 
 export type AIMode = 'human' | 'random' | 'heuristic' | 'intelligent';
@@ -185,22 +186,22 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
                       )}
                     </div>
                     {p.aiMode === 'intelligent' && AI_MODELS.length > 1 && (
-                      <div className="player-model-row">
+                      <div className="player-row player-model-row">
+                        <span style={{ flexShrink: 0, width: 22 }} aria-hidden="true" />
                         <label className="model-label">Model</label>
-                        <select
-                          className="select"
+                        <SimpleSelect
                           title="Reasoning-AI model"
                           value={p.aiModel ?? getDefaultModel()}
-                          onChange={e => {
+                          options={AI_MODELS.map(m => ({ value: m, label: m }))}
+                          onChange={model => {
                             const n = [...localPlayers];
-                            n[i] = { ...n[i], aiModel: e.target.value };
+                            n[i] = { ...n[i], aiModel: model };
                             setLocalPlayers(n);
                           }}
-                        >
-                          {AI_MODELS.map(m => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
+                        />
+                        {localPlayers.length > 2 && (
+                          <span className="row-remove-spacer" aria-hidden="true" />
+                        )}
                       </div>
                     )}
                   </div>
