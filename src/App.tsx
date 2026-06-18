@@ -38,6 +38,7 @@ import './ui/styles/game.css';
 const LOCAL_SAVE_KEY = 'carc_local_game';
 const LOCAL_SAVE_AI_KEY = 'carc_local_game_ai';
 const LOCAL_SAVE_AI_MODELS_KEY = 'carc_local_game_ai_models';
+const LOCAL_SAVE_MOVELOG_KEY = 'carc_local_game_movelog';
 
 function saveLocalGame(state: Readonly<import('./core/game/GameState').GameState>): void {
   try { localStorage.setItem(LOCAL_SAVE_KEY, serializeState(state)); } catch { /* quota */ }
@@ -50,8 +51,20 @@ function loadLocalGame(): import('./core/game/GameState').GameState | null {
   } catch { return null; }
 }
 
+function saveLocalMoveLog(log: import('./ui/hud/TurnTimeline').MoveRecord[]): void {
+  try { localStorage.setItem(LOCAL_SAVE_MOVELOG_KEY, JSON.stringify(log)); } catch { /* quota */ }
+}
+
+function loadLocalMoveLog(): import('./ui/hud/TurnTimeline').MoveRecord[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_SAVE_MOVELOG_KEY);
+    return raw ? (JSON.parse(raw) as import('./ui/hud/TurnTimeline').MoveRecord[]) : [];
+  } catch { return []; }
+}
+
 function clearLocalGame(): void {
   localStorage.removeItem(LOCAL_SAVE_KEY);
+  localStorage.removeItem(LOCAL_SAVE_MOVELOG_KEY);
   try { localStorage.removeItem(LOCAL_SAVE_AI_KEY); } catch {}
   try { localStorage.removeItem(LOCAL_SAVE_AI_MODELS_KEY); } catch {}
 }
@@ -120,7 +133,8 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const pendingReasoningUnavailableRef = useRef<MoveRecord['reasoningUnavailableReason'] | null>(null);
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
   const pendingHeuristicRef = useRef<HeuristicAnalysis | null>(null);
-  const [moveLog, setMoveLog] = useState<MoveRecord[]>([]);
+  const [moveLog, setMoveLog] = useState<MoveRecord[]>(loadLocalMoveLog);
+  useEffect(() => { saveLocalMoveLog(moveLog); }, [moveLog]);
   const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
