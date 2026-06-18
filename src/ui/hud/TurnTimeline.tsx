@@ -1,10 +1,24 @@
 import tileDistribution from '../../core/deck/tileDistribution.json';
 import type { ToolCallEntry } from './toolCallAccumulator';
 import type { HeuristicAnalysis } from '../../ai/heuristic';
+import type { Rotation } from '../../core/types';
+import { prototypeById } from '../../core/deck/baseGameTiles';
+import { getTileSnapshot } from '../../three/tileSnapshot';
 
 const tileImageMap: Record<string, string> = Object.fromEntries(
   (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
 );
+
+/** The move thumbnail: the real 3D tile (rendered once, cached), with the flat SVG as fallback. */
+function MoveThumb({ prototypeId, rotation }: { prototypeId: string; rotation: number }) {
+  const proto = prototypeById.get(prototypeId);
+  const snapshot = proto ? getTileSnapshot(proto, rotation as Rotation) : null;
+  if (snapshot) {
+    return <img src={snapshot} alt={prototypeId} />;
+  }
+  // Fallback when 3D rendering is unavailable (e.g. headless): flat SVG, CSS-rotated.
+  return <img src={tileImageMap[prototypeId] ?? ''} alt={prototypeId} style={{ transform: `rotate(${rotation}deg)` }} />;
+}
 
 export interface MoveRecord {
   turn: number;
@@ -58,11 +72,7 @@ function MoveCard({ m, onHighlight }: { m: MoveRecord; onHighlight?: (coord: { x
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div className="thumb">
-          <img
-            src={tileImageMap[m.prototypeId] ?? ''}
-            alt={m.prototypeId}
-            style={{ transform: `rotate(${m.rotation}deg)` }}
-          />
+          <MoveThumb prototypeId={m.prototypeId} rotation={m.rotation} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="move-pname" style={{ color: m.playerColor }}>{m.playerName}</div>
