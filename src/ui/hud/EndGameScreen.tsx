@@ -45,7 +45,7 @@ export function EndGameScreen({ players, onRestart }: Props) {
           >
             View Map
           </button>
-          <button className="btn btn-primary btn-block" onClick={onRestart}>Play Again</button>
+          <button className="btn btn-primary btn-block" onClick={onRestart}>Menu</button>
         </div>
       </div>
     </div>
