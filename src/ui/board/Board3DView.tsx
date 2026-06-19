@@ -4,8 +4,8 @@ import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
 import type { GameState } from '../../core/game/GameState';
 import type { GameController } from '../../controller/GameController';
-import type { Coord, FeatureId } from '../../core/types';
-import { coordKey } from '../../core/types';
+import type { Coord, FeatureId, SegmentRef } from '../../core/types';
+import { coordKey, segmentKey } from '../../core/types';
 import { PlacedTile3D, type BoardHover } from './PlacedTile3D';
 import { GhostTile3D } from './GhostTile3D';
 import { HighlightMarker3D } from './HighlightMarker3D';
@@ -20,6 +20,12 @@ interface Props {
   highlightedCoord?: { x: number; y: number } | null;
   /** Bumped each time a highlight is (re-)triggered so the pulse restarts. */
   highlightKey?: number;
+  /**
+   * Meeple target selected from the mobile choice list (issue #34). When set,
+   * its feature is highlighted on the board so the list selection has a visible
+   * reference, just like hovering a region with a mouse does.
+   */
+  previewMeepleRef?: SegmentRef | null;
   /**
    * Decorative background mode (menu showcase): drops the expensive render
    * passes — soft shadows, retina DPR, antialias — since the board sits behind
@@ -112,7 +118,7 @@ function SceneLighting({ shadows = true }: { shadows?: boolean }) {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, decorative = false }: Props) {
+export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -161,6 +167,14 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
     },
     [state.board.registry, state.players, isMeeplePhase],
   );
+
+  // Drive the board highlight from the mobile list selection: look up the
+  // feature behind the chosen segment and light it the same way a hover would.
+  useEffect(() => {
+    if (!isMeeplePhase || !previewMeepleRef) return;
+    const fid = state.board.registry.segmentToFeature.get(segmentKey(previewMeepleRef));
+    handleHoverFeature(fid ?? null);
+  }, [isMeeplePhase, previewMeepleRef, state.board.registry, handleHoverFeature]);
 
   const pendingProto = state.pendingTile;
 
