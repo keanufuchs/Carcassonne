@@ -8,6 +8,7 @@ import type { Coord, FeatureId } from '../../core/types';
 import { coordKey } from '../../core/types';
 import { PlacedTile3D, type BoardHover } from './PlacedTile3D';
 import { GhostTile3D } from './GhostTile3D';
+import { HighlightMarker3D } from './HighlightMarker3D';
 import { featureHighlightColor } from './board3d';
 import { playTilePlacementSound } from '../sound/tileSound';
 
@@ -15,6 +16,10 @@ interface Props {
   state: GameState;
   controller: GameController;
   canInteract?: boolean;
+  /** Tile coord to highlight (e.g. clicked in the Placement History), or null. */
+  highlightedCoord?: { x: number; y: number } | null;
+  /** Bumped each time a highlight is (re-)triggered so the pulse restarts. */
+  highlightKey?: number;
   /**
    * Decorative background mode (menu showcase): drops the expensive render
    * passes — soft shadows, retina DPR, antialias — since the board sits behind
@@ -107,7 +112,7 @@ function SceneLighting({ shadows = true }: { shadows?: boolean }) {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true, decorative = false }: Props) {
+export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, decorative = false }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -240,6 +245,10 @@ export function Board3DView({ state, controller, canInteract = true, decorative 
             animateDrop={tile.tileId === state.lastPlacedTileId}
           />
         ))}
+
+        {highlightedCoord && (
+          <HighlightMarker3D key={highlightKey} coord={highlightedCoord} />
+        )}
 
         {/* Invisible ground plane: maps the cursor to a grid cell and owns the
             placement click. Sole pointer target so the ghost never flickers. */}
