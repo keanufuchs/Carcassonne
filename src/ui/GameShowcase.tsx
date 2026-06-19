@@ -37,12 +37,23 @@ export function GameShowcase() {
     // board. Instead each mount owns a `cancelled`-gated loop that its own
     // cleanup stops; the surviving mount runs indefinitely.
     let cancelled = false;
+    // Coalesce render-triggering: the AI publishes several times per turn
+    // (draw → rotate → place → meeple), but the decorative board only needs a
+    // single React reconcile per frame. rAF batches a publish burst into one.
+    let rafId = 0;
+    const scheduleRender = () => {
+      if (cancelled || rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (!cancelled) forceRender(v => v + 1);
+      });
+    };
 
     async function loop() {
       while (!cancelled) {
         const ctrl = createGameController();
         ctrl.startGame(SHOWCASE_PLAYERS);
-        const unsub = ctrl.subscribe(() => { if (!cancelled) forceRender(v => v + 1); });
+        const unsub = ctrl.subscribe(scheduleRender);
         setController(ctrl);
 
         while (!cancelled) {
@@ -61,14 +72,14 @@ export function GameShowcase() {
     }
 
     loop();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; if (rafId) cancelAnimationFrame(rafId); };
   }, []);
 
   if (!controller) return null;
 
   return (
     <div className="showcase" aria-hidden="true">
-      <Board3DView state={controller.getState()} controller={controller} canInteract={false} />
+      <Board3DView state={controller.getState()} controller={controller} canInteract={false} decorative />
     </div>
   );
 }
