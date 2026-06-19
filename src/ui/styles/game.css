@@ -497,13 +497,33 @@
 .mobile-bottombar { display: none; }
 
 @media (max-width: 768px) {
+  /* Lock the page on mobile while a game is on screen: no body scroll, no
+     pull-to-refresh / rubber-band bounce. position:fixed pins the body to the
+     viewport so a stray vertical swipe can't scroll the page; the board
+     pans/zooms inside its own canvas and the meeple list keeps its own
+     horizontal scroll. Scoped to .carc-game-active so the scrollable setup /
+     lobby menus are unaffected (issue #37). */
+  body.carc-game-active {
+    overflow: hidden;
+    overscroll-behavior: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+  }
+
   .game-layout.is-mobile {
     flex-direction: column;
+    /* dvh tracks the *visible* viewport so the layout never exceeds the screen
+       (100vh includes the collapsible URL bar and would overflow → scroll). */
+    height: 100dvh;
+    overscroll-behavior: none;
   }
 
   .game-layout.is-mobile .board-area {
     flex: 1;
     min-height: 0;
+    /* Hand all touch gestures to the 3D canvas; the browser never scrolls here. */
+    touch-action: none;
   }
 
   /* ── Top bar: players + End Game ───────────────────────────────────────── */

@@ -360,6 +360,14 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Lock body scrolling on mobile while the game is mounted; the CSS rule keyed
+  // on this class fixes the page to the viewport so nothing scrolls (issue #37).
+  useEffect(() => {
+    if (!isMobile) return;
+    document.body.classList.add('carc-game-active');
+    return () => document.body.classList.remove('carc-game-active');
+  }, [isMobile]);
+
   const canEndGame = state.phase === 'PLACING_TILE' || state.phase === 'PLACING_MEEPLE';
 
   return (
