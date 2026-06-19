@@ -22,6 +22,10 @@ import { Controls } from './ui/hud/Controls';
 import { EndGameScreen } from './ui/hud/EndGameScreen';
 import { TurnTimeline } from './ui/hud/TurnTimeline';
 import type { MoveRecord } from './ui/hud/TurnTimeline';
+import { MeepleChoiceList } from './ui/hud/MeepleChoiceList';
+import { buildMeepleChoices, type MeepleChoice } from './ui/hud/meepleChoices';
+import type { SegmentRef } from './core/types';
+import { segmentKey } from './core/types';
 import { SetupScreen } from './ui/SetupScreen';
 import { LobbyScreen } from './ui/LobbyScreen';
 import type { GameController } from './controller/GameController';
@@ -165,6 +169,8 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
   const effectiveBoardView: BoardViewMode = isMobile ? '3d' : boardView;
   const [showMap, setShowMap] = useState(false);
+  // Mobile meeple placement: the segment picked from the choice list (issue #34).
+  const [selectedMeepleRef, setSelectedMeepleRef] = useState<SegmentRef | null>(null);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
@@ -177,6 +183,25 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
     state.version,
   ]);
   const canRotatePreview = state.phase === 'PLACING_TILE' && tilePreview.tile !== null;
+
+  // Valid meeple placements on the last tile, enriched with each segment's kind
+  // so the mobile choice list can label them (issue #34).
+  const meepleChoices = useMemo<MeepleChoice[]>(() => {
+    if (state.phase !== 'PLACING_MEEPLE' || !interactive) return [];
+    const placed = state.lastPlacedTileId
+      ? [...state.board.tiles.values()].find(t => t.tileId === state.lastPlacedTileId)
+      : undefined;
+    if (!placed) return [];
+    return buildMeepleChoices(controller.getMeepleTargetsForLastTile(), placed.segmentInstances);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.phase, state.lastPlacedTileId, state.version, interactive, controller]);
+
+  // Derive the active selection so a stale pick (after the tile/phase changed)
+  // simply falls away instead of needing an effect to reset it.
+  const selectedKey = selectedMeepleRef ? segmentKey(selectedMeepleRef) : null;
+  const activeMeepleRef = meepleChoices.some(c => segmentKey(c.ref) === selectedKey)
+    ? selectedMeepleRef
+    : null;
 
   function toggleBoardView() {
     setBoardView(prev => {
@@ -335,6 +360,14 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
     run();
   }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Lock body scrolling on mobile while the game is mounted; the CSS rule keyed
+  // on this class fixes the page to the viewport so nothing scrolls (issue #37).
+  useEffect(() => {
+    if (!isMobile) return;
+    document.body.classList.add('carc-game-active');
+    return () => document.body.classList.remove('carc-game-active');
+  }, [isMobile]);
+
   const canEndGame = state.phase === 'PLACING_TILE' || state.phase === 'PLACING_MEEPLE';
 
   return (
@@ -351,6 +384,17 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
               aria-label="End Game"
             >
               End Game
+            </button>
+          )}
+          {state.phase === 'GAME_OVER' && showMap && (
+            <button
+              type="button"
+              data-testid="mobile-exit-btn"
+              className="btn btn-sm btn-gold mobile-endgame-btn"
+              onClick={() => { clearLocalGame(); window.location.reload(); }}
+              aria-label="Exit"
+            >
+              Exit
             </button>
           )}
         </div>
@@ -410,7 +454,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           </button>
         )}
         {effectiveBoardView === '3d' ? (
-          <Board3DView state={state} controller={controller} canInteract={interactive} />
+          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
@@ -422,23 +466,26 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       )}
       {isMobile && (
         <div className="mobile-bottombar">
-          <TilePreview
-            tile={tilePreview.tile}
-            rotation={tilePreview.rotation}
-            controller={controller}
-            deckSize={state.deck.remaining.length}
-            canInteract={interactive}
-            canRotate={canRotatePreview}
-            viewMode={effectiveBoardView}
-          />
-          {state.phase === 'PLACING_MEEPLE' && interactive && (
-            <button
-              data-testid="skip-meeple-btn"
-              className="btn btn-sm btn-ghost mobile-skip-btn"
-              onClick={() => controller.skipMeeple()}
-            >
-              Skip Meeple
-            </button>
+          {state.phase === 'PLACING_MEEPLE' && interactive ? (
+            <MeepleChoiceList
+              choices={meepleChoices}
+              selectedKey={activeMeepleRef ? segmentKey(activeMeepleRef) : null}
+              onSelect={setSelectedMeepleRef}
+              onConfirm={() => {
+                if (activeMeepleRef) controller.placeMeeple(activeMeepleRef);
+              }}
+              onSkip={() => controller.skipMeeple()}
+            />
+          ) : (
+            <TilePreview
+              tile={tilePreview.tile}
+              rotation={tilePreview.rotation}
+              controller={controller}
+              deckSize={state.deck.remaining.length}
+              canInteract={interactive}
+              canRotate={canRotatePreview}
+              viewMode={effectiveBoardView}
+            />
           )}
         </div>
       )}

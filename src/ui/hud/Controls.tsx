@@ -67,7 +67,8 @@ function useMeepleIdleReminder(armed: boolean): ReminderState {
 
 export function Controls({ phase, currentPlayerName, controller, canInteract = true, viewMode = '3d' }: Props) {
   const active = phase === 'PLACING_TILE' || phase === 'PLACING_MEEPLE';
-  const [showHints, setShowHints] = useState(false);
+  // Shortcuts panel starts expanded so players discover the controls by default (issue #35).
+  const [showHints, setShowHints] = useState(true);
   const meepleReminder = useMeepleIdleReminder(phase === 'PLACING_MEEPLE' && canInteract);
   return (
     <div className="hud-pad controls">

@@ -14,6 +14,7 @@ import { scoreIncompleteEndGame } from '../scoring/endGame';
 import { scoreFarmers } from '../scoring/farmers';
 import type { PlacedTile } from '../tile/Tile';
 import type { GameState } from './GameState';
+import { generateId } from '../util/id';
 
 export function startGame(
   playerNames: string[],
@@ -41,7 +42,7 @@ export function startGame(
   if (!deckOverride) shuffle(deck, rng);
 
   const state: GameState = {
-    gameId: crypto.randomUUID(),
+    gameId: generateId(),
     version: 1,
     board: createEmptyBoard(),
     deck,

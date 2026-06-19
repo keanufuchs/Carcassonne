@@ -52,7 +52,11 @@ export function GameShowcase() {
     async function loop() {
       while (!cancelled) {
         const ctrl = createGameController();
-        ctrl.startGame(SHOWCASE_PLAYERS);
+        const started = ctrl.startGame(SHOWCASE_PLAYERS);
+        if (!started.ok) {
+          await delay(1000);
+          continue;
+        }
         const unsub = ctrl.subscribe(scheduleRender);
         setController(ctrl);
 

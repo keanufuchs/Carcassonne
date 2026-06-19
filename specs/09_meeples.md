@@ -82,6 +82,23 @@ End-game: meeples are **not** returned (game terminates).
 - "Skip Meeple" button always visible during this phase.
 - After placement or skip, targets disappear (phase leaves `PLACING_MEEPLE`).
 
+### Mobile: list-based selection (issue #34)
+
+On touch devices the highlighted regions are hard to tap accurately, so the
+mobile bottom bar swaps the tile preview for a **`MeepleChoiceList`** during
+`PLACING_MEEPLE`:
+
+- `buildMeepleChoices(targets, segmentInstances)` (`src/ui/hud/meepleChoices.ts`)
+  pairs each target ref with its segment `kind`.
+- The list shows one numbered, labelled entry per choice (`1. City`, `2. Road`, …).
+- Tapping an entry **selects** it (does not place yet) and highlights the matching
+  feature on the 3D board via `Board3DView`'s `previewMeepleRef` prop — the visual
+  highlight is kept purely as a reference.
+- A **"Place Meeple"** button (enabled once a choice is selected) commits via
+  `controller.placeMeeple(ref)`; **"Skip"** calls `controller.skipMeeple()`.
+- A stale selection is dropped by derivation (the active ref must still be among
+  the current choices), so changing tile/phase clears it without an effect.
+
 ### §9.5a Segment position algorithm
 
 Meeple targets and placed meeples use **CSS `position: absolute`** with `top`/`left` as percentages — no SVG required.
@@ -119,6 +136,9 @@ Each `SegmentInstance` carries `edgeSlots: EdgeSlot[]` (copied from `TilePrototy
 |---------|---------------|
 | Each valid meeple segment target | `meeple-target` |
 | Skip meeple button | `skip-meeple-btn` |
+| Mobile choice list (container) | `meeple-choice-list` |
+| Mobile choice list entry | `meeple-choice-option` |
+| Mobile "Place Meeple" confirm | `meeple-choice-confirm` |
 
 ## 9.7 State transition diagram
 
