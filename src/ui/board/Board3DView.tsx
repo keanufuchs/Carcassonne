@@ -15,6 +15,13 @@ interface Props {
   state: GameState;
   controller: GameController;
   canInteract?: boolean;
+  /**
+   * Decorative background mode (menu showcase): drops the expensive render
+   * passes — soft shadows, retina DPR, antialias — since the board sits behind
+   * a veil and is never interacted with. Cuts GPU cost dramatically on the
+   * Home menu without a visible quality loss.
+   */
+  decorative?: boolean;
 }
 
 const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
@@ -70,7 +77,7 @@ function CameraHotkeys() {
 }
 
 /** Lab-matched lighting + a directional light whose shadow frustum covers a board. */
-function SceneLighting() {
+function SceneLighting({ shadows = true }: { shadows?: boolean }) {
   return (
     <>
       <color attach="background" args={['#b6c4d0']} />
@@ -81,7 +88,7 @@ function SceneLighting() {
         position={[14, 22, 12]}
         color="#fff2da"
         intensity={1.7}
-        castShadow
+        castShadow={shadows}
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0002}
         shadow-camera-left={-22}
@@ -100,7 +107,7 @@ function SceneLighting() {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true }: Props) {
+export function Board3DView({ state, controller, canInteract = true, decorative = false }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -207,11 +214,14 @@ export function Board3DView({ state, controller, canInteract = true }: Props) {
   return (
     <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: canInteract && shiftHeld ? 'crosshair' : undefined }}>
       <Canvas
-        shadows="percentage"
+        shadows={decorative ? false : 'percentage'}
+        // Cap DPR: retina (2–3×) is invisible behind the menu veil and wasteful
+        // in-game. [1, 2] is the R3F-recommended default; decorative pins to 1.
+        dpr={decorative ? 1 : [1, 2]}
         camera={{ position: [12, 14, 12], fov: 40 }}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
+        gl={{ antialias: !decorative, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
-        <SceneLighting />
+        <SceneLighting shadows={!decorative} />
         {canInteract && <CameraHotkeys />}
         {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
         <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
