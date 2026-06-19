@@ -2,11 +2,34 @@ import { describe, it, expect } from 'vitest';
 import { startGame, drawTile, rotatePending, placeTile, skipMeeple, endGame } from './Game';
 import { _resetTileSeq } from '../tile/Tile';
 import type { GameState } from './GameState';
+import type { TilePrototype } from '../types/tile';
 
 function freshGame(playerNames: string[] = ['Alice', 'Bob']): GameState {
   _resetTileSeq();
   return startGame(playerNames, () => 0.5);
 }
+
+/** Builds a prototype whose four edges are all the given terrain (one segment). */
+function uniformTile(id: string, terrain: 'FIELD' | 'ROAD'): TilePrototype {
+  const sides = ['N', 'E', 'S', 'W'] as const;
+  const positions = ['L', 'C', 'R'] as const;
+  return {
+    id,
+    edges: { N: [terrain, terrain, terrain], E: [terrain, terrain, terrain], S: [terrain, terrain, terrain], W: [terrain, terrain, terrain] },
+    segments: [{
+      localId: 0,
+      kind: terrain,
+      edgeSlots: sides.flatMap(side => positions.map(pos => ({ side, pos }))),
+    }],
+    hasMonastery: false,
+  };
+}
+
+// The start tile (TILE-D) has edges N=CITY, E/W=FIELD·ROAD·FIELD, S=FIELD·FIELD·FIELD.
+// An all-ROAD tile matches none of those in any rotation → never placeable next to
+// a lone start tile. An all-FIELD tile matches the start tile's southern FIELD edge.
+const UNPLACEABLE_TILE = uniformTile('UNPLACEABLE', 'ROAD');
+const PLACEABLE_TILE = uniformTile('PLACEABLE-FIELD', 'FIELD');
 
 describe('Game flow', () => {
   describe('startGame', () => {
@@ -57,6 +80,48 @@ describe('Game flow', () => {
       const state = freshGame();
       state.phase = 'PLACING_MEEPLE';
       expect(drawTile(state).ok).toBe(false);
+    });
+  });
+
+  // Issue #33: a drawn tile with no legal placement must be discarded and a
+  // replacement drawn automatically, so the player's turn continues normally.
+  describe('drawTile — no valid placement (issue #33)', () => {
+    it('discards an unplaceable tile and draws the next placeable one', () => {
+      const state = startGame(['A', 'B'], () => 0.5, [UNPLACEABLE_TILE, PLACEABLE_TILE]);
+
+      const r = drawTile(state);
+
+      expect(r.ok).toBe(true);
+      // The unplaceable tile was skipped; the placeable replacement is pending.
+      expect(state.pendingTile?.id).toBe('PLACEABLE-FIELD');
+      // Both the discarded and the drawn tile are removed from the deck.
+      expect(state.deck.remaining).toHaveLength(0);
+      // Turn continues normally — still the same player's placement phase.
+      expect(state.phase).toBe('PLACING_TILE');
+      expect(state.currentPlayerIndex).toBe(0);
+    });
+
+    it('keeps discarding until a placeable tile is found', () => {
+      const state = startGame(
+        ['A', 'B'],
+        () => 0.5,
+        [UNPLACEABLE_TILE, uniformTile('UNPLACEABLE-2', 'ROAD'), PLACEABLE_TILE],
+      );
+
+      drawTile(state);
+
+      expect(state.pendingTile?.id).toBe('PLACEABLE-FIELD');
+      expect(state.deck.remaining).toHaveLength(0);
+    });
+
+    it('ends the game when every remaining tile is unplaceable', () => {
+      const state = startGame(['A', 'B'], () => 0.5, [UNPLACEABLE_TILE]);
+
+      const r = drawTile(state);
+
+      expect(r.ok).toBe(true);
+      expect(state.pendingTile).toBeNull();
+      expect(state.phase).toBe('GAME_OVER');
     });
   });
 
