@@ -378,6 +378,17 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
               End Game
             </button>
           )}
+          {state.phase === 'GAME_OVER' && showMap && (
+            <button
+              type="button"
+              data-testid="mobile-exit-btn"
+              className="btn btn-sm btn-gold mobile-endgame-btn"
+              onClick={() => { clearLocalGame(); window.location.reload(); }}
+              aria-label="Exit"
+            >
+              Exit
+            </button>
+          )}
         </div>
       ) : (
       <div className="game-sidebar">
