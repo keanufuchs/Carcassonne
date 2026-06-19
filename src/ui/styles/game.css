@@ -652,4 +652,68 @@
   }
   .meeple-choice-place { flex: 1; }
   .meeple-choice-place:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Drag-to-place: tile handle in the bottom bar ───────────── */
+  .mobile-bottombar .tile-frame.is-draggable {
+    /* Claim the touch gesture so dragging the tile never scrolls/zooms the page. */
+    touch-action: none;
+    cursor: grab;
+    position: relative;
+  }
+  .mobile-bottombar .tile-frame.is-draggable:active { cursor: grabbing; }
+  .tile-drag-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(40, 30, 18, 0.78);
+    color: #fdf6e3;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+
+/* ── Drag-to-place: floating tile + reject toast ───────────────── */
+.tile-drag-overlay {
+  position: fixed;
+  z-index: 50;
+  width: 84px;
+  height: 84px;
+  /* Lift the tile above the finger so it isn't hidden under the thumb. */
+  transform: translate(-50%, -130%);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.45));
+}
+.tile-drag-overlay img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 6px;
+}
+.mobile-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 128px;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: 80vw;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(40, 30, 18, 0.92);
+  color: #fdf6e3;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  animation: toast-pop 160ms ease-out;
+}
+@keyframes toast-pop {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }

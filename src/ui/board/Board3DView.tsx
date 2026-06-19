@@ -33,6 +33,67 @@ interface Props {
    * Home menu without a visible quality loss.
    */
   decorative?: boolean;
+  /**
+   * Touch drag-to-place (mobile): the live finger position in client
+   * pixels while the player drags the pending tile out of the bottom bar, or
+   * null when no drag is in progress. The board raycasts this point onto the
+   * grid so the ghost follows the finger.
+   */
+  dragPointer?: { clientX: number; clientY: number } | null;
+  /**
+   * Reports the cell currently under the drag finger and whether the pending
+   * tile can legally be placed there, so the parent can drop it on release.
+   * Called with null when the finger is off the board.
+   */
+  onDragHoverChange?: (result: { coord: Coord; legal: boolean } | null) => void;
+}
+
+/**
+ * Maps a client-pixel point onto the board grid by raycasting the camera ray
+ * against the ground plane (y = 0). Mounted only while a touch drag is active;
+ * on unmount it clears the hover so the ghost disappears. Lives inside <Canvas>
+ * so it can read the live camera via useThree.
+ */
+function DragHoverRaycaster({
+  pointer,
+  onCoord,
+}: {
+  pointer: { clientX: number; clientY: number };
+  onCoord: (coord: Coord | null) => void;
+}) {
+  const { camera, gl } = useThree();
+  const tools = useRef({
+    raycaster: new THREE.Raycaster(),
+    plane: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+    hit: new THREE.Vector3(),
+  });
+
+  useEffect(() => {
+    const rect = gl.domElement.getBoundingClientRect();
+    const inside =
+      pointer.clientX >= rect.left && pointer.clientX <= rect.right &&
+      pointer.clientY >= rect.top && pointer.clientY <= rect.bottom;
+    if (!inside) {
+      onCoord(null);
+      return;
+    }
+    const ndc = new THREE.Vector2(
+      ((pointer.clientX - rect.left) / rect.width) * 2 - 1,
+      -((pointer.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const { raycaster, plane, hit } = tools.current;
+    raycaster.setFromCamera(ndc, camera);
+    if (!raycaster.ray.intersectPlane(plane, hit)) {
+      onCoord(null);
+      return;
+    }
+    onCoord({ x: Math.round(hit.x), y: Math.round(hit.z) });
+  }, [pointer, camera, gl, onCoord]);
+
+  // Clear the hover when the drag ends (this component unmounts).
+  useEffect(() => () => onCoord(null), [onCoord]);
+
+  return null;
 }
 
 const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
@@ -118,7 +179,7 @@ function SceneLighting({ shadows = true }: { shadows?: boolean }) {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false }: Props) {
+export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false, dragPointer, onDragHoverChange }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -151,6 +212,20 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
     return { coord: hoverCoord, illegal };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placing, hoverCoord, state.board, state.pendingRotation, state.version]);
+
+  // While a touch drag is active, report the cell under the finger and whether
+  // the pending tile fits there, so the parent can place/reject it on release.
+  // previewPlacement already returns false for occupied cells.
+  useEffect(() => {
+    if (!onDragHoverChange) return;
+    if (!dragPointer || !hoverCoord) {
+      onDragHoverChange(null);
+      return;
+    }
+    const legal = controller.previewPlacement(hoverCoord, state.pendingRotation).legal;
+    onDragHoverChange({ coord: hoverCoord, legal });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragPointer, hoverCoord, state.pendingRotation, state.version, controller, onDragHoverChange]);
 
   const isMeeplePhase = state.phase === 'PLACING_MEEPLE';
   const meepleTargets = isMeeplePhase && canInteract ? controller.getMeepleTargetsForLastTile() : [];
@@ -278,6 +353,12 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
             <planeGeometry args={[400, 400]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
           </mesh>
+        )}
+
+        {/* Touch drag-to-place: raycast the finger position onto the grid so the
+            ghost follows it. Mounted only during an active drag. */}
+        {placing && dragPointer && (
+          <DragHoverRaycaster pointer={dragPointer} onCoord={setHoverCoord} />
         )}
 
         {/* One persistent ghost; it repositions/recolours instead of remounting. */}

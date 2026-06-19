@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { TilePrototype } from '../../core/types/tile';
 import type { Rotation } from '../../core/types';
 import type { GameController } from '../../controller/GameController';
@@ -17,9 +17,15 @@ interface Props {
   canInteract?: boolean;
   canRotate?: boolean;
   viewMode?: '2d' | '3d';
+  /**
+   * Mobile drag-to-place: when provided, the tile frame becomes a
+   * drag handle. Pressing it starts dragging the pending tile onto the board;
+   * the parent tracks the finger and drops the tile on release.
+   */
+  onTileDragStart?: (e: ReactPointerEvent) => void;
 }
 
-export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true, viewMode = '3d' }: Props) {
+export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true, viewMode = '3d', onTileDragStart }: Props) {
   // Mirror the A/D keyboard shortcuts with a visual "pressed" state on the
   // matching button. Purely cosmetic — the actual rotation is handled in App.
   const [pressed, setPressed] = useState<'CCW' | 'CW' | null>(null);
@@ -81,9 +87,10 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
       {tile ? (
         <>
           <div
-            className="tile-frame"
+            className={`tile-frame${onTileDragStart ? ' is-draggable' : ''}`}
             data-testid="tile-preview-img"
             data-rotation={rotation}
+            onPointerDown={onTileDragStart}
           >
             {viewMode === '3d' ? (
               <TilePreview3D proto={tile} rotation={rotation} />
@@ -94,6 +101,9 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
                 draggable={false}
                 style={{ width: '100%', height: '100%', transform: `rotate(${rotation}deg)`, display: 'block' }}
               />
+            )}
+            {onTileDragStart && canInteract && (
+              <span className="tile-drag-hint" aria-hidden="true">Ziehen&nbsp;↗</span>
             )}
           </div>
           <div className="rotate-row">

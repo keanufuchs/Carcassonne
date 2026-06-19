@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
 import { createGameController } from './controller/GameController';
@@ -36,7 +36,13 @@ import type { AIMode as PlayerAIMode } from './ui/SetupScreen';
 import type { HeuristicAnalysis } from './ai/heuristic';
 import { accumulateToolCall } from './ui/hud/toolCallAccumulator';
 import type { ToolCallEntry } from './ui/hud/toolCallAccumulator';
+import tileDistribution from './core/deck/tileDistribution.json';
 import './ui/styles/game.css';
+
+// Tile id → image path, used by the mobile drag overlay.
+const tileImageMap: Record<string, string> = Object.fromEntries(
+  (tileDistribution.tiles as Array<{ id: string; file: string }>).map(t => [t.id, `/tiles/${t.file}`]),
+);
 
 // ── Local game persistence ─────────────────────────────────────────────────
 
@@ -171,6 +177,13 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const [showMap, setShowMap] = useState(false);
   // Mobile meeple placement: the segment picked from the choice list (issue #34).
   const [selectedMeepleRef, setSelectedMeepleRef] = useState<SegmentRef | null>(null);
+  // Mobile drag-to-place: live finger position while dragging the
+  // pending tile out of the bottom bar, the board's reported drop target, and a
+  // transient "doesn't fit" toast.
+  const [dragPointer, setDragPointer] = useState<{ clientX: number; clientY: number } | null>(null);
+  const dragHoverRef = useRef<{ coord: { x: number; y: number }; legal: boolean } | null>(null);
+  const [dropToast, setDropToast] = useState<string | null>(null);
+  const dropToastTimerRef = useRef<number | null>(null);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
@@ -220,6 +233,68 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       highlightTimerRef.current = null;
     }, 3000);
   }
+
+  // ── Mobile drag-to-place ───────────────────────────────────────
+  const showDropToast = useCallback((message: string) => {
+    if (dropToastTimerRef.current !== null) window.clearTimeout(dropToastTimerRef.current);
+    setDropToast(message);
+    dropToastTimerRef.current = window.setTimeout(() => {
+      setDropToast(null);
+      dropToastTimerRef.current = null;
+    }, 1800);
+  }, []);
+
+  const handleDragHoverChange = useCallback(
+    (result: { coord: { x: number; y: number }; legal: boolean } | null) => {
+      dragHoverRef.current = result;
+    },
+    [],
+  );
+
+  function handleTileDragStart(e: ReactPointerEvent) {
+    if (!isMobile || !interactive) return;
+    if (state.phase !== 'PLACING_TILE' || !state.pendingTile) return;
+    e.preventDefault();
+    dragHoverRef.current = null;
+    setDragPointer({ clientX: e.clientX, clientY: e.clientY });
+  }
+
+  // Track the finger globally during a drag so it keeps following even when it
+  // leaves the small tile handle, and resolve the drop on release.
+  const isDragging = dragPointer !== null;
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const onMove = (e: PointerEvent) => {
+      e.preventDefault();
+      setDragPointer({ clientX: e.clientX, clientY: e.clientY });
+    };
+    const onUp = () => {
+      const hover = dragHoverRef.current;
+      dragHoverRef.current = null;
+      setDragPointer(null);
+      if (hover && hover.legal) {
+        controller.placeTile(hover.coord);
+      } else if (hover) {
+        // Finger was over the board but the tile can't go there.
+        showDropToast('Hier passt das Plättchen nicht');
+      }
+      // hover === null → released off the board: silently cancel.
+    };
+
+    window.addEventListener('pointermove', onMove, { passive: false });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+  }, [isDragging, controller, showDropToast]);
+
+  useEffect(() => () => {
+    if (dropToastTimerRef.current !== null) window.clearTimeout(dropToastTimerRef.current);
+  }, []);
 
   // Auto-draw tile at the start of every turn (active player only in network games)
   useEffect(() => {
@@ -454,7 +529,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           </button>
         )}
         {effectiveBoardView === '3d' ? (
-          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} />
+          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
@@ -485,9 +560,27 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
               canInteract={interactive}
               canRotate={canRotatePreview}
               viewMode={effectiveBoardView}
+              onTileDragStart={handleTileDragStart}
             />
           )}
         </div>
+      )}
+      {dragPointer && state.pendingTile && (
+        <div
+          className="tile-drag-overlay"
+          data-testid="tile-drag-overlay"
+          style={{ left: dragPointer.clientX, top: dragPointer.clientY }}
+        >
+          <img
+            src={tileImageMap[state.pendingTile.id] ?? ''}
+            alt=""
+            draggable={false}
+            style={{ transform: `rotate(${state.pendingRotation}deg)` }}
+          />
+        </div>
+      )}
+      {dropToast && (
+        <div className="mobile-toast" role="status" data-testid="drop-toast">{dropToast}</div>
       )}
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen
