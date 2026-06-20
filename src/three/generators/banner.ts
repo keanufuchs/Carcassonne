@@ -401,7 +401,11 @@ export function roadLantern([cx, cz]: World2, color: string | null, emblemColor:
   cap.position.y = L.postHeight + L.bodySize * 1.15 + L.capHeight / 2;
   group.add(cap);
 
-  if (color) group.add(lanternPennant(color, emblemColor));
+  if (color) {
+    const pennant = lanternPennant(color, emblemColor);
+    pennant.name = 'road-pennant';
+    group.add(pennant);
+  }
 
   group.position.set(cx, 0, cz);
   return group;

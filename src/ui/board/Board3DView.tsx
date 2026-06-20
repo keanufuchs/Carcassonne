@@ -248,8 +248,11 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
     const previousTileId = previousPlacedTileIdRef.current;
     previousPlacedTileIdRef.current = currentTileId ?? null;
     if (!currentTileId || currentTileId === previousTileId) return;
+    // The decorative home-menu showcase reuses this board purely as background;
+    // its tile drops should stay silent — placement sound is for actual play.
+    if (decorative) return;
     playTilePlacementSound();
-  }, [state.lastPlacedTileId]);
+  }, [state.lastPlacedTileId, decorative]);
 
   const placing = state.phase === 'PLACING_TILE' && !!state.pendingTile && canInteract;
 
