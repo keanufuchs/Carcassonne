@@ -13,12 +13,14 @@ import { useSmoothRotationY } from '../board/useSmoothRotationY';
  * HUD draw pile. Viewed from a fixed 45° tilt so the relief reads clearly, and
  * spun in-plane to mirror the pending rotation (matching `PlacedTile3D`).
  */
-function TileMesh({ proto, rotation }: { proto: TilePrototype; rotation: Rotation }) {
+function TileMesh({ proto, rotation, cameraSpin }: { proto: TilePrototype; rotation: Rotation; cameraSpin: number }) {
   const seed = proto.id;
   const group = useMemo(() => generateTile(proto, layoutRegions(proto, seed), seed), [proto, seed]);
   useEffect(() => () => disposeObject(group), [group]);
   // Mirror the board: clockwise rotation steps map to negative Y rotation.
-  const rotationY = -(rotation * Math.PI) / 180;
+  // Subtracting the camera spin reproduces how a world-fixed board tile appears
+  // to rotate as the camera orbits, so the preview matches the live view (#45).
+  const rotationY = -(rotation * Math.PI) / 180 - cameraSpin;
   const rotRef = useSmoothRotationY(rotationY, proto.id);
   return (
     <group ref={rotRef}>
@@ -41,9 +43,11 @@ function PreviewLighting() {
 interface Props {
   proto: TilePrototype;
   rotation: Rotation;
+  /** Camera azimuth offset (radians) so the preview mirrors the board view (#45). */
+  cameraSpin?: number;
 }
 
-export function TilePreview3D({ proto, rotation }: Props) {
+export function TilePreview3D({ proto, rotation, cameraSpin = 0 }: Props) {
   return (
     <Canvas
       // Low (~30°) 3/4 view so the tile is seen from the side and its relief stands out.
@@ -53,7 +57,7 @@ export function TilePreview3D({ proto, rotation }: Props) {
       style={{ width: '100%', height: '100%' }}
     >
       <PreviewLighting />
-      <TileMesh proto={proto} rotation={rotation} />
+      <TileMesh proto={proto} rotation={rotation} cameraSpin={cameraSpin} />
     </Canvas>
   );
 }

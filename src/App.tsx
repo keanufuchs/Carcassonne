@@ -161,6 +161,9 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const isMobile = useIsMobile();
   const [boardView, setBoardView] = useState<BoardViewMode>(loadBoardViewMode);
   const effectiveBoardView: BoardViewMode = isMobile ? '3d' : boardView;
+  // How far the 3D board camera has orbited from its initial view (radians).
+  // Drives the HUD preview tile so it spins to match the live view (issue #45).
+  const [cameraSpin, setCameraSpin] = useState(0);
   const [showMap, setShowMap] = useState(false);
   // Mobile meeple placement: the segment picked from the choice list (issue #34).
   const [selectedMeepleRef, setSelectedMeepleRef] = useState<SegmentRef | null>(null);
@@ -478,6 +481,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             canInteract={interactive}
             canRotate={canRotatePreview}
             viewMode={effectiveBoardView}
+            cameraSpin={cameraSpin}
           />
         </div>
         <div className="sidebar-section">
@@ -516,7 +520,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           </button>
         )}
         {effectiveBoardView === '3d' ? (
-          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} />
+          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} onCameraSpinChange={setCameraSpin} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
@@ -547,6 +551,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
               canInteract={interactive}
               canRotate={canRotatePreview}
               viewMode={effectiveBoardView}
+              cameraSpin={cameraSpin}
               onTileDragStart={handleTileDragStart}
             />
           )}

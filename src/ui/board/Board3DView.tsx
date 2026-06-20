@@ -46,6 +46,13 @@ interface Props {
    * Called with null when the finger is off the board.
    */
   onDragHoverChange?: (result: { coord: Coord; legal: boolean } | null) => void;
+  /**
+   * Reports how far the camera has orbited from its initial azimuth, in radians
+   * (issue #45). The HUD tile preview applies the negated value so the pending
+   * tile spins to match how board tiles appear under the current view, letting
+   * the player judge whether a rotation fits after moving the camera.
+   */
+  onCameraSpinChange?: (spin: number) => void;
 }
 
 /**
@@ -169,6 +176,31 @@ function CameraHotkeys() {
   return null;
 }
 
+/**
+ * Watches the orbit controls and reports the camera's azimuth offset from the
+ * initial isometric view (issue #45). Mounted inside the Canvas so it can read
+ * the live controls via `useThree`. Emits only on meaningful change (~0.5°) to
+ * keep the parent from re-rendering every frame of a drag.
+ */
+function CameraSpinReporter({ onSpin }: { onSpin: (spin: number) => void }) {
+  const controls = useThree((s) => s.controls) as { getAzimuthalAngle?: () => number; addEventListener?: (t: string, fn: () => void) => void; removeEventListener?: (t: string, fn: () => void) => void } | null;
+  useEffect(() => {
+    if (!controls?.getAzimuthalAngle || !controls.addEventListener) return;
+    let last = Number.NaN;
+    const emit = () => {
+      const spin = controls.getAzimuthalAngle!() - INIT_THETA;
+      if (Number.isNaN(last) || Math.abs(spin - last) > 0.01) {
+        last = spin;
+        onSpin(spin);
+      }
+    };
+    emit(); // sync the preview to the current view on mount
+    controls.addEventListener('change', emit);
+    return () => controls.removeEventListener?.('change', emit);
+  }, [controls, onSpin]);
+  return null;
+}
+
 /** Lab-matched lighting + a directional light whose shadow frustum covers a board. */
 function SceneLighting({ shadows = true }: { shadows?: boolean }) {
   return (
@@ -200,7 +232,7 @@ function SceneLighting({ shadows = true }: { shadows?: boolean }) {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false, dragPointer, onDragHoverChange }: Props) {
+export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false, dragPointer, onDragHoverChange, onCameraSpinChange }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -346,6 +378,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
       >
         <SceneLighting shadows={!decorative} />
         {canInteract && <CameraHotkeys />}
+        {onCameraSpinChange && <CameraSpinReporter onSpin={onCameraSpinChange} />}
         {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
         <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
 
