@@ -79,6 +79,15 @@ export async function executeAITurn(
   const afterPlace = controller.getState();
   if (afterPlace.phase === 'GAME_OVER') return;
 
+  // Yield so React renders the PLACING_MEEPLE state where this tile is the
+  // lastPlacedTileId — that intermediate render is what mounts the tile with
+  // animateDrop=true. Without this pause the meeple step below resolves the
+  // turn synchronously, lastPlacedTileId is reset to null before any render,
+  // and the AI's tile never plays the drop-in animation (unlike a human's,
+  // whose meeple phase always waits for input). The delay also lets the drop
+  // visibly land before the meeple appears.
+  await delay(600);
+
   if (afterPlace.phase === 'PLACING_MEEPLE') {
     const targets = controller.getMeepleTargetsForLastTile();
     const ref = chooseMeeple(mode, afterPlace, targets, decision);
