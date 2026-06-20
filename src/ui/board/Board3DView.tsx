@@ -321,8 +321,6 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
   const isTouchDevice = useIsTouchDevice();
 
   useEffect(() => {
-    if (!canInteract) return;
-
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(true); };
     const onKeyUp   = (e: KeyboardEvent) => { if (e.key === 'Shift') setShiftHeld(false); };
     window.addEventListener('keydown', onKeyDown);
@@ -331,7 +329,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup',   onKeyUp);
     };
-  }, [canInteract]);
+  }, []);
 
   // Track the last cell + the pointer-down position so we only re-render on a
   // cell change and don't place a tile at the end of a camera drag.
@@ -370,7 +368,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
   }, [ghost, controller]);
 
   return (
-    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: canInteract && shiftHeld ? 'crosshair' : undefined }}>
+    <div style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative', cursor: shiftHeld ? 'crosshair' : undefined }}>
       <Canvas
         shadows={decorative ? false : 'percentage'}
         // Cap DPR: retina (2–3×) is invisible behind the menu veil and wasteful
@@ -380,7 +378,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
         gl={{ antialias: !decorative, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
         <SceneLighting shadows={!decorative} />
-        {canInteract && <CameraHotkeys />}
+        <CameraHotkeys />
         {onCameraSpinChange && <CameraSpinReporter onSpin={onCameraSpinChange} />}
         {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
         <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
@@ -438,11 +436,11 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
 
         <MapControls
           makeDefault
-          enabled={canInteract}
+          enabled
           target={[0, 0, 0]}
-          enablePan={canInteract}
-          enableZoom={canInteract}
-          enableRotate={canInteract && (shiftHeld || isTouchDevice)}
+          enablePan
+          enableZoom
+          enableRotate={shiftHeld || isTouchDevice}
           minPolarAngle={POLAR_MIN_FREE}
           maxPolarAngle={POLAR_MAX_FREE}
           minAzimuthAngle={-Infinity}
