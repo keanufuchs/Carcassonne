@@ -565,7 +565,10 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           )}
         </div>
       )}
-      {dragPointer && state.pendingTile && (
+      {/* Floating 2D tile follows the finger only in the 2D view. In 3D the
+          in-scene translucent ghost tile is the drag indicator, so we must not
+          overlay the flat SVG on top of it. */}
+      {dragPointer && state.pendingTile && effectiveBoardView === '2d' && (
         <div
           className="tile-drag-overlay"
           data-testid="tile-drag-overlay"
