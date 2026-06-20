@@ -513,9 +513,18 @@
 
   .game-layout.is-mobile {
     flex-direction: column;
-    /* dvh tracks the *visible* viewport so the layout never exceeds the screen
-       (100vh includes the collapsible URL bar and would overflow → scroll). */
+    /* Pin the whole game UI as a fixed, dynamic-viewport-sized frame. Being
+       out of document flow, it can't be scrolled — so the top/bottom bars stay
+       glued to the screen edges even while a mobile browser's URL bar collapses
+       (the in-flow `height:100dvh` version let that mismatch pan a bar off-
+       screen). dvh tracks the *visible* viewport; the inner flex column gives
+       the board (flex:1) the slack between the two fixed bars. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 100dvh;
+    overflow: hidden;
     overscroll-behavior: none;
   }
 
