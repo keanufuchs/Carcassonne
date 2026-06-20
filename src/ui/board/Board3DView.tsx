@@ -33,10 +33,92 @@ interface Props {
    * Home menu without a visible quality loss.
    */
   decorative?: boolean;
+  /**
+   * Touch drag-to-place (mobile): the live finger position in client
+   * pixels while the player drags the pending tile out of the bottom bar, or
+   * null when no drag is in progress. The board raycasts this point onto the
+   * grid so the ghost follows the finger.
+   */
+  dragPointer?: { clientX: number; clientY: number } | null;
+  /**
+   * Reports the cell currently under the drag finger and whether the pending
+   * tile can legally be placed there, so the parent can drop it on release.
+   * Called with null when the finger is off the board.
+   */
+  onDragHoverChange?: (result: { coord: Coord; legal: boolean } | null) => void;
+}
+
+/**
+ * Maps a client-pixel point onto the board grid by raycasting the camera ray
+ * against the ground plane (y = 0). Mounted only while a touch drag is active;
+ * on unmount it clears the hover so the ghost disappears. Lives inside <Canvas>
+ * so it can read the live camera via useThree.
+ */
+function DragHoverRaycaster({
+  pointer,
+  onCoord,
+}: {
+  pointer: { clientX: number; clientY: number };
+  onCoord: (coord: Coord | null) => void;
+}) {
+  const { camera, gl } = useThree();
+  const tools = useRef({
+    raycaster: new THREE.Raycaster(),
+    plane: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+    hit: new THREE.Vector3(),
+  });
+
+  useEffect(() => {
+    const rect = gl.domElement.getBoundingClientRect();
+    const inside =
+      pointer.clientX >= rect.left && pointer.clientX <= rect.right &&
+      pointer.clientY >= rect.top && pointer.clientY <= rect.bottom;
+    if (!inside) {
+      onCoord(null);
+      return;
+    }
+    const ndc = new THREE.Vector2(
+      ((pointer.clientX - rect.left) / rect.width) * 2 - 1,
+      -((pointer.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const { raycaster, plane, hit } = tools.current;
+    raycaster.setFromCamera(ndc, camera);
+    if (!raycaster.ray.intersectPlane(plane, hit)) {
+      onCoord(null);
+      return;
+    }
+    onCoord({ x: Math.round(hit.x), y: Math.round(hit.z) });
+  }, [pointer, camera, gl, onCoord]);
+
+  // Clear the hover when the drag ends (this component unmounts).
+  useEffect(() => () => onCoord(null), [onCoord]);
+
+  return null;
 }
 
 const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
 const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit
+
+/**
+ * True on coarse-pointer (touch) devices. Desktop gates camera rotation behind
+ * a held Shift key (see `shiftHeld`), but a phone/tablet has no Shift key — so
+ * on touch we enable rotation unconditionally and let MapControls' two-finger
+ * DOLLY_ROTATE gesture spin the board. Tracks live so a plugged-in/unplugged
+ * touchscreen or DevTools device-emulation toggle is reflected immediately.
+ */
+function useIsTouchDevice(): boolean {
+  const [isTouch, setIsTouch] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(pointer: coarse)');
+    const onChange = () => setIsTouch(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+  return isTouch;
+}
 
 // Derive initial azimuth + pitch from the starting camera position so R resets
 // to exactly those angles regardless of the current zoom level.
@@ -118,7 +200,7 @@ function SceneLighting({ shadows = true }: { shadows?: boolean }) {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false }: Props) {
+export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false, dragPointer, onDragHoverChange }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -151,6 +233,19 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
     return { coord: hoverCoord, illegal };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placing, hoverCoord, state.board, state.pendingRotation, state.version]);
+
+  // While a touch drag is active, report the cell under the finger and whether
+  // the pending tile fits there, so the parent can place/reject it on release.
+  // previewPlacement already returns false for occupied cells.
+  useEffect(() => {
+    if (!onDragHoverChange) return;
+    if (!dragPointer || !hoverCoord) {
+      onDragHoverChange(null);
+      return;
+    }
+    const legal = controller.previewPlacement(hoverCoord, state.pendingRotation).legal;
+    onDragHoverChange({ coord: hoverCoord, legal });
+  }, [dragPointer, hoverCoord, state.pendingRotation, state.version, controller, onDragHoverChange]);
 
   const isMeeplePhase = state.phase === 'PLACING_MEEPLE';
   const meepleTargets = isMeeplePhase && canInteract ? controller.getMeepleTargetsForLastTile() : [];
@@ -185,6 +280,11 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
   // So we only need to gate enableRotate on shiftHeld — no mouseButtons override needed.
   const [shiftHeld, setShiftHeld] = useState(false);
 
+  // On touch devices there is no Shift key, so rotation is enabled directly and
+  // a two-finger drag rotates the board via MapControls' DOLLY_ROTATE gesture
+  // (one finger still pans, pinch still zooms).
+  const isTouchDevice = useIsTouchDevice();
+
   useEffect(() => {
     if (!canInteract) return;
 
@@ -205,6 +305,10 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
 
   const onHoverPlane = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
+    // Touch has no "hover": a tap would otherwise drop a red ghost on the tapped
+    // cell. On touch the ghost is driven solely by an active drag (the drag
+    // raycaster), so ignore plane hover from touch pointers here.
+    if (e.nativeEvent.pointerType === 'touch') return;
     const x = Math.round(e.point.x);
     const y = Math.round(e.point.z);
     const key = `${x},${y}`;
@@ -280,6 +384,12 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
           </mesh>
         )}
 
+        {/* Touch drag-to-place: raycast the finger position onto the grid so the
+            ghost follows it. Mounted only during an active drag. */}
+        {placing && dragPointer && (
+          <DragHoverRaycaster pointer={dragPointer} onCoord={setHoverCoord} />
+        )}
+
         {/* One persistent ghost; it repositions/recolours instead of remounting. */}
         {placing && pendingProto && (
           <GhostTile3D
@@ -296,7 +406,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
           target={[0, 0, 0]}
           enablePan={canInteract}
           enableZoom={canInteract}
-          enableRotate={canInteract && shiftHeld}
+          enableRotate={canInteract && (shiftHeld || isTouchDevice)}
           minPolarAngle={POLAR_MIN_FREE}
           maxPolarAngle={POLAR_MAX_FREE}
           minAzimuthAngle={-Infinity}
