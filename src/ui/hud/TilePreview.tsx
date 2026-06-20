@@ -17,6 +17,8 @@ interface Props {
   canInteract?: boolean;
   canRotate?: boolean;
   viewMode?: '2d' | '3d';
+  /** Camera azimuth offset (radians) so the 3D preview tracks the board view (#45). */
+  cameraSpin?: number;
   /**
    * Mobile drag-to-place: when provided, the tile frame becomes a
    * drag handle. Pressing it starts dragging the pending tile onto the board;
@@ -25,7 +27,7 @@ interface Props {
   onTileDragStart?: (e: ReactPointerEvent) => void;
 }
 
-export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true, viewMode = '3d', onTileDragStart }: Props) {
+export function TilePreview({ tile, rotation, controller, deckSize, canInteract = true, canRotate = true, viewMode = '3d', cameraSpin = 0, onTileDragStart }: Props) {
   // Mirror the A/D keyboard shortcuts with a visual "pressed" state on the
   // matching button. Purely cosmetic — the actual rotation is handled in App.
   const [pressed, setPressed] = useState<'CCW' | 'CW' | null>(null);
@@ -93,7 +95,7 @@ export function TilePreview({ tile, rotation, controller, deckSize, canInteract 
             onPointerDown={onTileDragStart}
           >
             {viewMode === '3d' ? (
-              <TilePreview3D proto={tile} rotation={rotation} />
+              <TilePreview3D proto={tile} rotation={rotation} cameraSpin={cameraSpin} />
             ) : (
               <img
                 src={tileImageMap[tile.id] ?? ''}
