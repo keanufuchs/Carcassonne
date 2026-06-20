@@ -3,6 +3,7 @@ import { createGameController } from '../controller/GameController';
 import type { GameController } from '../controller/GameController';
 import { executeAITurn } from '../ai';
 import { Board3DView } from './board/Board3DView';
+import { useIsMobile } from './hooks/useIsMobile';
 
 /**
  * Ambient background showcase for the menu screens: two/three AI players keep
@@ -27,10 +28,16 @@ const RESTART_HOLD_MS = 5000;
 const delay = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
 export function GameShowcase() {
+  // On phones the live 3D match (full AI loop + shadowed WebGL render) is far too
+  // costly and drains the battery behind a menu the player barely sees. Skip it
+  // entirely there: the effect never starts the loop and nothing is rendered, so
+  // the menu falls back to its cheap CSS gradient background.
+  const isMobile = useIsMobile();
   const [controller, setController] = useState<GameController | null>(null);
   const [, forceRender] = useState(0);
 
   useEffect(() => {
+    if (isMobile) return;
     // No ref guard here: under React StrictMode the effect mounts, is cleaned
     // up, then mounts again. A persistent guard would let the first (cancelled)
     // run claim ownership and block the surviving second run — freezing the
@@ -77,9 +84,9 @@ export function GameShowcase() {
 
     loop();
     return () => { cancelled = true; if (rafId) cancelAnimationFrame(rafId); };
-  }, []);
+  }, [isMobile]);
 
-  if (!controller) return null;
+  if (isMobile || !controller) return null;
 
   return (
     <div className="showcase" aria-hidden="true">

@@ -279,3 +279,29 @@
       linear-gradient(180deg, rgba(210, 221, 231, 0.45) 0%, transparent 26%, transparent 64%, rgba(48, 60, 72, 0.34) 100%);
   }
 }
+
+/* ── Mobile: no live 3D background (skipped in GameShowcase), so let the menu
+   breathe and scroll. Tall content (e.g. 5 local players) must never be cut
+   off by the fixed-height screen, and the drifting meeples are dropped — they
+   crowd the centred card and waste animation frames on a touch device. ────── */
+@media (max-width: 768px) {
+  .menu-screen {
+    /* dvh tracks the shrinking mobile URL bar; vh is the static fallback. */
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .menu-stage {
+    width: 100%;
+    max-height: none;
+    gap: 18px;
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    /* Auto margins centre the column when it fits the viewport, yet collapse to
+       0 (no clipping, fully scrollable) once the content is taller than the
+       screen — unlike align/justify-content: center, which would cut off the
+       top of overflowing content. */
+    margin: auto;
+  }
+  .menu-card { width: 100%; padding: 20px; }
+  .menu-meeple { display: none; }
+}

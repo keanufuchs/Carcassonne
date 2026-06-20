@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import { ControllerContext } from './ui/hooks/useController';
 import { useGameState } from './ui/hooks/useGameState';
+import { useIsMobile } from './ui/hooks/useIsMobile';
 import { createGameController } from './controller/GameController';
 import { startGame as startGameCore } from './core/game/Game';
 import { getPrototype } from './core/deck/baseGameTiles';
@@ -94,20 +95,6 @@ function loadBoardViewMode(): BoardViewMode {
 
 function saveBoardViewMode(mode: BoardViewMode): void {
   try { localStorage.setItem(BOARD_VIEW_KEY, mode); } catch { /* quota */ }
-}
-
-// Mobile breakpoint mirrors the CSS @media block in game.css.
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
-  );
-  useEffect(() => {
-    const mql = window.matchMedia('(max-width: 768px)');
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
-  return isMobile;
 }
 
 // ── Network session persistence ────────────────────────────────────────────
