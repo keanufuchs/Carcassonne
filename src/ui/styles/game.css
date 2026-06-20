@@ -590,8 +590,9 @@
   .mobile-bottombar .tile-frame { width: 76px; height: 76px; padding: 4px; }
   .mobile-bottombar .rotate-row { gap: 10px; }
   .mobile-bottombar .rotate-btn { width: 52px; height: 52px; }
-  .mobile-bottombar .rotate-key { font-size: 22px; }
-  .mobile-bottombar .rotate-arrow { font-size: 16px; }
+  /* Touch has no keyboard: drop the A/D letters, show only the rotation arrows. */
+  .mobile-bottombar .rotate-key { display: none; }
+  .mobile-bottombar .rotate-arrow { font-size: 26px; }
   .mobile-skip-btn { flex-shrink: 0; padding: 10px 14px; }
 
   /* ── Meeple choice list: touch-friendly placement picker (issue #34) ─────── */
