@@ -99,6 +99,27 @@ function DragHoverRaycaster({
 const POLAR_MIN_FREE = Math.PI / 6;   // ~30° — upper tilt limit
 const POLAR_MAX_FREE = Math.PI / 2.2; // ~82° — lower tilt limit
 
+/**
+ * True on coarse-pointer (touch) devices. Desktop gates camera rotation behind
+ * a held Shift key (see `shiftHeld`), but a phone/tablet has no Shift key — so
+ * on touch we enable rotation unconditionally and let MapControls' two-finger
+ * DOLLY_ROTATE gesture spin the board. Tracks live so a plugged-in/unplugged
+ * touchscreen or DevTools device-emulation toggle is reflected immediately.
+ */
+function useIsTouchDevice(): boolean {
+  const [isTouch, setIsTouch] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(pointer: coarse)');
+    const onChange = () => setIsTouch(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+  return isTouch;
+}
+
 // Derive initial azimuth + pitch from the starting camera position so R resets
 // to exactly those angles regardless of the current zoom level.
 const _initOffset = new THREE.Vector3(12, 14, 12); // INIT_POS - origin
@@ -259,6 +280,11 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
   // So we only need to gate enableRotate on shiftHeld — no mouseButtons override needed.
   const [shiftHeld, setShiftHeld] = useState(false);
 
+  // On touch devices there is no Shift key, so rotation is enabled directly and
+  // a two-finger drag rotates the board via MapControls' DOLLY_ROTATE gesture
+  // (one finger still pans, pinch still zooms).
+  const isTouchDevice = useIsTouchDevice();
+
   useEffect(() => {
     if (!canInteract) return;
 
@@ -380,7 +406,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
           target={[0, 0, 0]}
           enablePan={canInteract}
           enableZoom={canInteract}
-          enableRotate={canInteract && shiftHeld}
+          enableRotate={canInteract && (shiftHeld || isTouchDevice)}
           minPolarAngle={POLAR_MIN_FREE}
           maxPolarAngle={POLAR_MAX_FREE}
           minAzimuthAngle={-Infinity}
