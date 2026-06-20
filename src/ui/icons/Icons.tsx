@@ -233,3 +233,187 @@ export function MedalIcon({ rank, size = 20, className, style }: { rank: number;
     </svg>
   );
 }
+
+// 🏰 City Icon: Fortress / castle walls and towers with a slate/terracotta gradient
+export function CityIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: 'block', ...style }}
+    >
+      <defs>
+        <linearGradient id="carcCityGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f5eedc" />
+          <stop offset="50%" stopColor="#d9c191" />
+          <stop offset="100%" stopColor="#b15a3c" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M 2 21 L 2 8 L 3 8 L 3 10 L 5 10 L 5 8 L 6 8 L 6 13 L 10 13 L 10 5 L 11 5 L 11 7 L 13 7 L 13 5 L 14 5 L 14 13 L 18 13 L 18 8 L 19 8 L 19 10 L 21 10 L 21 8 L 22 8 L 22 21 Z"
+        fill="url(#carcCityGrad)"
+        stroke="var(--slate)"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Arch Gate */}
+      <path
+        d="M 9 21 v -3 a 3 3 0 0 1 6 0 v 3"
+        fill="rgba(40, 30, 18, 0.2)"
+        stroke="var(--slate)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Small slit windows */}
+      <rect x="3.5" y="12" width="1" height="3" rx="0.5" fill="var(--slate)" stroke="none" />
+      <rect x="19.5" y="12" width="1" height="3" rx="0.5" fill="var(--slate)" stroke="none" />
+      <rect x="11.5" y="9" width="1" height="3" rx="0.5" fill="var(--slate)" stroke="none" />
+    </svg>
+  );
+}
+
+// 🛣️ Road Icon: Winding cobblestone path with perspective
+export function RoadIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: 'block', ...style }}
+    >
+      <defs>
+        <linearGradient id="carcRoadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fdfbf7" />
+          <stop offset="50%" stopColor="#efe7d3" />
+          <stop offset="100%" stopColor="#cfc6b0" />
+        </linearGradient>
+      </defs>
+      {/* Road border / background shape */}
+      <path
+        d="M 2 22 Q 10 14 6 7 T 18 2"
+        fill="none"
+        stroke="var(--slate)"
+        strokeWidth="5.5"
+        strokeLinecap="round"
+      />
+      {/* Road itself with warm sand gradient */}
+      <path
+        d="M 2 22 Q 10 14 6 7 T 18 2"
+        fill="none"
+        stroke="url(#carcRoadGrad)"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      {/* Winding dashed center line */}
+      <path
+        d="M 2 22 Q 10 14 6 7 T 18 2"
+        fill="none"
+        stroke="var(--slate)"
+        strokeWidth="1"
+        strokeDasharray="2,3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// ⛪ Monastery Icon: Medieval church / cathedral with a steep roof and cross
+export function MonasteryIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: 'block', ...style }}
+    >
+      <defs>
+        <linearGradient id="carcMonasteryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f9f8f5" />
+          <stop offset="60%" stopColor="#e9e3d6" />
+          <stop offset="100%" stopColor="#9c4a32" />
+        </linearGradient>
+      </defs>
+      {/* Cross on top of the roof */}
+      <path d="M 12 2 v 4 M 10 4 h 4" stroke="var(--slate)" strokeWidth="1.5" strokeLinecap="round" />
+      
+      {/* Main building body and roof */}
+      <path
+        d="M 5 21 L 5 13 L 12 7 L 19 13 L 19 21 Z"
+        fill="url(#carcMonasteryGrad)"
+        stroke="var(--slate)"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      
+      {/* Arched entryway */}
+      <path
+        d="M 10 21 v -3 a 2 2 0 0 1 4 0 v 3"
+        fill="rgba(40, 30, 18, 0.2)"
+        stroke="var(--slate)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      
+      {/* Rose window / Circular window above gate */}
+      <circle
+        cx="12"
+        cy="12.5"
+        r="2"
+        fill="rgba(196, 88, 58, 0.15)"
+        stroke="var(--slate)"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
+// 🌾 Field Icon: Stalk of wheat / crop with a golden-meadow gradient
+export function FieldIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={className}
+      style={{ display: 'block', ...style }}
+    >
+      <defs>
+        <linearGradient id="carcFieldGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#5f9e4a" />
+          <stop offset="50%" stopColor="#8cc06b" />
+          <stop offset="100%" stopColor="#d8b85a" />
+        </linearGradient>
+      </defs>
+      
+      {/* Wheat Stem */}
+      <path d="M 12 22 V 4" stroke="var(--slate)" strokeWidth="1.5" strokeLinecap="round" />
+      
+      {/* Wheat Kernels / Leaves alternating up the stem */}
+      {/* Left 1 */}
+      <path d="M 12 18 C 9 17, 8 15, 9 13 C 10 13, 11 14, 12 16 Z" fill="url(#carcFieldGrad)" stroke="var(--slate)" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* Right 1 */}
+      <path d="M 12 16 C 15 15, 16 13, 15 11 C 14 11, 13 12, 12 14 Z" fill="url(#carcFieldGrad)" stroke="var(--slate)" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* Left 2 */}
+      <path d="M 12 13 C 9 12, 8 10, 9 8 C 10 8, 11 9, 12 11 Z" fill="url(#carcFieldGrad)" stroke="var(--slate)" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* Right 2 */}
+      <path d="M 12 11 C 15 10, 16 8, 15 6 C 14 6, 13 7, 12 9 Z" fill="url(#carcFieldGrad)" stroke="var(--slate)" strokeWidth="1.2" strokeLinejoin="round" />
+      {/* Left 3 */}
+      <path d="M 12 8 C 9 7, 8 5, 9 3 C 10 3, 11 4, 12 6 Z" fill="url(#carcFieldGrad)" stroke="var(--slate)" strokeWidth="1.2" strokeLinejoin="round" />
+      
+      {/* Top tip kernel */}
+      <path d="M 12 4 C 11 2, 12 1, 12 1 C 12 1, 13 2, 12 4 Z" fill="url(#carcFieldGrad)" stroke="var(--slate)" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
