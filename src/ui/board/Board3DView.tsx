@@ -224,7 +224,6 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
     }
     const legal = controller.previewPlacement(hoverCoord, state.pendingRotation).legal;
     onDragHoverChange({ coord: hoverCoord, legal });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragPointer, hoverCoord, state.pendingRotation, state.version, controller, onDragHoverChange]);
 
   const isMeeplePhase = state.phase === 'PLACING_MEEPLE';
@@ -280,6 +279,10 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
 
   const onHoverPlane = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
+    // Touch has no "hover": a tap would otherwise drop a red ghost on the tapped
+    // cell. On touch the ghost is driven solely by an active drag (the drag
+    // raycaster), so ignore plane hover from touch pointers here.
+    if (e.nativeEvent.pointerType === 'touch') return;
     const x = Math.round(e.point.x);
     const y = Math.round(e.point.z);
     const key = `${x},${y}`;
