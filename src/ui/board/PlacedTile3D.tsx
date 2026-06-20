@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import type { PlacedTile } from '../../core/tile/Tile';
@@ -61,6 +61,17 @@ const SETTLE_DURATION = 0.18;
 
 const easeOut = (t: number): number => 1 - (1 - t) * (1 - t);
 
+/** Duration of the meeple banner's "plant" pop-in, in seconds. */
+const MEEPLE_POP_DURATION = 0.45;
+
+/** Ease-out-back: settles past 1 then back, giving the banner a lively snap. */
+const easeOutBack = (t: number): number => {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  const p = t - 1;
+  return 1 + c3 * p * p * p + c1 * p * p;
+};
+
 type DropPhase = 'fall' | 'settle' | 'done';
 
 /**
@@ -89,6 +100,49 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
     [regions, claimSig], // eslint-disable-line react-hooks/exhaustive-deps
   );
   useEffect(() => () => disposeObject(markers), [markers]);
+
+  // Banner "plant" pop-in: when a claim newly appears on this tile — i.e. a
+  // meeple was just placed on one of its features — the new marker scales up
+  // from the ground with a lively snap. The baseline is captured on the first
+  // render so pre-existing claims (a restored game, a tile that already carries
+  // banners) never animate; only genuine in-play additions do. Multi-tile
+  // features add a banner to every member tile, so each pops in together.
+  const prevClaimIdsRef = useRef<Set<number> | null>(null);
+  const bannerAnimsRef = useRef<{ obj: THREE.Object3D; elapsed: number }[]>([]);
+  useLayoutEffect(() => {
+    const currentIds = new Set(claims.keys());
+    const prev = prevClaimIdsRef.current;
+    prevClaimIdsRef.current = currentIds;
+    if (prev === null) return; // first render: establish baseline only, no animation
+    const anims: { obj: THREE.Object3D; elapsed: number }[] = [];
+    for (const [id, claim] of claims) {
+      if (prev.has(id)) continue;
+      // Roads keep their already-standing lantern; only the new pennant rises.
+      const obj = claim.kind === 'ROAD'
+        ? markers.getObjectByName(`road-lantern-${id}`)?.getObjectByName('road-pennant')
+        : markers.getObjectByName(`claim-marker-${claim.kind}-${id}`);
+      if (!obj) continue;
+      obj.scale.setScalar(0.0001); // hide until the first animated frame to avoid a one-frame pop
+      anims.push({ obj, elapsed: 0 });
+    }
+    bannerAnimsRef.current = anims;
+    // claims is rederived every render; markers identity tracks the only relevant change.
+  }, [markers]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useFrame((_, delta) => {
+    const anims = bannerAnimsRef.current;
+    if (anims.length === 0) return;
+    for (let i = anims.length - 1; i >= 0; i--) {
+      const a = anims[i];
+      a.elapsed += delta;
+      const t = Math.min(a.elapsed / MEEPLE_POP_DURATION, 1);
+      a.obj.scale.setScalar(easeOutBack(t));
+      if (t >= 1) {
+        a.obj.scale.setScalar(1);
+        anims.splice(i, 1);
+      }
+    }
+  });
 
   const rotationY = -(placed.rotation * Math.PI) / 180;
 
