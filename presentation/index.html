@@ -40,31 +40,10 @@
           Single Source of Truth: Notion</p>
       </div>
       <div>
-        <!-- Inline-SVG: stilisierte Kachel mit Stadt/Straße/Meeple -->
-        <svg viewBox="0 0 240 240" class="diagram" role="img" aria-label="Carcassonne-Kachel">
-          <defs>
-            <linearGradient id="tileBg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#ffffff"/>
-              <stop offset="1" stop-color="#f1f3ef"/>
-            </linearGradient>
-          </defs>
-          <rect x="14" y="14" width="212" height="212" rx="20"
-                fill="url(#tileBg)" stroke="#e4e6e1" stroke-width="2"/>
-          <!-- Feld -->
-          <rect x="22" y="22" width="196" height="196" rx="14" fill="#eef4e9"/>
-          <!-- Stadt -->
-          <path d="M22 22 H218 V96 Q150 120 120 96 Q92 74 22 96 Z" fill="#e7d7bd"/>
-          <path d="M22 22 H218 V96 Q150 120 120 96 Q92 74 22 96 Z" fill="none" stroke="#b7791f" stroke-width="2.5"/>
-          <!-- Straße -->
-          <path d="M120 240 V150" fill="none" stroke="#cbb89a" stroke-width="16" stroke-linecap="round"/>
-          <path d="M120 240 V150" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 10"/>
-          <!-- Meeple -->
-          <g transform="translate(120 168)">
-            <circle cx="0" cy="-14" r="9" fill="#0f766e"/>
-            <path d="M-13 16 Q-13 -2 0 -2 Q13 -2 13 16 Z" fill="#0f766e"/>
-            <path d="M-16 2 L-4 0 M16 2 L4 0" stroke="#0f766e" stroke-width="6" stroke-linecap="round"/>
-          </g>
-        </svg>
+        <!-- 3D-Render des Spielbretts -->
+        <img src="img/board-3d.png" class="diagram"
+             alt="3D-Render eines Carcassonne-Spielbretts mit Stadt, Straße, Feld und Bäumen"
+             style="border-radius:18px;box-shadow:var(--shadow);width:100%;">
       </div>
     </div>
     <div class="slide-footer"><span class="brand">CARCASSONNE</span><span>01</span></div>
