@@ -28,11 +28,12 @@
       <div>
         <span class="kicker">Projektpräsentation · Software-Engineering</span>
         <h1 data-id="title">Carcassonne</h1>
-        <p class="sub">Digitale Umsetzung des Basisspiels als Electron-Desktop-App —
-          agile Entwicklung, automatisierte Qualitätssicherung, mehrstufiges Deployment.</p>
+        <p class="sub">Digitale Umsetzung des Basisspiels als Web-App mit optionalem
+          Electron-Desktop-Client — agile Entwicklung, automatisierte
+          Qualitätssicherung, mehrstufiges Deployment.</p>
         <div class="meta-row">
           <span class="badge info dot">React + TypeScript</span>
-          <span class="badge info dot">Electron</span>
+          <span class="badge info dot">Electron-Client</span>
           <span class="badge info dot">Vite</span>
           <span class="badge ok dot">v0.6.0</span>
         </div>
@@ -62,9 +63,9 @@
       </div>
       <div class="card accent2">
         <h3>Plattform</h3>
-        <p>Electron-Desktop-App (Windows priorisiert), gerendert mit React.
-           Die Core-Logik ist bewusst <strong>framework-unabhängig</strong> in
-           TypeScript gehalten.</p>
+        <p>Web-App (React + TypeScript), im Browser und als optionaler
+           Electron-Desktop-Client lauffähig. Die Core-Logik ist bewusst
+           <strong>framework-unabhängig</strong> in TypeScript gehalten.</p>
       </div>
       <div class="card accent3">
         <h3>Rahmen</h3>
@@ -74,9 +75,10 @@
     </div>
     <div class="note mt2">
       <span class="lbl">Architektur (strikt)</span>
-      Vier getrennte Schichten ohne Vermischung von Verantwortlichkeiten:
+      Klar getrennte Schichten ohne Vermischung von Verantwortlichkeiten:
       <strong>Core</strong> (Spiellogik) → <strong>Controller</strong> (Spielfluss) →
-      <strong>UI</strong> (React, nur Rendering) → <strong>Electron</strong> (App-Lebenszyklus).
+      <strong>UI</strong> (React, nur Rendering). Auslieferung als Web-App, optional
+      gekapselt im <strong>Electron</strong>-Desktop-Client.
     </div>
     <div class="slide-footer"><span class="brand">CARCASSONNE</span><span>02</span></div>
   </section>
@@ -327,7 +329,7 @@
             <rect width="150" height="78" rx="10" fill="#f0faf8" stroke="#0f766e" stroke-width="2"/>
             <text x="75" y="26" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0f766e">scenarios.yml</text>
             <text x="75" y="45" text-anchor="middle" font-size="9.5" fill="#4b5563">npm run test:scenarios</text>
-            <text x="75" y="61" text-anchor="middle" font-size="9.5" fill="#4b5563">Playwright · 10 YAML</text>
+            <text x="75" y="61" text-anchor="middle" font-size="9.5" fill="#4b5563">Playwright · 11 YAML</text>
           </g>
           <!-- build-desktop.yml -->
           <g transform="translate(140 142)">
@@ -358,7 +360,7 @@
           GitHub-Actions-Pipelines eingebunden und laufen bei jedem Push und
           Pull Request auf <span class="pill">main</span>/<span class="pill">develop</span>.</p>
         <ul class="small mt">
-          <li><span class="pill">scenarios.yml</span> — fährt die 10 YAML-Szenarien</li>
+          <li><span class="pill">scenarios.yml</span> — fährt die 11 YAML-Szenarien</li>
           <li><span class="pill">build-desktop.yml</span> — paketiert die Desktop-App</li>
           <li>Report wird als CI-Artefakt hochgeladen + Job-Summary</li>
         </ul>
@@ -417,7 +419,7 @@ expect:
           <li><strong>Regelvalidiert</strong> — jede abgelehnte Aktion bricht ab</li>
           <li><strong>Lesbar</strong> — Fachregel als Klartext-Beschreibung</li>
         </ul>
-        <p class="tiny muted mt2">10 Szenarien · Katalog in
+        <p class="tiny muted mt2">11 Szenarien · Katalog in
            <span class="pill">tests/scenarios/README.md</span></p>
       </div>
     </div>
