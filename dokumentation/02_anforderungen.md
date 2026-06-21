@@ -128,11 +128,11 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 | QS-01 | Testsystem-Dokumentation (`docs/`, `specs/08_testing.md`) |  |
 | QS-02 | Unit- & Integrationstests (Vitest) |  |
 | QS-03 | E2E-Automatisierung (Playwright) + YAML-Szenario-Framework |  |
+| QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug |  |
+| ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ | verworfen* |
 
 > **QS-03 (E2E):** Stakeholder-Anforderung aus Meeting #1; technische Umsetzung (Playwright,
 > YAML-Szenario-Framework, CI-Gate) erfolgte **erst kurz vor Meeting #4**.
-| QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug |  |
-| ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ | verworfen* |
 
 *\* QS-04 wurde bewusst nicht formal umgesetzt; der QS-Nachweis erfolgt stattdessen über
 **282 automatisierte Tests + CI-Gating + Code-Reviews**. Begründung & Konsequenz siehe
