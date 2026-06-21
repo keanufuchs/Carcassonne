@@ -138,7 +138,7 @@ zur **internen Meilenstein-Steuerung** verwendet.
 
 > **Realitätsabgleich (verbindlich):** Der für die Abgabe maßgebliche, öffentlich
 > getaggte Release ist **`v0.1.0`** (Git-Tag auf `main` + GitHub Release, 21.06.2026),
-> ergänzt um das dauerhafte Live-Deployment auf
+> ergänzt um das Live-Deployment auf
 > [carcassonne.spelk.de](https://carcassonne.spelk.de). Die übrigen in Meetings/Backlog
 > genannten Versionen dienten der internen Planung.
 
