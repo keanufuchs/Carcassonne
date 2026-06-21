@@ -82,9 +82,7 @@ npm run electron:dev
 ### Installierbares Paket bauen
 
 ```bash
-npm run electron:pack:win   # Windows  (.exe / NSIS-Installer)
-npm run electron:pack:mac   # macOS    (.dmg)
-npm run electron:pack       # aktuelles Betriebssystem
+npm run electron:pack:mac   # macOS (.dmg)
 ```
 
 Die fertigen Pakete liegen anschließend im Ordner `release/`.
