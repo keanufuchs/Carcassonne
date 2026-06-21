@@ -127,11 +127,12 @@
       <div>
         <!-- Inline-SVG: kreisförmiger Flow mit Pfeilen -->
         <svg viewBox="0 0 460 460" class="diagram" role="img"
+             style="max-width:420px;max-height:440px;margin:0 auto;"
              aria-label="Agiler Kreisprozess: Backlog, User Stories, Implementierung, Tests, Feedback, Anpassung">
           <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5"
-                    markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M0 0 L10 5 L0 10 z" fill="#0f766e"/>
+            <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" fill="#7c3aed"/>
             </marker>
             <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stop-color="#0f766e"/>
@@ -140,13 +141,10 @@
             </linearGradient>
           </defs>
 
-          <!-- Ringbogen mit Pfeilrichtung (offen, damit Iteration sichtbar) -->
-          <circle cx="230" cy="230" r="150" fill="none"
-                  stroke="url(#ring)" stroke-width="3" stroke-dasharray="820 120"
-                  stroke-linecap="round" transform="rotate(-72 230 230)"/>
-          <!-- Rücklauf-Pfeil (nächste Iteration) -->
-          <path d="M150 120 A150 150 0 0 1 196 92" fill="none" stroke="#7c3aed"
-                stroke-width="3" marker-end="url(#arrow)"/>
+          <!-- Ringbogen im Uhrzeigersinn, oben offen für die nächste Iteration -->
+          <path d="M268.8 85.1 A150 150 0 1 1 191.2 85.1" fill="none"
+                stroke="url(#ring)" stroke-width="3" stroke-linecap="round"
+                marker-end="url(#arrow)"/>
 
           <!-- 6 Knoten gleichmäßig auf dem Kreis (Winkel: -90,-30,30,90,150,210) -->
           <!-- Knoten: cx = 230 + 150*cos, cy = 230 + 150*sin -->
