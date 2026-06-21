@@ -628,10 +628,12 @@
   }
   /* Progressive disclosure: inactive players collapse to colour-token + score.
      The repeated "Random AI" name is redundant — the meeple colour is the
-     identity. Score is the one thing worth a constant glance, so the meeple
-     supply is dropped from the bar (it surfaces during meeple placement) to
-     keep all 5 players on one un-scrolled row. */
-  .mobile-topbar .player-chip .pmeeples { display: none; }
+     identity. Score is the one thing worth a constant glance. The active
+     player keeps its meeple supply so you can always see how many meeples you
+     have left on your turn (issue: mobile meeple count); inactive players drop
+     it to keep all 5 players on one un-scrolled row. */
+  .mobile-topbar .player-chip:not(.active) .pmeeples { display: none; }
+  .mobile-topbar .player-chip.active .pmeeples { font-size: 13px; }
   .mobile-topbar .player-chip:not(.active) .pname { display: none; }
   .mobile-topbar .player-chip:not(.active) .pscore { font-size: 14px; }
   /* Only the player whose turn it is keeps its name. */
