@@ -24,11 +24,11 @@ unterschiedlicher Stärke.
 | Aspekt | Beschreibung |
 |--------|--------------|
 | **Auftraggeber / Stakeholder** | Der Dozent agiert als Kunde, Auftraggeber und Stakeholder. |
-| **Team** | Studierendengruppe (Selbstorganisation, Aufgabenverteilung auf alle Mitglieder). |
+| **Team** | Keanu, Neo, Paul & Jan (Selbstorganisation, Aufgabenverteilung auf alle Mitglieder). |
 | **Art** | Studentisches Software-Engineering-Projekt, das den **gesamten Entwicklungszyklus** durchläuft. |
 | **Bewertung** | Je 50 % Dokumentation und Abschlusspräsentation. |
 | **Abschlusspräsentation** | 22.06.2026 |
-| **Finaler Release** | `v0.1.0` (21.06.2026), zusätzlich dauerhaft als Web-App live. |
+| **Finaler Release** | `v0.1.0` (21.06.2026), zusätzlich als Web-App live. |
 | **Anforderungsquelle** | Notion-Workspace *Carcassonne* als verbindliche Single Source of Truth. |
 
 Die formalen Vorgaben sind in [`specs/00_vorgaben.md`](../specs/00_vorgaben.md) festgehalten.
