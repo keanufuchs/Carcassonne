@@ -80,9 +80,9 @@ durchgeführt; jedes mit lauffähiger Demo und Statusbericht.
 
 | Meeting                   | Datum       | Kerninhalt / Entscheidung                                                                                                                                                        |
 | ------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **#1 — Kickoff**          | 04.05.2026  | Vorstellung Konzept; **2 Erweiterungen bestätigt** (Netzwerk + KI); **Zoom/Pan (MH-08) und E2E-Automatisierung (QS-03) neu gefordert**; QS-Schwellen fixiert; Windows-Priorität. |
+| **#1 — Kickoff**          | 04.05.2026  | Vorstellung Konzept; **2 Erweiterungen bestätigt** (Netzwerk + KI); **Zoom/Pan (MH-08) und E2E-Automatisierung (QS-03) neu gefordert**; QS-Schwellen fixiert. |
 | **#2**                    | 11.05.2026  | GUI-Fortschritt abgenommen; Vertiefung KI & Netzwerk beschlossen; MH-06 priorisiert.                                                                                             |
-| **#3**                    | 01.06.2026  | EW-01 als stabil bestätigt; EW-02-Demo; Feature-Freeze geplant; Risiken Netzwerk/Windows bewertet; Game-Code-Beitritt (US-M3) und KI-Fallback (US-A3) bestätigt.                 |
+| **#3**                    | 01.06.2026  | EW-01 als stabil bestätigt; EW-02-Demo; Feature-Freeze geplant; Risiken Netzwerk bewertet; Game-Code-Beitritt (US-M3) und KI-Fallback (US-A3) bestätigt.                 |
 | **#4 — Pre-Release Demo** | ~10.06.2026 | Abnahme-Demo; **E2E-Automatisierung (QS-03) abgenommen**; **Freigabe der agilen Anforderungsdokumentation** als Pflichtenheft-Äquivalent.                                                                                    |
 
 
