@@ -174,6 +174,8 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const dragHoverRef = useRef<{ coord: { x: number; y: number }; legal: boolean } | null>(null);
   const [dropToast, setDropToast] = useState<string | null>(null);
   const dropToastTimerRef = useRef<number | null>(null);
+  const [discardToast, setDiscardToast] = useState<string | null>(null);
+  const discardToastTimerRef = useRef<number | null>(null);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
@@ -284,6 +286,22 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
 
   useEffect(() => () => {
     if (dropToastTimerRef.current !== null) window.clearTimeout(dropToastTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    const count = state.lastDrawDiscardedCount;
+    if (count <= 0) return;
+    if (discardToastTimerRef.current !== null) window.clearTimeout(discardToastTimerRef.current);
+    const noun = count === 1 ? 'Kachel' : 'Kacheln';
+    setDiscardToast(`${count} ${noun} ohne Platz verworfen`);
+    discardToastTimerRef.current = window.setTimeout(() => {
+      setDiscardToast(null);
+      discardToastTimerRef.current = null;
+    }, 3000);
+  }, [state.lastDrawDiscardedCount, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => {
+    if (discardToastTimerRef.current !== null) window.clearTimeout(discardToastTimerRef.current);
   }, []);
 
   // Auto-draw tile at the start of every turn (active player only in network games)
@@ -576,6 +594,9 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       )}
       {dropToast && (
         <div className="mobile-toast" role="status" data-testid="drop-toast">{dropToast}</div>
+      )}
+      {discardToast && (
+        <div className="mobile-toast" role="status" data-testid="discard-toast">{discardToast}</div>
       )}
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen

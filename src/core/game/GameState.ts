@@ -15,4 +15,5 @@ export interface GameState {
   pendingRotation: Rotation;
   lastPlacedTileId: TileId | null;
   lastCompletedFeatures: FeatureId[];
+  lastDrawDiscardedCount: number;
 }
