@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
 
   <!-- Eigenes helles Theme -->
-  <link rel="stylesheet" href="css/theme.css?v=5">
+  <link rel="stylesheet" href="css/theme.css?v=6">
 </head>
 <body>
 <div class="reveal">
@@ -379,20 +379,33 @@
     <h2 class="lead">Ein Szenario = eine deterministische Partie</h2>
     <div class="split">
       <div>
-        <pre style="box-shadow:var(--shadow);border-radius:12px;font-size:.5em;"><code class="language-yaml" data-trim data-noescape>name: full-game-playthrough
+        <div class="code-card">
+          <div class="code-card__header">
+            <span class="code-card__dots"><span></span></span>
+            <span class="code-card__file">tests/scenarios/full-game-playthrough.yaml</span>
+          </div>
+          <pre><code class="language-yaml" data-trim data-noescape>name: full-game-playthrough
+
 description: >
-  Vollständige Partie regelkonform bis
-  Spielende, deterministisch & geseedet.
+  Vollständige Partie regelkonform bis Spielende,
+  deterministisch & geseedet.
+
 players: [Alice, Bob]
+
 deckFrom: base-game      # 79-Kachel-Stapel
 steps: []                # Züge aus Auto-Play
+
 autoPlay:
   seed: 1                # gleicher Seed → gleiche Partie
+
 expect:
   phase: GAME_OVER
   placedTiles: 80
   deckRemaining: 0
-  scores: { Alice: 25, Bob: 17 }</code></pre>
+  scores:
+    Alice: 25
+    Bob: 17</code></pre>
+        </div>
       </div>
       <div>
         <p class="small">Jede <span class="pill">*.yaml</span> in
