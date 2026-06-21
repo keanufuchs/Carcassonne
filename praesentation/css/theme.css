@@ -609,6 +609,59 @@
   width: 100%;
 }
 
+/* ── QR-Abschluss ───────────────────────────────────────────────────────── */
+.qr-slide {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.qr-slide .qr-kicker {
+  font-size: .8em;
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: .5em;
+}
+
+.qr-slide h2 {
+  font-size: 1.8em;
+  margin-bottom: .7em;
+}
+
+.qr-slide .qr-card {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(15, 118, 110, .14);
+}
+
+.qr-slide .qr-card svg {
+  display: block;
+  width: 260px;
+  height: 260px;
+}
+
+.qr-slide .qr-url {
+  margin-top: .9em;
+  font-size: 1.1em;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: var(--accent);
+}
+
+.qr-slide .qr-hint {
+  margin-top: .25em;
+  font-size: .72em;
+  color: var(--ink-muted);
+}
+
 /* ── Abschnitt-Trenner ──────────────────────────────────────────────────── */
 .section-slide {
   text-align: center;
