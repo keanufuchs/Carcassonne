@@ -1,0 +1,277 @@
+/* ============================================================================
+   Carcassonne — Reveal.js Light Theme (minimalistisch)
+   Helles, ruhiges Design. Ein Akzent (Petrol) + neutrale Tinten, dezente
+   Statusfarben. Keine externen Assets nötig: Reveal-Core via CDN, alle eigenen
+   Grafiken sind reines CSS / Inline-SVG. Optimiert für Vortrag (große Schrift,
+   luftige Slides).
+   ========================================================================== */
+
+:root {
+  /* Flächen */
+  --bg:        #fbfbf9;   /* off-white, warm */
+  --surface:   #ffffff;
+  --surface-2: #f5f6f3;
+  --line:      #e5e7e1;
+  --line-2:    #d7dad2;
+
+  /* Tinte / Typografie */
+  --ink:       #1c2330;
+  --ink-soft:  #4a5360;
+  --ink-muted: #8b94a1;
+
+  /* Genau EIN Akzent (minimalistisch) */
+  --accent:    #0f766e;   /* petrol */
+  --accent-bg: #e9f2f0;
+
+  /* Status (dezent, sparsam) */
+  --ok:    #15803d;  --ok-bg: #e8f3ec;
+  --warn:  #b45309;  --warn-bg: #f6eede;
+
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 10px 28px rgba(16,24,40,.05);
+}
+
+/* ── Reveal-Grundlagen ─────────────────────────────────────────────────── */
+.reveal {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  font-size: 30px;
+  font-weight: 400;
+}
+.reveal-viewport { background: var(--bg); }
+
+.reveal .slides section {
+  text-align: left;
+  top: 0 !important;
+  height: 100%;
+}
+
+/* Überschriften */
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  line-height: 1.1;
+  margin: 0 0 .4em;
+}
+.reveal h1 { font-size: 2.1em; }
+.reveal h2 { font-size: 1.5em; }
+.reveal h3 { font-size: 1.0em; }
+
+.reveal p  { line-height: 1.5; color: var(--ink-soft); }
+.reveal strong { color: var(--ink); font-weight: 700; }
+.reveal a { color: var(--accent); text-decoration: none; }
+.reveal em { color: var(--accent); font-style: normal; font-weight: 600; }
+.reveal code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: .82em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .06em .35em;
+  color: var(--ink);
+}
+
+/* Titel mit Akzentlinie */
+.reveal h2.lead {
+  position: relative;
+  padding-bottom: .26em;
+  margin-bottom: .7em;
+}
+.reveal h2.lead::after {
+  content: "";
+  position: absolute; left: 0; bottom: 0;
+  width: 58px; height: 4px; border-radius: 2px;
+  background: var(--accent);
+}
+
+/* Kapitel-Kicker */
+.kicker {
+  display: inline-block;
+  font-size: .5em;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: .6em;
+}
+
+/* ── Listen ─────────────────────────────────────────────────────────────── */
+.reveal ul, .reveal ol { margin: 0; padding: 0; }
+.reveal ul { list-style: none; }
+.reveal ul li {
+  position: relative;
+  padding-left: 1.3em;
+  margin: .5em 0;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+.reveal ul li::before {
+  content: "";
+  position: absolute; left: 0; top: .58em;
+  width: 7px; height: 7px; border-radius: 2px;
+  background: var(--accent);
+}
+.reveal ol { padding-left: 1.2em; }
+.reveal ol li { margin: .5em 0; color: var(--ink-soft); }
+.reveal li strong { color: var(--ink); }
+.reveal .spaced li { margin: .7em 0; }
+
+/* ── Layout-Helfer ──────────────────────────────────────────────────────── */
+.grid { display: grid; gap: 18px; }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.muted { color: var(--ink-muted); }
+.center { text-align: center; }
+.small { font-size: .8em; }
+.tiny  { font-size: .66em; }
+.mt   { margin-top: .6em; }
+.mt2  { margin-top: 1.1em; }
+
+/* ── Karten ─────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+.card h3 {
+  font-size: .92em;
+  margin-bottom: .35em;
+  display: flex; align-items: center; gap: .45em;
+}
+.card p, .card ul li { font-size: .82em; }
+.card .num {
+  font-size: 1.6em; font-weight: 800; color: var(--accent);
+  line-height: 1; letter-spacing: -.03em;
+}
+.card.accent { border-color: var(--accent); background: var(--accent-bg); }
+
+/* Kennzahl-Kachel */
+.stat { text-align: center; }
+.stat .num { font-size: 2.1em; font-weight: 800; color: var(--accent); letter-spacing: -.03em; }
+.stat .lbl { font-size: .68em; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .08em; margin-top: .2em; }
+
+/* ── Badges ─────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  font-size: .62em; font-weight: 700;
+  padding: .2em .6em; border-radius: 999px;
+  letter-spacing: .02em;
+  border: 1px solid transparent;
+}
+.badge.ok   { color: var(--ok);   background: var(--ok-bg);   }
+.badge.acc  { color: var(--accent); background: var(--accent-bg); }
+.badge.warn { color: var(--warn); background: var(--warn-bg); }
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15em;
+  margin-right: .2em;
+  vertical-align: -.12em;
+}
+
+/* ── Tabellen ───────────────────────────────────────────────────────────── */
+.reveal table { width: 100%; border-collapse: collapse; font-size: .74em; margin: 0; }
+.reveal table th {
+  text-align: left; font-weight: 700; color: var(--ink-muted);
+  text-transform: uppercase; letter-spacing: .06em; font-size: .82em;
+  padding: .5em .7em; border-bottom: 2px solid var(--line-2);
+}
+.reveal table td { padding: .55em .7em; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.reveal table th .icon--check {
+  width: .95em;
+  height: .95em;
+  vertical-align: -.08em;
+  margin-left: .15em;
+}
+.reveal table strong { color: var(--ink); }
+
+/* ── Schicht-Stack (Architektur) ────────────────────────────────────────── */
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.layer {
+  border: 1px solid var(--line-2);
+  border-left: 5px solid var(--accent);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 14px 20px;
+}
+.layer .lname { font-weight: 700; color: var(--ink); font-size: .9em; }
+.layer .ldesc { font-size: .72em; color: var(--ink-muted); margin-top: .15em; }
+.layer.dim { border-left-color: var(--line-2); opacity: .85; }
+
+/* ── Prozess / Flow ─────────────────────────────────────────────────────── */
+.flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+.flow .step {
+  flex: 1; min-width: 0;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; text-align: center;
+}
+.flow .step .t { font-weight: 700; font-size: .82em; color: var(--ink); }
+.flow .step .d { font-size: .64em; color: var(--ink-muted); margin-top: .25em; }
+.flow .arrow { display: flex; align-items: center; color: var(--accent); font-size: 1.3em; padding: 0 8px; }
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.reveal .slide-footer {
+  position: absolute; bottom: 14px; left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--ink-muted);
+  padding: 0 12px; letter-spacing: .02em;
+}
+
+/* ── Custom SVG-Icons (praesentation/icons.svg) ─────────────────────────── */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.icon--logo {
+  width: 1.15em;
+  height: 1.15em;
+}
+.icon--inline {
+  width: 1.05em;
+  height: 1.05em;
+  margin-right: .12em;
+}
+.icon--check {
+  width: 1em;
+  height: 1em;
+  color: var(--ok);
+}
+.title-slide .game .icon--logo {
+  width: 96px;
+  height: 96px;
+}
+
+/* ── Titelfolie ─────────────────────────────────────────────────────────── */
+.title-slide { text-align: center; }
+.title-slide .game { line-height: 1; margin-bottom: .15em; }
+.title-slide h1 { font-size: 2.6em; margin-bottom: .15em; }
+.title-slide .sub { font-size: 1.0em; color: var(--ink-soft); }
+.title-slide .team { font-size: .8em; color: var(--ink-muted); margin-top: 1.6em; }
+.title-slide .meta { font-size: .66em; color: var(--ink-muted); margin-top: .5em; }
+
+/* ── Abschnitt-Trenner ──────────────────────────────────────────────────── */
+.section-slide { text-align: center; display:flex; flex-direction:column; justify-content:center; height:100%; }
+.section-slide .num { font-size: 1.1em; color: var(--accent); font-weight: 800; letter-spacing:.2em; }
+.section-slide h2 { font-size: 2.2em; margin-top:.2em; }
+.section-slide p { font-size: .9em; }
+
+/* Pflichtfrage-Highlight */
+.q-pill {
+  display:inline-block; background: var(--accent); color:#fff;
+  font-size:.5em; font-weight:700; letter-spacing:.1em;
+  padding:.35em .9em; border-radius:999px; text-transform:uppercase;
+  margin-bottom:.7em;
+}
+
+/* Reveal Fortschrittsbalken / Steuerung dezent */
+.reveal .progress { color: var(--accent); height: 4px; }
+.reveal .controls { color: var(--accent); }
+
+/* kompaktere Zeilen wenn nötig */
+.reveal .dense li { margin: .32em 0; font-size: .9em; }
