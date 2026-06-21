@@ -71,7 +71,7 @@ Vollständige Anleitung inkl. Desktop-App und KI-Konfiguration: **[Kapitel 07](0
 | Plattform | Electron-Desktop (Windows/macOS) **+** Web-App |
 | Tech-Stack | TypeScript · React 19 · Vite · Electron · Three.js (3D) · Node/Express · WebSocket |
 | Spielkern | Framework-unabhängiges TypeScript (reine Funktionen) |
-| Erweiterungen | EW-01 Netzwerk-Multiplayer · EW-02 Intelligenter KI-Agent (LLM + MCP) |
+| Erweiterungen | EW-01 Netzwerk-Multiplayer · EW-02 Reasoning AI (LLM + MCP) |
 | Vorgehen | Agil (Scrum-orientiert), Notion als Backlog, 4 Stakeholder-Reviews |
 | Qualität | 282 automatisierte Tests (40 Dateien), CI-Gate, Code-Reviews |
 | Release | `v0.1.0` (Git-Tag auf `main` + GitHub Release, 21.06.2026) |

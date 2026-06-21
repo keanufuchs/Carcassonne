@@ -76,7 +76,7 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 | ID | User Story | Paket | Herkunft |
 |----|-----------|-------|----------|
 | US-A1 | Als Einzelspieler möchte ich gegen einen zufallsbasierten KI-Gegner spielen. | MH-05 | Anforderung |
-| US-A2 | Als Spieler möchte ich gegen einen strategisch denkenden KI-Agenten (Claude) spielen. | EW-02 | Anforderung |
+| US-A2 | Als Spieler möchte ich gegen einen strategisch denkenden Reasoning-AI-KI-Agenten spielen. | EW-02 | Anforderung |
 | US-A3 | Als Spieler möchte ich auch ohne API-Key bzw. bei Timeout eine sinnvolle KI haben. | EW-02b | **M#3** |
 
 ### EPIC-QS
@@ -114,7 +114,7 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 |----|--------------|--------|
 | EW-01 | **Netzwerk-Multiplayer** — Client-Server mit autoritativem Backend (REST + WebSocket/Polling) |  |
 | EW-01b | Online-/Cloud-Multiplayer — Spiel-Code-Beitritt, serverseitige Persistenz |  |
-| EW-02 | **Intelligenter KI-Agent** — LLM (Claude/OpenRouter/OpenAI-kompatibel) mit Tool-Use über MCP-Server |  |
+| EW-02 | **Intelligenter KI-Agent (Reasoning AI)** — OpenAI-kompatibles LLM (z. B. OpenRouter/Custom-Endpunkt) mit Tool-Use über MCP-Server |  |
 | EW-02b | Heuristik-/Greedy-KI — eigene Spielstufe + Fallback ohne API-Key/Timeout |  |
 
 > **Architektur-Entscheidung:** EW-01 wurde statt P2P-WebSocket als **Client-Server-Modell**

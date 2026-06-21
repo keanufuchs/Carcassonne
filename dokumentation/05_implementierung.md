@@ -111,7 +111,7 @@ orchestriert (`ai/index.ts`). Es gibt drei Stufen:
 |-------|-------|--------------|
 | **Zufall** (MH-05) | `random.ts` | Wählt zufällig aus allen legalen Zügen. Treiber der E2E-Vollpartien. |
 | **Heuristik** (EW-02b) | `heuristic.ts` | Regelbasierte Bewertung (Greedy); **kein API-Key nötig**; zugleich Fallback. |
-| **Intelligent** (EW-02) | `intelligent.ts` | **LLM-Agent** (Claude/OpenRouter/OpenAI-kompatibel) mit **Tool-Use** über den MCP-Server. |
+| **Intelligent / Reasoning AI** (EW-02) | `intelligent.ts` | **LLM-Agent** (OpenAI-kompatibel, z. B. OpenRouter/Custom-Endpunkt) mit **Tool-Use** über den MCP-Server. |
 
 ```mermaid
 flowchart TD

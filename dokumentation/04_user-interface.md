@@ -29,7 +29,7 @@ flowchart TD
 
 | Bildschirm | Datei | Funktion |
 |-----------|-------|----------|
-| **Setup** | `src/ui/SetupScreen.tsx` | 2–5 Spieler anlegen; pro Spieler Modus wählen (Mensch / Zufall / Heuristik / Claude); KI-Modell wählen. |
+| **Setup** | `src/ui/SetupScreen.tsx` | 2–5 Spieler anlegen; pro Spieler Modus wählen (Mensch / Zufall / Heuristik / Reasoning AI); KI-Modell wählen. |
 | **Lobby** | `src/ui/LobbyScreen.tsx` | Online-Spiel erstellen/beitreten via 5-stelligem Spiel-Code (EW-01b). |
 | **Game** | `src/App.tsx` + Board/HUD | Eigentliches Spiel: Board + Bedienleisten. |
 | **End-Game** | `src/ui/hud/EndGameScreen.tsx` | Endabrechnung, Sieger, Punkteaufschlüsselung. |

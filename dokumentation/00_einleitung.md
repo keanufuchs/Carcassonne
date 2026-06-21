@@ -100,7 +100,7 @@ Entscheidung Meeting #1, 04.05.2026):
 | ID        | Erweiterung                | Begründung der Wahl                                                                                              | Status |
 | --------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------ |
 | **EW-01** | **Netzwerk-Multiplayer**   | Höchster Spielwert; ermöglicht verteiltes Spielen. Als Client-Server-Modell mit autoritativem Backend umgesetzt. |        |
-| **EW-02** | **Intelligenter KI-Agent** | Anspruchsvoller „guter" Gegner mittels LLM (Claude/OpenRouter) + Tool-Use über lokalen MCP-Server.               |        |
+| **EW-02** | **Intelligenter KI-Agent (Reasoning AI)** | Anspruchsvoller „guter" Gegner mittels OpenAI-kompatiblem LLM (z. B. OpenRouter/Custom-Endpunkt) + Tool-Use über lokalen MCP-Server.               |        |
 
 
 > Über die Pflicht hinaus wurden weitere optionale Pakete umgesetzt (3D-Board,

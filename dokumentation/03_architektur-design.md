@@ -193,7 +193,7 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 | Desktop | **Electron + electron-builder** | macOS-Pakete aus einer Web-Codebasis. |
 | Backend | **Node + Express + ws** | REST + WebSocket für autoritativen Multiplayer (EW-01). |
 | Tests | **Vitest + Playwright** | Unit/Integration + echte Browser-E2E/Szenarien. |
-| KI | **OpenAI-kompatibles LLM + MCP** | Flexibel (Claude/OpenRouter/Custom), Tool-Use, Fallback. |
+| KI | **OpenAI-kompatibles LLM + MCP** | Reasoning AI; flexibel (OpenRouter/Custom-Endpunkt), Tool-Use, Fallback. |
 | CI | **GitHub Actions** | Test-Gate, Builds, Deploy. |
 
 ---

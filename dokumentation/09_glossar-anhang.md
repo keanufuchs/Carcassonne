@@ -29,7 +29,8 @@
 | **Pub/Sub** | Publish-/Subscribe-Mechanismus, über den die UI auf Zustandsänderungen reagiert. |
 | **FSM** | Finite State Machine — die Phasen eines Spielzugs. |
 | **MCP** | Model Context Protocol — Server, der dem KI-Agenten Analyse-Tools bereitstellt. |
-| **LLM** | Large Language Model — Basis des intelligenten KI-Agenten (EW-02). |
+| **LLM** | Large Language Model — Basis des Reasoning-AI-KI-Agenten (EW-02). |
+| **Reasoning AI** | Spielmodus (EW-02) im Setup-Screen; nutzt ein OpenAI-kompatibles LLM mit Tool-Use über MCP. Nicht an einen einzelnen Anbieter gebunden. |
 | **E2E** | End-to-End-Test (Playwright) über UI + Backend. |
 | **Szenario** | Deterministischer Regeltest in YAML gegen die echte Engine. |
 | **GitFlow** | Branch-Modell mit `main`/`develop`/`feature`/`release`/`hotfix`. |

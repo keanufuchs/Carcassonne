@@ -57,7 +57,7 @@ npm run dev:full
 
 Anschließend **[http://localhost:5173](http://localhost:5173)** im Browser öffnen.
 
-> Für **Netzwerk-Multiplayer** und den **intelligenten KI-Agenten (Claude)** wird
+> Für **Netzwerk-Multiplayer** und den **Reasoning-AI-KI-Agenten** wird
 > `dev:full` benötigt. Hot-Seat und Zufalls-/Heuristik-KI laufen auch mit `npm run dev`.
 
 ### 3. Einzelne Server (optional)
@@ -97,7 +97,7 @@ Die fertigen Pakete liegen anschließend im Ordner `release/`.
 
 ## KI-Agent konfigurieren (optional, für EW-02)
 
-Der **intelligente KI-Modus** nutzt ein OpenAI-kompatibles LLM mit Tool-Use. Lege dazu
+Der **Reasoning-AI-Modus** nutzt ein OpenAI-kompatibles LLM mit Tool-Use. Lege dazu
 eine `.env` an (Vorlage: `.env.example`). Es genügt **eine** der beiden Optionen:
 
 ```bash
@@ -143,7 +143,7 @@ npm run lint           # ESLint
 ## Spiel starten (im Programm)
 
 1. **Spieleranzahl** wählen (2–5) und je Spieler einen **Modus** setzen
-   (Mensch · Zufall · Heuristik · Claude).
+   (Mensch · Zufall · Heuristik · Reasoning AI).
 2. **Lokal:** „Spiel starten" → Hot-Seat am selben Gerät.
    **Online:** „Create" → 5-stelligen **Spiel-Code** teilen; Mitspieler „Join" + Code; Host „Start Game".
 3. Kachel ziehen → drehen → auf ein legales Feld legen → optional Meeple setzen → Zug beenden.
