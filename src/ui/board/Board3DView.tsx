@@ -408,9 +408,9 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
         shadows={decorative ? false : 'percentage'}
         // Cap DPR: retina (2–3×) is invisible behind the menu veil and wasteful
         // in-game. [1, 2] is the R3F-recommended default; decorative pins to 1.
-        dpr={decorative ? 1 : [1, 2]}
+        dpr={[1, 2]}
         camera={{ position: [12, 14, 12], fov: 40 }}
-        gl={{ antialias: !decorative, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
       >
         <SceneLighting shadows={!decorative} />
         <CameraHotkeys />
