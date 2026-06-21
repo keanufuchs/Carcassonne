@@ -41,6 +41,7 @@ export interface SerializedState {
   pendingRotation: number;
   lastPlacedTileId: string | null;
   lastCompletedFeatures: string[];
+  lastDrawDiscardedCount?: number;
   players: Player[];
   deck: { startTileId: string; remainingIds: string[] };
   board: {
@@ -79,6 +80,7 @@ export function serializeState(state: GameState): string {
     pendingRotation: state.pendingRotation,
     lastPlacedTileId: state.lastPlacedTileId,
     lastCompletedFeatures: state.lastCompletedFeatures,
+    lastDrawDiscardedCount: state.lastDrawDiscardedCount,
     players: state.players,
     deck: {
       startTileId: state.deck.startTile.id,
@@ -177,5 +179,6 @@ export function deserializeState(json: string): GameState {
     pendingRotation: d.pendingRotation as GameState['pendingRotation'],
     lastPlacedTileId: d.lastPlacedTileId,
     lastCompletedFeatures: d.lastCompletedFeatures,
+    lastDrawDiscardedCount: d.lastDrawDiscardedCount ?? 0,
   };
 }

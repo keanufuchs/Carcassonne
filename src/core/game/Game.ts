@@ -53,6 +53,7 @@ export function startGame(
     pendingRotation: 0,
     lastPlacedTileId: null,
     lastCompletedFeatures: [],
+    lastDrawDiscardedCount: 0,
   };
 
   placeTileInternal(state.board, deck.startTile, { x: 0, y: 0 }, 0);
@@ -63,6 +64,7 @@ export function drawTile(state: GameState): Result {
   if (state.phase !== 'PLACING_TILE') return err('WRONG_PHASE', 'Not in PLACING_TILE phase');
   if (state.pendingTile !== null) return okVoid();
 
+  const deckSizeBefore = state.deck.remaining.length;
   const tile = drawPlaceable(state.deck, t => hasAnyLegalPlacement(state.board, t));
 
   if (!tile) {
@@ -70,6 +72,7 @@ export function drawTile(state: GameState): Result {
     return okVoid();
   }
 
+  state.lastDrawDiscardedCount = deckSizeBefore - state.deck.remaining.length - 1;
   state.pendingTile = tile;
   state.pendingRotation = 0;
   state.version++;
@@ -101,6 +104,7 @@ export function placeTile(state: GameState, coord: Coord): Result {
 
   state.lastPlacedTileId = placed.tileId;
   state.lastCompletedFeatures = completedFeatures.map(f => f.id);
+  state.lastDrawDiscardedCount = 0;
   state.pendingTile = null;
   state.pendingRotation = 0;
   state.phase = 'PLACING_MEEPLE';

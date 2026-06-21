@@ -164,7 +164,11 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   // How far the 3D board camera has orbited from its initial view (radians).
   // Drives the HUD preview tile so it spins to match the live view (issue #45).
   const [cameraSpin, setCameraSpin] = useState(0);
+  const resetCameraRef = useRef<(() => void) | null>(null);
   const [showMap, setShowMap] = useState(false);
+  // Confirmation before ending the match — the End Game icon reads as "leave",
+  // so the dialog spells out that it ends the game for everyone.
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
   // Mobile meeple placement: the segment picked from the choice list (issue #34).
   const [selectedMeepleRef, setSelectedMeepleRef] = useState<SegmentRef | null>(null);
   // Mobile drag-to-place: live finger position while dragging the
@@ -174,6 +178,8 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const dragHoverRef = useRef<{ coord: { x: number; y: number }; legal: boolean } | null>(null);
   const [dropToast, setDropToast] = useState<string | null>(null);
   const dropToastTimerRef = useRef<number | null>(null);
+  const [discardToast, setDiscardToast] = useState<string | null>(null);
+  const discardToastTimerRef = useRef<number | null>(null);
   const [highlightedCoord, setHighlightedCoord] = useState<{ x: number; y: number } | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimerRef = useRef<number | null>(null);
@@ -284,6 +290,22 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
 
   useEffect(() => () => {
     if (dropToastTimerRef.current !== null) window.clearTimeout(dropToastTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    const count = state.lastDrawDiscardedCount;
+    if (count <= 0) return;
+    if (discardToastTimerRef.current !== null) window.clearTimeout(discardToastTimerRef.current);
+    const noun = count === 1 ? 'Kachel' : 'Kacheln';
+    setDiscardToast(`${count} ${noun} ohne Platz verworfen`);
+    discardToastTimerRef.current = window.setTimeout(() => {
+      setDiscardToast(null);
+      discardToastTimerRef.current = null;
+    }, 3000);
+  }, [state.lastDrawDiscardedCount, state.version]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => {
+    if (discardToastTimerRef.current !== null) window.clearTimeout(discardToastTimerRef.current);
   }, []);
 
   // Auto-draw tile at the start of every turn (active player only in network games)
@@ -444,22 +466,32 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             <button
               type="button"
               data-testid="end-game-btn"
-              className="btn btn-sm btn-danger mobile-endgame-btn"
-              onClick={() => controller.endGame()}
-              aria-label="End Game"
+              className="mobile-endgame-btn"
+              onClick={() => setConfirmEndOpen(true)}
+              aria-label="Spiel verlassen"
+              title="Spiel verlassen"
             >
-              End Game
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
             </button>
           )}
           {state.phase === 'GAME_OVER' && showMap && (
             <button
               type="button"
               data-testid="mobile-exit-btn"
-              className="btn btn-sm btn-gold mobile-endgame-btn"
+              className="mobile-endgame-btn"
               onClick={() => { clearLocalGame(); window.location.reload(); }}
               aria-label="Exit"
+              title="Exit"
             >
-              Exit
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
             </button>
           )}
         </div>
@@ -519,8 +551,25 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
           </button>
         )}
+        {effectiveBoardView === '3d' && isMobile && (
+          <button
+            type="button"
+            className="board-recenter-btn"
+            onClick={() => resetCameraRef.current?.()}
+            aria-label="Kamera zurücksetzen"
+            title="Kamera zurücksetzen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <line x1="12" y1="2" x2="12" y2="7" />
+              <line x1="12" y1="17" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="7" y2="12" />
+              <line x1="17" y1="12" x2="22" y2="12" />
+            </svg>
+          </button>
+        )}
         {effectiveBoardView === '3d' ? (
-          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} onCameraSpinChange={setCameraSpin} />
+          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} onCameraSpinChange={setCameraSpin} resetCameraRef={resetCameraRef} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
@@ -577,6 +626,9 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
       {dropToast && (
         <div className="mobile-toast" role="status" data-testid="drop-toast">{dropToast}</div>
       )}
+      {discardToast && (
+        <div className="mobile-toast" role="status" data-testid="discard-toast">{discardToast}</div>
+      )}
       {state.phase === 'GAME_OVER' && (
         <EndGameScreen
           players={state.players}
@@ -584,6 +636,41 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           showMap={showMap}
           onShowMap={() => setShowMap(true)}
         />
+      )}
+      {confirmEndOpen && (
+        <div
+          className="confirm-overlay"
+          data-testid="end-game-confirm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-end-title"
+          onClick={() => setConfirmEndOpen(false)}
+        >
+          <div className="card confirm-card" onClick={(e) => e.stopPropagation()}>
+            <h2 id="confirm-end-title" className="confirm-title">Spiel verlassen?</h2>
+            <p className="confirm-text">
+              Möchtest du das Spiel wirklich verlassen? Es beendet das Spiel für alle.
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-ghost btn-block"
+                data-testid="end-game-cancel"
+                onClick={() => setConfirmEndOpen(false)}
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger btn-block"
+                data-testid="end-game-confirm-btn"
+                onClick={() => { setConfirmEndOpen(false); controller.endGame(); }}
+              >
+                Spiel beenden
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

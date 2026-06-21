@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
@@ -53,6 +53,12 @@ interface Props {
    * the player judge whether a rotation fits after moving the camera.
    */
   onCameraSpinChange?: (spin: number) => void;
+  /**
+   * When provided, the ref is populated with a `resetCamera` function that
+   * moves the camera back to its initial position and resets the orbit target
+   * to the origin (issue #54). The parent mounts a recenter button that calls it.
+   */
+  resetCameraRef?: MutableRefObject<(() => void) | null>;
 }
 
 /**
@@ -127,16 +133,19 @@ function useIsTouchDevice(): boolean {
   return isTouch;
 }
 
+// Initial camera position and orbit target.
+const INIT_POS    = new THREE.Vector3(12, 14, 12);
+const INIT_TARGET = new THREE.Vector3(0, 0, 0);
+
 // Derive initial azimuth + pitch from the starting camera position so R resets
 // to exactly those angles regardless of the current zoom level.
-const _initOffset = new THREE.Vector3(12, 14, 12); // INIT_POS - origin
+const _initOffset = new THREE.Vector3().subVectors(INIT_POS, INIT_TARGET);
 const _initSph    = new THREE.Spherical().setFromVector3(_initOffset);
 const INIT_THETA  = _initSph.theta; // azimuth  ≈ π/4
-const INIT_PHI    = _initSph.phi;   // polar    ≈ 50°
 
 /**
  * Keyboard shortcuts for camera angle presets (inside Canvas to access useThree).
- *   R       — reset azimuth + pitch to initial isometric angles, zoom unchanged
+ *   R       — full camera reset: position + target back to initial values
  *   1/2/3/4 — rotate to North / East / South / West, zoom + pitch unchanged
  */
 function CameraHotkeys() {
@@ -161,7 +170,12 @@ function CameraHotkeys() {
       };
 
       switch (e.key) {
-        case 'r': case 'R': applyAngle(INIT_THETA, INIT_PHI); break;
+        case 'r': case 'R': {
+          ctrl.target.copy(INIT_TARGET);
+          camera.position.copy(INIT_POS);
+          ctrl.update();
+          break;
+        }
         case '1': applyAngle(Math.PI);        break; // North
         case '2': applyAngle(Math.PI / 2);    break; // East
         case '3': applyAngle(0);              break; // South
@@ -172,6 +186,27 @@ function CameraHotkeys() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [camera, controls]);
+
+  return null;
+}
+
+/**
+ * Populates `resetRef` with a function that snaps camera + target back to the
+ * initial isometric view. Mounted inside <Canvas> so it can access useThree.
+ */
+function CameraResetter({ resetRef }: { resetRef: MutableRefObject<(() => void) | null> }) {
+  const { camera, controls } = useThree();
+
+  useEffect(() => {
+    const ctrl = controls as any;
+    resetRef.current = () => {
+      if (!ctrl?.update) return;
+      ctrl.target.copy(INIT_TARGET);
+      camera.position.copy(INIT_POS);
+      ctrl.update();
+    };
+    return () => { resetRef.current = null; };
+  }, [camera, controls, resetRef]);
 
   return null;
 }
@@ -232,7 +267,7 @@ function SceneLighting({ shadows = true }: { shadows?: boolean }) {
  * (geometry + ownership markers + meeples) and a translucent ghost at each valid
  * slot for the pending tile. Replaces the 2D SVG/CSS BoardView.
  */
-export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false, dragPointer, onDragHoverChange, onCameraSpinChange }: Props) {
+export function Board3DView({ state, controller, canInteract = true, highlightedCoord, highlightKey, previewMeepleRef, decorative = false, dragPointer, onDragHoverChange, onCameraSpinChange, resetCameraRef }: Props) {
   // state.version is required: board.tiles is mutated in place (same Map ref),
   // so version is the only signal that the placed-tile set changed.
   const placedTiles = useMemo(
@@ -379,6 +414,7 @@ export function Board3DView({ state, controller, canInteract = true, highlighted
       >
         <SceneLighting shadows={!decorative} />
         <CameraHotkeys />
+        {resetCameraRef && <CameraResetter resetRef={resetCameraRef} />}
         {onCameraSpinChange && <CameraSpinReporter onSpin={onCameraSpinChange} />}
         {/* gridHelper(size, divisions, colorCenterLine, colorGrid) — uniform color, no axis highlight */}
         <gridHelper args={[300, 300, '#4a6070', '#4a6070']} position={[0.5, -0.02, 0.5]} />
