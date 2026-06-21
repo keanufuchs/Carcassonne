@@ -701,7 +701,11 @@
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding-bottom: 2px;
+    /* Pad on every side so the selected option's focus ring (box-shadow)
+       isn't clipped by the scroll container — kept the edges looking ragged
+       on mobile (issue #52). Negative margin keeps the row flush with the bar. */
+    padding: 3px;
+    margin: -3px;
     -webkit-overflow-scrolling: touch;
   }
   .meeple-choice-option {
@@ -718,6 +722,10 @@
     font-weight: 600;
     cursor: pointer;
     min-height: 44px;
+    /* Crisp edges: avoid sub-pixel border seams from transforms/scrolling. */
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    outline: none;
   }
   .meeple-choice-option.is-selected {
     border-color: var(--gold, #c79a3b);

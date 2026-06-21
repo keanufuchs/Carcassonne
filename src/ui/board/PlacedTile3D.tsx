@@ -108,13 +108,13 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
   // banners) never animate; only genuine in-play additions do. Multi-tile
   // features add a banner to every member tile, so each pops in together.
   const prevClaimIdsRef = useRef<Set<number> | null>(null);
-  const bannerAnimsRef = useRef<{ obj: THREE.Object3D; elapsed: number }[]>([]);
+  const bannerAnimsRef = useRef<{ obj: THREE.Object3D; elapsed: number; baseScale: number }[]>([]);
   useLayoutEffect(() => {
     const currentIds = new Set(claims.keys());
     const prev = prevClaimIdsRef.current;
     prevClaimIdsRef.current = currentIds;
     if (prev === null) return; // first render: establish baseline only, no animation
-    const anims: { obj: THREE.Object3D; elapsed: number }[] = [];
+    const anims: { obj: THREE.Object3D; elapsed: number; baseScale: number }[] = [];
     for (const [id, claim] of claims) {
       if (prev.has(id)) continue;
       // Roads keep their already-standing lantern; only the new pennant rises.
@@ -122,8 +122,11 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
         ? markers.getObjectByName(`road-lantern-${id}`)?.getObjectByName('road-pennant')
         : markers.getObjectByName(`claim-marker-${claim.kind}-${id}`);
       if (!obj) continue;
+      // Capture the marker's intended scale (e.g. 0.4 for tombstones) before hiding it,
+      // so the animation restores the correct final size instead of always landing at 1.
+      const baseScale = obj.scale.x;
       obj.scale.setScalar(0.0001); // hide until the first animated frame to avoid a one-frame pop
-      anims.push({ obj, elapsed: 0 });
+      anims.push({ obj, elapsed: 0, baseScale });
     }
     bannerAnimsRef.current = anims;
     // claims is rederived every render; markers identity tracks the only relevant change.
@@ -136,9 +139,9 @@ export function PlacedTile3D({ placed, registry, players, controller, hover, onH
       const a = anims[i];
       a.elapsed += delta;
       const t = Math.min(a.elapsed / MEEPLE_POP_DURATION, 1);
-      a.obj.scale.setScalar(easeOutBack(t));
+      a.obj.scale.setScalar(easeOutBack(t) * a.baseScale);
       if (t >= 1) {
-        a.obj.scale.setScalar(1);
+        a.obj.scale.setScalar(a.baseScale);
         anims.splice(i, 1);
       }
     }

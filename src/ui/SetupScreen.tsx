@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { GameShowcase } from './GameShowcase';
 import { MeepleIcon } from './board/MeepleIcon';
 import { getAvailableModels, getDefaultModel } from '../ai/models';
@@ -53,6 +53,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
   const [createName, setCreateName] = useState('');
   const [joinCode, setJoinCode]     = useState(initialGameId ?? '');
   const [joinName, setJoinName]     = useState('');
+  const segRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({
     local: null,
     create: null,
@@ -64,7 +65,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
     opacity: 0,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function updateIndicator() {
       const activeBtn = tabRefs.current[tab];
       if (activeBtn) {
@@ -77,8 +78,21 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
     }
 
     updateIndicator();
+
+    // Re-measure once the UI webfont finishes loading: font-weight 800 swaps in
+    // after first paint and changes button widths, which would otherwise leave
+    // the indicator misaligned behind the initial "Local" tab (esp. on mobile).
+    document.fonts?.ready.then(updateIndicator).catch(() => {});
+
+    // Observe the control itself so orientation changes / late layout shifts
+    // keep the indicator aligned, not just window resizes.
+    const ro = new ResizeObserver(updateIndicator);
+    if (segRef.current) ro.observe(segRef.current);
     window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateIndicator);
+    };
   }, [tab]);
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -164,7 +178,7 @@ export function SetupScreen({ initialGameId, onCreateGame, onJoinGame, onStartLo
           onTransitionEnd={() => setIsTransitioning(false)}
         >
           <div ref={contentRef}>
-            <div className="seg" role="tablist">
+            <div className="seg" role="tablist" ref={segRef}>
             <div className="seg-indicator" style={indicatorStyle} />
             {tabs.map(t => (
               <button

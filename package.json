@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.6.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -21,11 +24,11 @@
     "test:watch": "vitest --config vitest.config.ts",
     "test:e2e": "playwright test",
     "test:scenarios": "playwright test scenarios.spec.ts",
-    "electron:dev": "vite --mode electron",
-    "electron:build": "vite build --mode electron",
-    "electron:pack": "npm run electron:build && electron-builder",
-    "electron:pack:mac": "npm run electron:build && electron-builder --mac",
-    "electron:pack:win": "npm run electron:build && electron-builder --win"
+    "electron:compile": "esbuild electron/main.ts --bundle --platform=node --target=node22 --external:electron --outfile=dist-electron/main.js --format=esm",
+    "electron:dev": "npm run electron:compile && electron .",
+    "electron:pack": "npm run electron:compile && electron-builder",
+    "electron:pack:mac": "npm run electron:compile && electron-builder --mac",
+    "electron:pack:win": "npm run electron:compile && electron-builder --win"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -68,43 +71,30 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^5.4.21",
-    "vite-plugin-electron": "^0.29.1",
     "vitest": "^1.6.1"
   },
   "build": {
-    "appId": "com.carcassonne.app",
+    "appId": "de.spelk.carcassonne",
     "productName": "Carcassonne",
+    "icon": "build/icon.png",
+    "asar": true,
+    "npmRebuild": false,
+    "electronLanguages": ["en", "de"],
     "files": [
-      "dist/**/*",
-      "dist-electron/**/*"
-    ],
-    "asarUnpack": [
-      "node_modules/better-sqlite3/**/*"
+      "!**/*",
+      "dist-electron/**/*",
+      "build/icon.png",
+      "package.json"
     ],
     "directories": {
       "output": "release"
     },
     "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
       "category": "public.app-category.games"
     },
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "nsis": {
       "oneClick": false,
