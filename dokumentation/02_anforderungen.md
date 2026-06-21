@@ -174,7 +174,6 @@ Die Qualitätssicherung adressiert beide QS-Dimensionen:
 - [x] E2E-Tests automatisiert lauffähig (Playwright + Szenario-Framework, CI-gated)
 - [x] Electron-App lauffähig (macOS CI) + Web-Deployment
 - [x] Demo im Stakeholder-Meeting #4 bestanden
-- [x] Dokumentation + Quellcode abgegeben (22.06.2026)
 - [x] Abschlusspräsentation gehalten (22.06.2026)
 
 ---
