@@ -112,7 +112,7 @@ Entscheidung Meeting #1, 04.05.2026):
 und **Verifikation** (ist die Spezifikation korrekt umgesetzt?).
 - **Wartbarkeit**: keine „hartkodierten" Daten — Daten und Programm sind getrennt
 (datengesteuertes Arbeiten), z. B. Kachelverteilung als JSON/Datenmodell.
-- **Versionierung** mit Git (GitHub, semantische Versionen, Conventional Commits).
+- **Versionierung** mit Git (GitFlow, semantische Versionen, Conventional Commits).
 - **Mindestens 4 Stakeholder-Updates** — alle vier durchgeführt.
 
 ---
