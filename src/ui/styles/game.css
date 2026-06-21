@@ -696,6 +696,14 @@
     gap: 12px;
     padding: 8px 10px;
     padding-bottom: max(8px, env(safe-area-inset-bottom));
+    /* Constant height across all three states. The bar swaps between the tile
+       preview (own turn, ~92px), the opponent-waiting banner (shortest) and the
+       meeple choice list (tallest, ~100px). Without a floor the bar resized per
+       state, nudging the flex:1 board area up/down. min-height is sized to fit
+       the tallest content and tracks the safe-area inset so it always wins over
+       the intrinsic content height — keeping the board perfectly still. */
+    min-height: calc(108px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
     background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
     border-top: 1px solid var(--panel-edge);
     box-shadow: 0 -3px 14px rgba(40, 30, 18, 0.14);
