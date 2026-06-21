@@ -37,6 +37,11 @@ flowchart TD
 | **System/Szenario** | Playwright + YAML | vollständige Regel-Szenarien gegen **echte Engine + 2D-UI** | regelkonforme Wertung end-to-end |
 | **E2E** | Playwright | UI + Backend | Stabilität ganzer Partien, User-Flows |
 
+> **Zeitlicher Verlauf E2E (QS-03):** Die Anforderung stammt aus Meeting #1 (04.05.2026);
+> implementiert und in CI integriert wurde die E2E-Automatisierung **erst kurz vor
+> Meeting #4** (~10.06.2026). Bis dahin erfolgte die Verifikation über Unit-, Integrations-
+> und manuelle Tests.
+
 **Strategie-Grundsatz:** *Alle Kernregeln* erhalten Unit-Tests — dort verstecken sich
 fast alle Fehler. Die UI erhält bewusst nur **Smoke-Tests** (Aufwand/Nutzen).
 
