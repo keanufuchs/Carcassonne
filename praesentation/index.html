@@ -98,9 +98,9 @@
               <use href="#logo" />
             </svg></div>
           <h1>Carcassonne</h1>
-          <div class="sub">Digitale Umsetzung des Brettspiels — Basisspiel + 2 Erweiterungen</div>
+          <div class="sub">Digitale Umsetzung des Brettspiels — Basisspiel + 3 Erweiterungen</div>
           <div class="team">Keanu · Neo · Paul · Jan</div>
-          <div class="meta">Abschlusspräsentation · 22.06.2026 · Release v0.1.0 · carcassonne.spelk.de</div>
+          <div class="meta">Abschlusspräsentation · 22.06.2026</div>
         </div>
       </section>
 
@@ -233,12 +233,13 @@
             </ul>
           </div>
           <div class="card">
-            <h3>2 Pflicht-Erweiterungen <span class="badge ok">beide erfüllt</span></h3>
+            <h3>3 Erweiterungen <span class="badge ok">alle erfüllt</span></h3>
             <ul class="dense small">
               <li><strong>EW-01 Netzwerk-Multiplayer</strong><br />Client-Server, autoritatives Backend</li>
               <li><strong>EW-02 Reasoning AI</strong><br />LLM-Agent mit Tool-Use über MCP</li>
+              <li><strong>EW-03 3D-Darstellung</strong> <span class="badge">agil entstanden</span><br />ungeplant — aus Stakeholder-Feedback (#3)</li>
             </ul>
-            <p class="tiny muted mt">Darüber hinaus: 3D-Board, prozedurale Kacheln, Mobile-Layout, Heuristik-KI.</p>
+            <p class="tiny muted mt">2 Pflicht-Erweiterungen (EW-01/02) zu Beginn bestätigt; 3D kam aus Feedback dazu. Darüber hinaus: prozedurale Kacheln, Mobile-Layout, Heuristik-KI.</p>
           </div>
         </div>
       </section>
@@ -248,7 +249,7 @@
         <div class="section-slide">
           <div class="num">TEIL 2</div>
           <h2>Prozess &amp; Anforderungen</h2>
-          <p class="muted">Vorgehensweise · Stakeholder · agiles Pflichtenheft</p>
+          <p class="muted">Vorgehensweise · Stakeholder · Product Backlog</p>
         </div>
       </section>
 
@@ -325,12 +326,12 @@
           <tr>
             <td><strong>#3</strong></td>
             <td>01.06.</td>
-            <td>Netzwerk stabil; KI-Demo; Feature-Freeze; Fallbacks</td>
+            <td>Netzwerk stabil; KI-Demo; Kritik an Optik → 3D-Darstellung als ungeplante Erweiterung beschlossen</td>
           </tr>
           <tr>
             <td><strong>#4 Pre-Release</strong></td>
             <td>15.06.</td>
-            <td>Abnahme-Demo; E2E abgenommen; Pflichtenheft freigegeben</td>
+            <td>Abnahme-Demo; E2E &amp; 3D-Darstellung abgenommen; Backlog freigegeben</td>
           </tr>
         </table>
         <div class="flow mt2 small">
@@ -795,7 +796,7 @@
                 </svg></span> Alle Must-Haves implementiert &amp; getestet</li>
             <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> 2 Erweiterungen stabil (Netzwerk + KI)</li>
+                </svg></span> 3 Erweiterungen stabil (Netzwerk + KI + 3D)</li>
             <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
                 </svg></span> Testsystem dokumentiert</li>
@@ -824,7 +825,7 @@
             <div class="lbl">Must-Haves</div>
           </div>
           <div class="card stat">
-            <div class="num">2/2</div>
+            <div class="num">3/3</div>
             <div class="lbl">Erweiterungen</div>
           </div>
           <div class="card stat">
@@ -874,7 +875,7 @@
         if (s.querySelector('.slide-footer')) return;
         var f = document.createElement('div');
         f.className = 'slide-footer';
-        f.innerHTML = '<span>Carcassonne · Projektpräsentation</span><span>Team Keanu · Neo · Paul · Jan</span>';
+        f.innerHTML = '<span>Carcassonne · Projektpräsentation</span><span>Gruppe 4: Keanu · Neo · Paul · Jan</span>';
         s.appendChild(f);
       });
     }
