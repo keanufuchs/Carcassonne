@@ -152,6 +152,12 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const interactive = canInteract(controller, state, aiModes);
   const aiRunning = useRef(false);
   const activeAiRunRef = useRef(0);
+  // Bumped after each AI turn finishes so the auto-execute effect re-evaluates
+  // exactly once. Without this the loop can strand: when a placed tile has no
+  // meeple phase, placeTile() advances the turn *before* the post-placement
+  // delay, so the currentPlayerIndex re-render fires while aiRunning is still
+  // true and is ignored — and no further state change arrives to restart it.
+  const [aiTick, setAiTick] = useState(0);
   const pendingReasoningRef = useRef<string | null>(null);
   const pendingReasoningUnavailableRef = useRef<MoveRecord['reasoningUnavailableReason'] | null>(null);
   const pendingToolCallsRef = useRef<ToolCallEntry[]>([]);
@@ -442,10 +448,14 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           activeAiRunRef.current = 0;
         }
         aiRunning.current = false;
+        // Force one clean re-evaluation: the turn may have advanced mid-run
+        // while this guard was held, so the next AI turn (if any) needs an
+        // explicit nudge to start.
+        setAiTick(t => t + 1);
       }
     };
     run();
-  }, [state.phase, state.currentPlayerIndex, state.version, aiModes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.phase, state.currentPlayerIndex, state.version, aiModes, aiTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Lock body scrolling on mobile while the game is mounted; the CSS rule keyed
   // on this class fixes the page to the viewport so nothing scrolls (issue #37).
