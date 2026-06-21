@@ -28,12 +28,12 @@
       <div>
         <span class="kicker">Projektpräsentation · Software-Engineering</span>
         <h1 data-id="title">Carcassonne</h1>
-        <p class="sub">Digitale Umsetzung des Basisspiels als Web-App mit optionalem
-          Electron-Desktop-Client — agile Entwicklung, automatisierte
+        <p class="sub">Digitale Umsetzung des Basisspiels als Web-App
+          (Electron nur als Wrapper) — agile Entwicklung, automatisierte
           Qualitätssicherung, mehrstufiges Deployment.</p>
         <div class="meta-row">
           <span class="badge info dot">React + TypeScript</span>
-          <span class="badge info dot">Electron-Client</span>
+          <span class="badge info dot">Electron-Wrapper</span>
           <span class="badge info dot">Vite</span>
           <span class="badge ok dot">v0.6.0</span>
         </div>
@@ -63,8 +63,9 @@
       </div>
       <div class="card accent2">
         <h3>Plattform</h3>
-        <p>Web-App (React + TypeScript), im Browser und als optionaler
-           Electron-Desktop-Client lauffähig. Die Core-Logik ist bewusst
+        <p>Primär eine <strong>Web-App</strong> (React + TypeScript). Electron dient
+           nur als <strong>dünner Wrapper</strong>, der die gehostete Web-App lädt —
+           kein eigenständiger Offline-Build. Die Core-Logik ist bewusst
            <strong>framework-unabhängig</strong> in TypeScript gehalten.</p>
       </div>
       <div class="card accent3">
@@ -77,8 +78,8 @@
       <span class="lbl">Architektur (strikt)</span>
       Klar getrennte Schichten ohne Vermischung von Verantwortlichkeiten:
       <strong>Core</strong> (Spiellogik) → <strong>Controller</strong> (Spielfluss) →
-      <strong>UI</strong> (React, nur Rendering). Auslieferung als Web-App, optional
-      gekapselt im <strong>Electron</strong>-Desktop-Client.
+      <strong>UI</strong> (React, nur Rendering). Auslieferung als Web-App;
+      <strong>Electron</strong> ist nur ein dünner Wrapper, der ebendiese Web-App lädt.
     </div>
     <div class="slide-footer"><span class="brand">CARCASSONNE</span><span>02</span></div>
   </section>
