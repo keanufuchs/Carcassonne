@@ -164,6 +164,7 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   // How far the 3D board camera has orbited from its initial view (radians).
   // Drives the HUD preview tile so it spins to match the live view (issue #45).
   const [cameraSpin, setCameraSpin] = useState(0);
+  const resetCameraRef = useRef<(() => void) | null>(null);
   const [showMap, setShowMap] = useState(false);
   // Mobile meeple placement: the segment picked from the choice list (issue #34).
   const [selectedMeepleRef, setSelectedMeepleRef] = useState<SegmentRef | null>(null);
@@ -519,8 +520,19 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
           </button>
         )}
+        {effectiveBoardView === '3d' && (
+          <button
+            type="button"
+            className="board-recenter-btn"
+            onClick={() => resetCameraRef.current?.()}
+            aria-label="Kamera zurücksetzen"
+            title="Kamera zurücksetzen (R)"
+          >
+            ⌂
+          </button>
+        )}
         {effectiveBoardView === '3d' ? (
-          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} onCameraSpinChange={setCameraSpin} />
+          <Board3DView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} previewMeepleRef={activeMeepleRef} dragPointer={dragPointer} onDragHoverChange={handleDragHoverChange} onCameraSpinChange={setCameraSpin} resetCameraRef={resetCameraRef} />
         ) : (
           <BoardView state={state} controller={controller} canInteract={interactive} highlightedCoord={highlightedCoord} highlightKey={highlightKey} />
         )}
