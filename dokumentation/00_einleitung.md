@@ -21,17 +21,19 @@ unterschiedlicher Stärke.
 
 ## 2. Rahmen des Projekts
 
-| Aspekt | Beschreibung |
-|--------|--------------|
-| **Auftraggeber / Stakeholder** | Der Dozent agiert als Kunde, Auftraggeber und Stakeholder. |
-| **Team** | Keanu, Neo, Paul & Jan (Selbstorganisation, Aufgabenverteilung auf alle Mitglieder). |
-| **Art** | Studentisches Software-Engineering-Projekt, das den **gesamten Entwicklungszyklus** durchläuft. |
-| **Bewertung** | Je 50 % Dokumentation und Abschlusspräsentation. |
-| **Abschlusspräsentation** | 22.06.2026 |
-| **Finaler Release** | `v0.1.0` (21.06.2026), zusätzlich als Web-App live. |
-| **Anforderungsquelle** | Notion-Workspace *Carcassonne* als verbindliche Single Source of Truth. |
 
-Die formalen Vorgaben sind in [`specs/00_vorgaben.md`](../specs/00_vorgaben.md) festgehalten.
+| Aspekt                         | Beschreibung                                                                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| **Auftraggeber / Stakeholder** | Der Dozent agiert als Kunde, Auftraggeber und Stakeholder.                                      |
+| **Team**                       | Keanu, Neo, Paul & Jan (Selbstorganisation, Aufgabenverteilung auf alle Mitglieder).            |
+| **Art**                        | Studentisches Software-Engineering-Projekt, das den **gesamten Entwicklungszyklus** durchläuft. |
+| **Bewertung**                  | Je 50 % Dokumentation und Abschlusspräsentation.                                                |
+| **Abschlusspräsentation**      | 22.06.2026                                                                                      |
+| **Finaler Release**            | `v0.1.0` (21.06.2026), zusätzlich als Web-App live.                                             |
+| **Anforderungsquelle**         | Notion-Workspace *Carcassonne* als verbindliche Single Source of Truth.                         |
+
+
+Die formalen Vorgaben sind in `[specs/00_vorgaben.md](../specs/00_vorgaben.md)` festgehalten.
 
 ---
 
@@ -41,7 +43,7 @@ Die formalen Vorgaben sind in [`specs/00_vorgaben.md`](../specs/00_vorgaben.md) 
 
 - Ein **regelkonformes** Carcassonne-Basisspiel: Nur gültige Spielzüge sind erlaubt.
 - **Vollständige Wertung**: Zwischenwertung (mid-game) bei Fertigstellung von Gebieten
-  und Endabrechnung (end-game) inkl. der komplexen **Wiesen-/Bauern-Wertung**.
+und Endabrechnung (end-game) inkl. der komplexen **Wiesen-/Bauern-Wertung**.
 - **Mehrere Spielmodi**: Hot-Seat (lokal), Netzwerk-Multiplayer, Mensch gegen KI.
 - **Stabilität**: Eine vollständige Partie läuft ohne Absturz durch.
 - **Wertige Präsentation**: Ansprechende 2D-Oberfläche, optional 3D-Ansicht.
@@ -71,17 +73,19 @@ Stories und Status findet sich in **[Kapitel 02](02_anforderungen.md)**.
 
 ### 4.1 Must-Haves (zwingend) — alle erfüllt
 
-| ID | Anforderung | Status |
-|----|-------------|--------|
-| MH-01 | Kachelplatzierung mit Regelvalidierung (Kantenmatch, Drehung) |  |
-| MH-02 | Feature-System: Stadt, Straße, Kloster, Feld (Merge/Union) |  |
-| MH-03 | Meeple-System + Punktewertung (mid-game + end-game) |  |
-| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler, lokal) |  |
-| MH-05 | Einfacher, zufallsbasierter KI-Gegner |  |
-| MH-06 | 2D-GUI als Electron-Desktop-App |  |
-| MH-07 | Spielende + Endabrechnung |  |
-| MH-08 | Spielfeld zoomen und verschieben |  |
-| MH-09 | Session-Persistenz (Spielstand-Wiederaufnahme) |  |
+
+| ID    | Anforderung                                                   | Status |
+| ----- | ------------------------------------------------------------- | ------ |
+| MH-01 | Kachelplatzierung mit Regelvalidierung (Kantenmatch, Drehung) |        |
+| MH-02 | Feature-System: Stadt, Straße, Kloster, Feld (Merge/Union)    |        |
+| MH-03 | Meeple-System + Punktewertung (mid-game + end-game)           |        |
+| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler, lokal)                     |        |
+| MH-05 | Einfacher, zufallsbasierter KI-Gegner                         |        |
+| MH-06 | 2D-GUI als Electron-Desktop-App                               |        |
+| MH-07 | Spielende + Endabrechnung                                     |        |
+| MH-08 | Spielfeld zoomen und verschieben                              |        |
+| MH-09 | Session-Persistenz (Spielstand-Wiederaufnahme)                |        |
+
 
 Plattform-Vorgabe: **Desktop-PC-Anwendung mit grafischer 2D-Oberfläche**, nur
 **regelkonforme Züge**, **lokaler Hot-Seat-Modus**, **einfacher KI-Gegner**, zunächst
@@ -92,10 +96,12 @@ nur das **Basisspiel** (72 Kacheln).
 Die Vorgaben verlangen **mindestens zwei** Erweiterungen. Gewählt wurden (Stakeholder-
 Entscheidung Meeting #1, 04.05.2026):
 
-| ID | Erweiterung | Begründung der Wahl | Status |
-|----|-------------|---------------------|--------|
-| **EW-01** | **Netzwerk-Multiplayer** | Höchster Spielwert; ermöglicht verteiltes Spielen. Als Client-Server-Modell mit autoritativem Backend umgesetzt. |  |
-| **EW-02** | **Intelligenter KI-Agent** | Anspruchsvoller „guter" Gegner mittels LLM (Claude/OpenRouter) + Tool-Use über lokalen MCP-Server. |  |
+
+| ID        | Erweiterung                | Begründung der Wahl                                                                                              | Status |
+| --------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------ |
+| **EW-01** | **Netzwerk-Multiplayer**   | Höchster Spielwert; ermöglicht verteiltes Spielen. Als Client-Server-Modell mit autoritativem Backend umgesetzt. |        |
+| **EW-02** | **Intelligenter KI-Agent** | Anspruchsvoller „guter" Gegner mittels LLM (Claude/OpenRouter) + Tool-Use über lokalen MCP-Server.               |        |
+
 
 > Über die Pflicht hinaus wurden weitere optionale Pakete umgesetzt (3D-Board,
 > prozedurale Kacheln, Mobile-/Touch-Layout, Heuristik-KI) — siehe [Kapitel 02](02_anforderungen.md).
@@ -103,10 +109,10 @@ Entscheidung Meeting #1, 04.05.2026):
 ### 4.3 Qualitäts- & Prozessanforderungen
 
 - **Qualitätssicherung** umfasst **Validierung** (erfüllt die Software die Kundenwünsche?)
-  und **Verifikation** (ist die Spezifikation korrekt umgesetzt?).
+und **Verifikation** (ist die Spezifikation korrekt umgesetzt?).
 - **Wartbarkeit**: keine „hartkodierten" Daten — Daten und Programm sind getrennt
-  (datengesteuertes Arbeiten), z. B. Kachelverteilung als JSON/Datenmodell.
-- **Versionierung** mit Git (GitFlow, semantische Versionen, Conventional Commits).
+(datengesteuertes Arbeiten), z. B. Kachelverteilung als JSON/Datenmodell.
+- **Versionierung** mit Git (GitHub, semantische Versionen, Conventional Commits).
 - **Mindestens 4 Stakeholder-Updates** — alle vier durchgeführt.
 
 ---
@@ -114,24 +120,26 @@ Entscheidung Meeting #1, 04.05.2026):
 ## 5. Abgrenzung (Was ist *nicht* Teil des Projekts?)
 
 - Nur das **Basisspiel** — keine offiziellen Carcassonne-Erweiterungen (Händler &
-  Baumeister, Wirtshäuser etc.). Entsprechende optionale Pakete (OPT-03) wurden bewusst
-  verworfen (siehe Archiv im Notion).
+Baumeister, Wirtshäuser etc.). Entsprechende optionale Pakete (OPT-03) wurden bewusst
+verworfen (siehe Archiv im Notion).
 - **Kein Android-Port** (OPT-04 verworfen); stattdessen jedoch ein **responsives
-  Mobile-/Touch-Web-Layout** (OPT-08).
+Mobile-/Touch-Web-Layout** (OPT-08).
 - Keine offizielle Lizenzierung der Original-Grafiken; verwendet werden eigene bzw.
-  prozedural generierte Kacheldarstellungen.
+prozedural generierte Kacheldarstellungen.
 
 ---
 
 ## 6. Glossar (Kurzfassung)
 
-| Begriff | Bedeutung |
-|---------|-----------|
-| **Tile / Kachel** | Quadratisches Landschaftsplättchen mit Kanten (N/O/S/W). |
-| **Feature / Gebiet** | Stadt, Straße, Kloster oder Wiese, das sich über mehrere Kacheln erstrecken kann. |
-| **Meeple** | Spielfigur, die ein Feature beansprucht und Punkte einbringt. |
-| **Hot-Seat** | Lokaler Mehrspielermodus an einem Gerät (Spieler wechseln sich ab). |
-| **MCP** | Model Context Protocol — Schnittstelle, über die der KI-Agent Analyse-Tools aufruft. |
+
+| Begriff              | Bedeutung                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| **Tile / Kachel**    | Quadratisches Landschaftsplättchen mit Kanten (N/O/S/W).                             |
+| **Feature / Gebiet** | Stadt, Straße, Kloster oder Wiese, das sich über mehrere Kacheln erstrecken kann.    |
+| **Meeple**           | Spielfigur, die ein Feature beansprucht und Punkte einbringt.                        |
+| **Hot-Seat**         | Lokaler Mehrspielermodus an einem Gerät (Spieler wechseln sich ab).                  |
+| **MCP**              | Model Context Protocol — Schnittstelle, über die der KI-Agent Analyse-Tools aufruft. |
+
 
 Ausführliches Glossar: [Kapitel 09](09_glossar-anhang.md).
 
