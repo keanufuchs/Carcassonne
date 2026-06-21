@@ -24,7 +24,7 @@ unterschiedlicher Stärke.
 
 | Aspekt                         | Beschreibung                                                                                    |
 | ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| **Auftraggeber / Stakeholder** | Der Dozent agiert als Kunde, Auftraggeber und Stakeholder.                                      |
+| **Auftraggeber / Stakeholder** | Prof. Dr. Martin Hüfner agiert als Kunde, Auftraggeber und Stakeholder.                         |
 | **Team**                       | Keanu, Neo, Paul & Jan (Selbstorganisation, Aufgabenverteilung auf alle Mitglieder).            |
 | **Art**                        | Studentisches Software-Engineering-Projekt, das den **gesamten Entwicklungszyklus** durchläuft. |
 | **Bewertung**                  | Je 50 % Dokumentation und Abschlusspräsentation.                                                |
