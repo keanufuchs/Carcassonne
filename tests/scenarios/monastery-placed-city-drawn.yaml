@@ -1,0 +1,23 @@
+name: monastery-placed-city-drawn
+description: >
+  Alice zieht TILE-B (Kloster) und legt es südlich der Startkachel ab (alle Kanten FIELD
+  passen zu Startkachel-S). Bob zieht danach TILE-C (vollständige Stadt) — die einzige
+  legale Position für TILE-C ist nördlich der Startkachel (Startkachel-N = CITY).
+  Kein Meeple wird gesetzt. Prüft: beide Kacheln korrekt platziert, 3 Kacheln
+  insgesamt auf dem Board, keine abgeschlossenen Features, Scores unverändert.
+
+players: [Alice, Bob]
+
+steps:
+  # Alice — Kloster südlich der Startkachel (0,0); TILE-B N=[FIELD] passt zu Startkachel S=[FIELD]
+  - { tile: TILE-B, at: { x: 0, y: 1 }, rotation: 0, skip: true }
+  # Bob — vollständige Stadt nördlich der Startkachel; TILE-C S=[CITY] passt zu Startkachel N=[CITY]
+  - { tile: TILE-C, at: { x: 0, y: -1 }, rotation: 0, skip: true }
+
+padding: [TILE-B]
+
+expect:
+  scores: { Alice: 0, Bob: 0 }
+  meeplesAvailable: { Alice: 7, Bob: 7 }
+  placedTiles: 3
+  deckRemaining: 0

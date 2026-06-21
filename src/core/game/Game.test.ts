@@ -221,4 +221,53 @@ describe('Game flow', () => {
       expect(endGame(state).ok).toBe(false);
     });
   });
+
+  // Issue #41: lastDrawDiscardedCount drives the "N tiles discarded" toast in the HUD.
+  describe('lastDrawDiscardedCount', () => {
+    it('is 0 after startGame', () => {
+      const state = freshGame();
+      expect(state.lastDrawDiscardedCount).toBe(0);
+    });
+
+    it('is 0 when the first drawn tile is placeable', () => {
+      const state = startGame(['A', 'B'], () => 0.5, [PLACEABLE_TILE]);
+      drawTile(state);
+      expect(state.lastDrawDiscardedCount).toBe(0);
+    });
+
+    it('is 1 when exactly one unplaceable tile is skipped', () => {
+      const state = startGame(['A', 'B'], () => 0.5, [UNPLACEABLE_TILE, PLACEABLE_TILE]);
+      drawTile(state);
+      expect(state.lastDrawDiscardedCount).toBe(1);
+    });
+
+    it('is 2 when two unplaceable tiles are skipped in a row', () => {
+      const state = startGame(
+        ['A', 'B'],
+        () => 0.5,
+        [UNPLACEABLE_TILE, uniformTile('UNPLACEABLE-2', 'ROAD'), PLACEABLE_TILE],
+      );
+      drawTile(state);
+      expect(state.lastDrawDiscardedCount).toBe(2);
+    });
+
+    it('resets to 0 after the tile is placed', () => {
+      const state = startGame(['A', 'B'], () => 0.5, [UNPLACEABLE_TILE, PLACEABLE_TILE]);
+      drawTile(state);
+      expect(state.lastDrawDiscardedCount).toBe(1);
+
+      // PLACEABLE_TILE (all FIELD) fits south of the start tile (south edge = all FIELD).
+      const placed = [{ x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: -1, y: 0 }]
+        .some(c => placeTile(state, c).ok);
+      expect(placed).toBe(true);
+      expect(state.lastDrawDiscardedCount).toBe(0);
+    });
+
+    it('is 0 when all remaining tiles are unplaceable (game ends instead)', () => {
+      const state = startGame(['A', 'B'], () => 0.5, [UNPLACEABLE_TILE]);
+      drawTile(state);
+      expect(state.lastDrawDiscardedCount).toBe(0);
+      expect(state.phase).toBe('GAME_OVER');
+    });
+  });
 });
