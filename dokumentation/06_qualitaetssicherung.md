@@ -102,7 +102,7 @@ GitHub Actions (`.github/workflows/`) automatisiert Tests, Builds und Deployment
 | Workflow | Zweck |
 |----------|-------|
 | `scenarios.yml` | Szenario-/Testlauf als **Merge-Gate** (PRs nach `develop`). |
-| `build-desktop.yml` | Electron-Desktop-Builds (Windows/macOS). |
+| `build-desktop.yml` | Electron-Desktop-Builds (macOS). |
 | `deploy.yml` | Deployment der Web-App auf den VPS (carcassonne.spelk.de). |
 
 **Lokale Vor-Merge-Checks** (sollten grün sein, bevor ein Branch in *Review* geht):
