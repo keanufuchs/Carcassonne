@@ -142,7 +142,6 @@ const INIT_TARGET = new THREE.Vector3(0, 0, 0);
 const _initOffset = new THREE.Vector3().subVectors(INIT_POS, INIT_TARGET);
 const _initSph    = new THREE.Spherical().setFromVector3(_initOffset);
 const INIT_THETA  = _initSph.theta; // azimuth  ≈ π/4
-const INIT_PHI    = _initSph.phi;   // polar    ≈ 50°
 
 /**
  * Keyboard shortcuts for camera angle presets (inside Canvas to access useThree).
