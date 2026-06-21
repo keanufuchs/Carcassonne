@@ -63,6 +63,20 @@ dokumentieren — jede getroffene Entscheidung ist zu **begründen**:
 8. **Dokumentation** (dieses Dokument)
 9. **Rollout** (Release + Präsentation) → [Kapitel 01 §6](01_projektmanagement.md)
 
+### 3.3 Entwicklungsreihenfolge (Kern zuerst, Optik später)
+
+Die Entwicklung verlief bewusst **von den Kernfunktionen hin zu den optionalen Extras**.
+Zuerst wurde die Spiellogik tragfähig gemacht: dass Kacheln eine korrekte Logik besitzen
+und regelkonform aneinandergelegt werden können, dass Gebiete richtig erkannt werden (was
+eine Straße, was eine Stadt ist) und dass anschließend Meeples gesetzt werden können. Erst
+als diese Grundstruktur stabil lief, wurde die 3D-Ansicht angegangen.
+
+**Begründung:** Die Grundstruktur muss zuerst stehen. Hätte man mit der 3D-Darstellung
+begonnen, wäre die anfängliche Implementierung deutlich komplexer geworden — zumal die
+3D-Kacheln ohnehin **aus demselben Datenmodell** generiert werden, das die Spiellogik
+liefert (siehe [Kapitel 04 §6](04_user-interface.md)). Ein tragfähiger, framework-freier
+Kern war damit die Voraussetzung, auf der die Optik überhaupt sinnvoll aufsetzen konnte.
+
 ---
 
 ## 4. Anforderungen (Überblick)
