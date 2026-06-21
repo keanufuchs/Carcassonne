@@ -44,7 +44,13 @@
 }
 
 .reveal-viewport {
-  background: var(--bg);
+  background-color: var(--bg);
+  /* Spielbrett-Raster — dezent, zieht sich durch jede Folie */
+  background-image:
+    linear-gradient(rgba(15, 118, 110, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 118, 110, .035) 1px, transparent 1px);
+  background-size: 88px 88px;
+  background-position: center;
 }
 
 .reveal .slides section {
@@ -121,10 +127,13 @@
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 58px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--accent);
+  width: 84px;
+  height: 6px;
+  border-radius: 3px;
+  /* „Straßensegment": Sandbahn mit gepunkteter Petrol-Mittellinie (wie Agenda-Weg) */
+  background:
+    radial-gradient(circle at center, var(--accent) 1.1px, transparent 1.7px) left center / 9px 6px repeat-x,
+    #e7e0ce;
 }
 
 /* Kapitel-Kicker */
@@ -496,11 +505,27 @@
   left: 0;
   right: 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   font-size: 13px;
   color: var(--ink-muted);
-  padding: 0 12px;
+  padding: 8px 12px 0;
   letter-spacing: .02em;
+  /* gepunktete Straße zieht sich am Fuß jeder Folie durch */
+  background:
+    radial-gradient(circle at center, rgba(15, 118, 110, .5) 1px, transparent 1.5px) left top / 9px 2px repeat-x;
+}
+
+.reveal .slide-footer .foot-left {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+}
+
+.reveal .slide-footer .foot-meeple {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
 }
 
 /* ── Custom SVG-Icons (praesentation/icons.svg) ─────────────────────────── */
