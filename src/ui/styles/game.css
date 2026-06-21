@@ -56,28 +56,25 @@
 
 .board-recenter-btn {
   position: absolute;
-  /* Sits below the 2D/3D toggle; on mobile (no toggle) inherits top: 32px override below. */
-  top: 72px;
+  top: 14px;
   right: 14px;
   z-index: 21;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   border: 1px solid var(--panel-edge);
   background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
   box-shadow: var(--shadow-sm), 0 4px 14px rgba(40, 30, 18, 0.22);
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
   color: var(--ink-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  transition: filter 0.15s ease, color 0.15s ease;
+  transition: filter 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 .board-recenter-btn:hover { filter: brightness(1.06); color: var(--ink); }
-.board-recenter-btn:active { transform: translateY(1px); }
+.board-recenter-btn:active { transform: scale(0.92); }
 .board-recenter-btn:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
 
 /* ── Side panels ────────────────────────────────────────────────────────── */
@@ -559,10 +556,6 @@
     min-height: 0;
     /* Hand all touch gestures to the 3D canvas; the browser never scrolls here. */
     touch-action: none;
-  }
-
-  .game-layout.is-mobile .board-recenter-btn {
-    top: 32px;
   }
 
   /* ── Top bar: players + End Game ───────────────────────────────────────── */

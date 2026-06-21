@@ -538,15 +538,21 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             <span className={boardView === '3d' ? 'is-active' : ''}>3D</span>
           </button>
         )}
-        {effectiveBoardView === '3d' && (
+        {effectiveBoardView === '3d' && isMobile && (
           <button
             type="button"
             className="board-recenter-btn"
             onClick={() => resetCameraRef.current?.()}
             aria-label="Kamera zurücksetzen"
-            title="Kamera zurücksetzen (R)"
+            title="Kamera zurücksetzen"
           >
-            ⌂
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <line x1="12" y1="2" x2="12" y2="7" />
+              <line x1="12" y1="17" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="7" y2="12" />
+              <line x1="17" y1="12" x2="22" y2="12" />
+            </svg>
           </button>
         )}
         {effectiveBoardView === '3d' ? (
