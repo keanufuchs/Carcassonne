@@ -73,7 +73,7 @@
 | 04.05.2026 | Stakeholder-Meeting #1 (Kickoff) |
 | 11.05.2026 | Stakeholder-Meeting #2 |
 | 01.06.2026 | Stakeholder-Meeting #3 |
-| ~10.06.2026 | Stakeholder-Meeting #4 (Pre-Release Demo, Freigabe agile Doku) |
+| ~10.06.2026 | Stakeholder-Meeting #4 (Pre-Release Demo, Freigabe agile Doku, **Abnahme E2E/QS-03**) |
 | 21.06.2026 | **Release `v0.1.0`** (Git-Tag auf `main` + GitHub Release) · Live: carcassonne.spelk.de |
 | 22.06.2026 | Abschlusspräsentation + Doku-Abgabe |
 

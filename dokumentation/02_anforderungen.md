@@ -40,7 +40,8 @@ gegliedert:
 ## 3. User-Story-Katalog (Auszug)
 
 Format: *„Als ‹Rolle› möchte ich ‹Ziel›, um ‹Nutzen›."*
-Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakeholder-Meeting.
+Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakeholder-Meeting
+*(Umsetzung M#n)* = Lieferung in einem späteren Meeting.
 
 ### EPIC-CORE
 
@@ -83,10 +84,11 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 | ID | User Story | Paket | Herkunft |
 |----|-----------|-------|----------|
 | US-Q1 | Als Stakeholder möchte ich, dass eine 30-minütige Partie ohne Absturz läuft. | QS-02/03 | **M#1** |
-| US-Q2 | Als Team möchte ich automatisierte Vollpartien (E2E), um Stabilität reproduzierbar nachzuweisen. | QS-03 | **M#1** |
+| US-Q2 | Als Team möchte ich automatisierte Vollpartien (E2E), um Stabilität reproduzierbar nachzuweisen. | QS-03 | **M#1** *(Umsetzung M#4)* |
 
 > Insgesamt **22 User Stories über 6 Epics**. Mehrere Stories entstanden bzw. schärften
 > sich **erst durch Stakeholder-Feedback** (US-U2, US-M3, US-M4, US-A3, US-Q1/Q2, US-D2).
+> **US-Q2 (QS-03):** Anforderung in Meeting #1, Lieferung kurz vor Meeting #4.
 
 ---
 
@@ -128,6 +130,9 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 | QS-03 | E2E-Automatisierung (Playwright) + YAML-Szenario-Framework |  |
 | QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug |  |
 | ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ | verworfen* |
+
+> **QS-03 (E2E):** Stakeholder-Anforderung aus Meeting #1; technische Umsetzung (Playwright,
+> YAML-Szenario-Framework, CI-Gate) erfolgte **erst kurz vor Meeting #4**.
 
 *\* QS-04 wurde bewusst nicht formal umgesetzt; der QS-Nachweis erfolgt stattdessen über
 **282 automatisierte Tests + CI-Gating + Code-Reviews**. Begründung & Konsequenz siehe
