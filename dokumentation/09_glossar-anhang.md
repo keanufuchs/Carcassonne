@@ -58,7 +58,7 @@
 - [x] 2 Erweiterungen stabil: Netzwerk-Multiplayer (EW-01) + Intelligenter KI-Agent (EW-02)
 - [x] Testsystem schriftlich dokumentiert (`docs/`, `specs/08_testing.md`)
 - [x] E2E-Tests automatisiert lauffähig (Playwright + Szenario-Framework, CI-gated)
-- [x] Electron-App lauffähig (Windows/macOS-Builds via CI) + Web-Deployment
+- [x] Electron-App lauffähig (macOS-Builds via CI) + Web-Deployment
 - [x] Demo im Stakeholder-Meeting #4 bestanden
 - [x] Abschlusspräsentation gehalten (22.06.2026)
 
