@@ -663,6 +663,25 @@
   .meeple-choice-place { flex: 1; }
   .meeple-choice-place:disabled { opacity: 0.5; cursor: not-allowed; }
 
+  /* ── Opponent-turn banner: slim it down for the bottom bar ──── */
+  .mobile-bottombar .tile-preview.opponent-turn {
+    min-height: 0;
+    flex-direction: row;
+    gap: 8px;
+  }
+  .mobile-bottombar .opponent-waiting {
+    flex-direction: row;
+    gap: 8px;
+    padding: 0;
+  }
+  .mobile-bottombar .opponent-waiting-label {
+    font-size: 13px;
+  }
+  .mobile-bottombar .loading-dot {
+    width: 6px;
+    height: 6px;
+  }
+
   /* ── Drag-to-place: tile handle in the bottom bar ───────────── */
   .mobile-bottombar .tile-frame.is-draggable {
     /* Claim the touch gesture so dragging the tile never scrolls/zooms the page. */
