@@ -1,5 +1,6 @@
 .PHONY: electron
 
+SHELL := /bin/bash
+
 electron:
-	npm install
-	npm run electron:pack:mac
+	@source "$$HOME/.nvm/nvm.sh" && nvm use && npm install && npm run electron:pack:mac
