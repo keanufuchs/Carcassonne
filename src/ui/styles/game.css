@@ -564,7 +564,7 @@
   }
   .mobile-topbar .player-chip .pname { max-width: 72px; font-size: 12px; }
   .mobile-topbar .player-chip .pscore { font-size: 15px; }
-  .mobile-topbar .player-chip .pmeeples { display: none; }
+  .mobile-topbar .player-chip .pmeeples { font-size: 11px; gap: 2px; }
   .mobile-topbar .turn-flag { display: none; }
 
   .mobile-endgame-btn {
@@ -595,7 +595,7 @@
     gap: 12px;
     padding: 0;
   }
-  .mobile-bottombar .deck-pill { display: none; }
+  .mobile-bottombar .deck-pill { font-size: 11px; padding: 3px 8px; white-space: nowrap; }
   .mobile-bottombar .tile-frame { width: 76px; height: 76px; padding: 4px; }
   .mobile-bottombar .rotate-row { gap: 10px; }
   .mobile-bottombar .rotate-btn { width: 52px; height: 52px; }
