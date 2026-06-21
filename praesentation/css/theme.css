@@ -419,6 +419,76 @@
   padding: 0 8px;
 }
 
+/* ── Agenda als „Reise" (serpentiner Weg) ───────────────────────────────── */
+.agenda-flow {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1000 / 420;
+  margin-top: .2em;
+}
+
+.agenda-flow .road {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.agenda-flow .road-base {
+  fill: none;
+  stroke: #ece7da;
+  stroke-width: 26;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.agenda-flow .road-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1 16;
+  opacity: .55;
+}
+
+.agenda-flow .node {
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 4;
+  filter: drop-shadow(0 3px 6px rgba(16, 24, 40, .18));
+}
+
+.agenda-flow .node-num {
+  fill: #fff;
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.agenda-flow .stop {
+  position: absolute;
+  width: 178px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.agenda-flow .stop .lbl {
+  font-weight: 700;
+  font-size: .82em;
+  color: var(--ink);
+  letter-spacing: -.01em;
+}
+
+.agenda-flow .stop .dsc {
+  font-size: .6em;
+  color: var(--ink-muted);
+  margin-top: .15em;
+  line-height: 1.3;
+}
+
 /* ── Footer ─────────────────────────────────────────────────────────────── */
 .reveal .slide-footer {
   position: absolute;

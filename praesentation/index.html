@@ -108,34 +108,52 @@
       <section>
         <span class="kicker">Überblick</span>
         <h2 class="lead">Agenda</h2>
-        <div class="grid cols-3">
-          <div class="card">
-            <h3>1 · Was &amp; Warum</h3>
-            <p>Ziele, Rahmen und Anforderungen des Projekts.</p>
+        <div class="agenda-flow">
+          <svg class="road" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path class="road-base"
+              d="M70 110 C156 110 156 300 242 300 C328 300 328 110 414 110 C500 110 500 300 586 300 C672 300 672 110 758 110 C844 110 844 300 930 300" />
+            <path class="road-line"
+              d="M70 110 C156 110 156 300 242 300 C328 300 328 110 414 110 C500 110 500 300 586 300 C672 300 672 110 758 110 C844 110 844 300 930 300" />
+            <g>
+              <circle class="node" cx="70" cy="110" r="30" />
+              <text class="node-num" x="70" y="110">1</text>
+              <circle class="node" cx="242" cy="300" r="30" />
+              <text class="node-num" x="242" y="300">2</text>
+              <circle class="node" cx="414" cy="110" r="30" />
+              <text class="node-num" x="414" y="110">3</text>
+              <circle class="node" cx="586" cy="300" r="30" />
+              <text class="node-num" x="586" y="300">4</text>
+              <circle class="node" cx="758" cy="110" r="30" />
+              <text class="node-num" x="758" y="110">5</text>
+              <circle class="node" cx="930" cy="300" r="30" />
+              <text class="node-num" x="930" y="300">6</text>
+            </g>
+          </svg>
+          <div class="stop" style="left:7%; top:0;">
+            <div class="lbl">Was &amp; Warum</div>
+            <div class="dsc">Ziele &amp; Anforderungen</div>
           </div>
-          <div class="card">
-            <h3>2 · Prozess</h3>
-            <p>Vorgehensweise, Stakeholder, Anforderungen.</p>
+          <div class="stop" style="left:24.2%; top:82%;">
+            <div class="lbl">Prozess</div>
+            <div class="dsc">Vorgehen &amp; Stakeholder</div>
           </div>
-          <div class="card">
-            <h3>3 · Design</h3>
-            <p>Architektur, Domänenmodell, Entscheidungen.</p>
+          <div class="stop" style="left:41.4%; top:0;">
+            <div class="lbl">Design</div>
+            <div class="dsc">Architektur &amp; Modell</div>
           </div>
-          <div class="card">
-            <h3>4 · Umsetzung</h3>
-            <p>User Interface, Spielkern, KI &amp; Netzwerk.</p>
+          <div class="stop" style="left:58.6%; top:82%;">
+            <div class="lbl">Umsetzung</div>
+            <div class="dsc">UI · Kern · KI · Netz</div>
           </div>
-          <div class="card">
-            <h3>5 · Qualität</h3>
-            <p>Teststrategie, CI/CD, Kennzahlen.</p>
+          <div class="stop" style="left:75.8%; top:0;">
+            <div class="lbl">Qualität</div>
+            <div class="dsc">Tests &amp; Kennzahlen</div>
           </div>
-          <div class="card">
-            <h3>6 · Start &amp; Code</h3>
-            <p>Programm starten, Code-Einstieg, Stand.</p>
+          <div class="stop" style="left:93%; top:82%;">
+            <div class="lbl">Start &amp; Code</div>
+            <div class="dsc">Starten &amp; Einstieg</div>
           </div>
         </div>
-        <p class="mt2 muted small">Die drei Pflichtfragen — <em>Was soll das Ganze? · Wie starte ich? · Wo steige ich in
-            den Code ein?</em> — sind als eigene Abschnitte markiert.</p>
       </section>
 
       <!-- 3 · ABSCHNITT: Was soll das Ganze -->
