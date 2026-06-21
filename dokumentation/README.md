@@ -68,7 +68,7 @@ Vollständige Anleitung inkl. Desktop-App und KI-Konfiguration: **[Kapitel 07](0
 | Merkmal | Wert |
 |---------|------|
 | Produkt | Carcassonne-Basisspiel (digital), 2–5 Spieler |
-| Plattform | Electron-Desktop (Windows/macOS) **+** Web-App |
+| Plattform | Electron-Desktop (macOS) **+** Web-App |
 | Tech-Stack | TypeScript · React 19 · Vite · Electron · Three.js (3D) · Node/Express · WebSocket |
 | Spielkern | Framework-unabhängiges TypeScript (reine Funktionen) |
 | Erweiterungen | EW-01 Netzwerk-Multiplayer · EW-02 Reasoning AI (LLM + MCP) |
