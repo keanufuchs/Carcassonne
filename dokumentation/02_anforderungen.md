@@ -144,7 +144,7 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 |----|--------------|--------|
 | OPS-01 | CI/CD-Pipeline (GitHub Actions: Szenario-Tests, Desktop-Build, Deploy) |  |
 | OPS-02 | Produktiv-/Staging-Deployment auf VPS (PM2, rsync, SSH) |  |
-| OPS-03 | Electron-Desktop-Pakete (macOS `.dmg` / Windows `.exe`) |  |
+| OPS-03 | Electron-Desktop-Pakete (macOS `.dmg`) |  |
 
 ### 4.5 Optionale Zusatzpakete (über die Pflicht hinaus)
 
@@ -177,7 +177,7 @@ Die Qualitätssicherung adressiert beide QS-Dimensionen:
 - [x] 2 Erweiterungen stabil: Netzwerk-Multiplayer + Intelligenter KI-Agent
 - [x] Testsystem schriftlich dokumentiert
 - [x] E2E-Tests automatisiert lauffähig (Playwright + Szenario-Framework, CI-gated)
-- [x] Electron-App lauffähig (macOS/Windows-Builds via CI) + Web-Deployment
+- [x] Electron-App lauffähig (macOS CI) + Web-Deployment
 - [x] Demo im Stakeholder-Meeting #4 bestanden
 - [x] Dokumentation + Quellcode abgegeben (22.06.2026)
 - [x] Abschlusspräsentation gehalten (22.06.2026)
