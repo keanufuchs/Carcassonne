@@ -166,6 +166,9 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
   const [cameraSpin, setCameraSpin] = useState(0);
   const resetCameraRef = useRef<(() => void) | null>(null);
   const [showMap, setShowMap] = useState(false);
+  // Confirmation before ending the match — the End Game icon reads as "leave",
+  // so the dialog spells out that it ends the game for everyone.
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
   // Mobile meeple placement: the segment picked from the choice list (issue #34).
   const [selectedMeepleRef, setSelectedMeepleRef] = useState<SegmentRef | null>(null);
   // Mobile drag-to-place: live finger position while dragging the
@@ -463,22 +466,32 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
             <button
               type="button"
               data-testid="end-game-btn"
-              className="btn btn-sm btn-danger mobile-endgame-btn"
-              onClick={() => controller.endGame()}
-              aria-label="End Game"
+              className="mobile-endgame-btn"
+              onClick={() => setConfirmEndOpen(true)}
+              aria-label="Spiel verlassen"
+              title="Spiel verlassen"
             >
-              End Game
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
             </button>
           )}
           {state.phase === 'GAME_OVER' && showMap && (
             <button
               type="button"
               data-testid="mobile-exit-btn"
-              className="btn btn-sm btn-gold mobile-endgame-btn"
+              className="mobile-endgame-btn"
               onClick={() => { clearLocalGame(); window.location.reload(); }}
               aria-label="Exit"
+              title="Exit"
             >
-              Exit
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
             </button>
           )}
         </div>
@@ -623,6 +636,41 @@ function GameApp({ controller, aiModes, aiModels }: { controller: GameController
           showMap={showMap}
           onShowMap={() => setShowMap(true)}
         />
+      )}
+      {confirmEndOpen && (
+        <div
+          className="confirm-overlay"
+          data-testid="end-game-confirm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-end-title"
+          onClick={() => setConfirmEndOpen(false)}
+        >
+          <div className="card confirm-card" onClick={(e) => e.stopPropagation()}>
+            <h2 id="confirm-end-title" className="confirm-title">Spiel verlassen?</h2>
+            <p className="confirm-text">
+              Möchtest du das Spiel wirklich verlassen? Es beendet das Spiel für alle.
+            </p>
+            <div className="confirm-actions">
+              <button
+                type="button"
+                className="btn btn-ghost btn-block"
+                data-testid="end-game-cancel"
+                onClick={() => setConfirmEndOpen(false)}
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger btn-block"
+                data-testid="end-game-confirm-btn"
+                onClick={() => { setConfirmEndOpen(false); controller.endGame(); }}
+              >
+                Spiel beenden
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

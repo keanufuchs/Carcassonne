@@ -507,6 +507,40 @@
 .score-row .sname { flex: 1; text-align: left; font-weight: 700; color: var(--ink); }
 .score-row .sscore { font-family: var(--font-display); font-weight: 900; font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .endgame-actions { display: flex; gap: 10px; width: 100%; }
+
+/* ── Confirm dialog (e.g. leaving / ending the game) ─────────────────────── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(40, 30, 18, 0.62);
+  backdrop-filter: blur(3px);
+  animation: fadeUp 0.2s ease both;
+}
+.confirm-card {
+  width: min(360px, 100%);
+  padding: 26px 26px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.confirm-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--ink);
+}
+.confirm-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.confirm-actions { display: flex; gap: 10px; width: 100%; margin-top: 6px; }
 .sidebar-exit {
   margin-top: auto;
   padding: 14px;
@@ -562,8 +596,8 @@
   .mobile-topbar {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 8px;
+    padding: 10px 10px;
     padding-top: max(10px, env(safe-area-inset-top));
     background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
     border-bottom: 1px solid var(--panel-edge);
@@ -571,32 +605,60 @@
     z-index: 3;
     flex-shrink: 0;
   }
+  /* Single non-wrapping row: height stays constant no matter how many
+     players are in the game. Overflows scroll horizontally instead of
+     stacking into 2–3 rows and eating the board (issue: full mobile topbar). */
   .mobile-topbar .player-panel {
     flex: 1;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 0;
+    flex-wrap: nowrap;
+    gap: 5px;
+    padding: 2px;
     min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
+  .mobile-topbar .player-panel::-webkit-scrollbar { display: none; }
   .mobile-topbar .player-panel .hud-label { display: none; }
   .mobile-topbar .player-chip {
-    padding: 6px 9px;
-    gap: 6px;
+    padding: 5px 6px;
+    gap: 5px;
     flex-shrink: 0;
   }
-  .mobile-topbar .player-chip .pname { max-width: 72px; font-size: 12px; }
+  /* Progressive disclosure: inactive players collapse to colour-token + score.
+     The repeated "Random AI" name is redundant — the meeple colour is the
+     identity. Score is the one thing worth a constant glance, so the meeple
+     supply is dropped from the bar (it surfaces during meeple placement) to
+     keep all 5 players on one un-scrolled row. */
+  .mobile-topbar .player-chip .pmeeples { display: none; }
+  .mobile-topbar .player-chip:not(.active) .pname { display: none; }
+  .mobile-topbar .player-chip:not(.active) .pscore { font-size: 14px; }
+  /* Only the player whose turn it is keeps its name. */
+  .mobile-topbar .player-chip.active { transform: none; padding-right: 9px; }
+  .mobile-topbar .player-chip.active .pname { max-width: 96px; }
+  .mobile-topbar .player-chip .pname { font-size: 12px; }
   .mobile-topbar .player-chip .pscore { font-size: 15px; }
-  .mobile-topbar .player-chip .pmeeples { font-size: 11px; gap: 2px; }
   .mobile-topbar .turn-flag { display: none; }
 
+  /* De-emphasised, compact icon button so it stops dominating the bar. Reads as
+     "leave"; the consequence (it ends the match for everyone) is spelled out by
+     the confirmation dialog it opens. Square token, danger-tinted outline. */
   .mobile-endgame-btn {
     flex-shrink: 0;
-    padding: 9px 14px;
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1.5px solid color-mix(in srgb, var(--terracotta-deep) 45%, transparent);
+    border-radius: var(--radius-sm);
+    background: var(--cream);
+    color: var(--terracotta-deep);
+    box-shadow: var(--shadow-sm);
   }
+  .mobile-endgame-btn:active { transform: translateY(1px); }
 
   /* ── Bottom bar: tile + rotate, optional Skip Meeple ───────────────────── */
   .mobile-bottombar {
