@@ -77,9 +77,14 @@
     "appId": "de.spelk.carcassonne",
     "productName": "Carcassonne",
     "icon": "build/icon.png",
+    "asar": true,
+    "npmRebuild": false,
+    "electronLanguages": ["en", "de"],
     "files": [
+      "!**/*",
       "dist-electron/**/*",
-      "build/icon.png"
+      "build/icon.png",
+      "package.json"
     ],
     "directories": {
       "output": "release"
