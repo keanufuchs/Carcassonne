@@ -105,4 +105,4 @@ Entwicklungswerkzeug **Tile-Lab** (QS-05) zur Visualisierung/Prüfung der Kachel
 
 ---
 
-➡️ Weiter mit **[Kapitel 05 — Implementierung](05_implementierung.md)**
+Weiter mit **[Kapitel 05 — Implementierung](05_implementierung.md)**

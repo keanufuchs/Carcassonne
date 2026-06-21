@@ -21,7 +21,7 @@ CI-Pipeline abgeglichen.
 
 ---
 
-## ⭐ Die drei Pflichtfragen — Direkteinstieg
+##  Die drei Pflichtfragen — Direkteinstieg
 
 Die Aufgabenstellung verlangt, dass mindestens diese drei Fragen beantwortet werden.
 Sie werden ausführlich in eigenen Kapiteln behandelt:

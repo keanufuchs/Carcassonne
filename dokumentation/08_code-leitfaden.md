@@ -145,4 +145,4 @@ tile-lab/        Entwicklungswerkzeug zur Kachel-Visualisierung (QS-05)
 
 ---
 
-➡️ Weiter mit **[Kapitel 09 — Glossar & Anhang](09_glossar-anhang.md)**
+Weiter mit **[Kapitel 09 — Glossar & Anhang](09_glossar-anhang.md)**

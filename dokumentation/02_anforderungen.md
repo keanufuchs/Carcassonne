@@ -92,28 +92,28 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 
 ## 4. Arbeitspaket-Status (final)
 
-### 4.1 Must-Have — vollständig erledigt ✅
+### 4.1 Must-Have — vollständig erledigt
 
 | ID | Arbeitspaket | Status |
 |----|--------------|--------|
-| MH-01 | Kachelplatzierung mit Regelvalidierung | ✅ |
-| MH-02 | Feature-System (Stadt/Straße/Kloster/Feld, Merge/Union) | ✅ |
-| MH-03 | Meeple-System + Wertung (mid-/end-game) | ✅ |
-| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler) | ✅ |
-| MH-05 | Einfacher KI-Gegner (zufallsbasiert) | ✅ |
-| MH-06 | 2D-GUI als Electron-Desktop-App | ✅ |
-| MH-07 | Spielende + Endabrechnung | ✅ |
-| MH-08 | Spielfeld zoomen & verschieben | ✅ |
-| MH-09 | Session-Persistenz | ✅ |
+| MH-01 | Kachelplatzierung mit Regelvalidierung |  |
+| MH-02 | Feature-System (Stadt/Straße/Kloster/Feld, Merge/Union) |  |
+| MH-03 | Meeple-System + Wertung (mid-/end-game) |  |
+| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler) |  |
+| MH-05 | Einfacher KI-Gegner (zufallsbasiert) |  |
+| MH-06 | 2D-GUI als Electron-Desktop-App |  |
+| MH-07 | Spielende + Endabrechnung |  |
+| MH-08 | Spielfeld zoomen & verschieben |  |
+| MH-09 | Session-Persistenz |  |
 
-### 4.2 Pflicht-Erweiterungen — erledigt ✅
+### 4.2 Pflicht-Erweiterungen — erledigt
 
 | ID | Arbeitspaket | Status |
 |----|--------------|--------|
-| EW-01 | **Netzwerk-Multiplayer** — Client-Server mit autoritativem Backend (REST + WebSocket/Polling) | ✅ |
-| EW-01b | Online-/Cloud-Multiplayer — Spiel-Code-Beitritt, serverseitige Persistenz | ✅ |
-| EW-02 | **Intelligenter KI-Agent** — LLM (Claude/OpenRouter/OpenAI-kompatibel) mit Tool-Use über MCP-Server | ✅ |
-| EW-02b | Heuristik-/Greedy-KI — eigene Spielstufe + Fallback ohne API-Key/Timeout | ✅ |
+| EW-01 | **Netzwerk-Multiplayer** — Client-Server mit autoritativem Backend (REST + WebSocket/Polling) |  |
+| EW-01b | Online-/Cloud-Multiplayer — Spiel-Code-Beitritt, serverseitige Persistenz |  |
+| EW-02 | **Intelligenter KI-Agent** — LLM (Claude/OpenRouter/OpenAI-kompatibel) mit Tool-Use über MCP-Server |  |
+| EW-02b | Heuristik-/Greedy-KI — eigene Spielstufe + Fallback ohne API-Key/Timeout |  |
 
 > **Architektur-Entscheidung:** EW-01 wurde statt P2P-WebSocket als **Client-Server-Modell**
 > umgesetzt (autoritatives Backend = einfachere Synchronisation, weniger Cheating-Risiko).
@@ -123,32 +123,32 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 
 | ID | Arbeitspaket | Status |
 |----|--------------|--------|
-| QS-01 | Testsystem-Dokumentation (`docs/`, `specs/08_testing.md`) | ✅ |
-| QS-02 | Unit- & Integrationstests (Vitest) | ✅ |
-| QS-03 | E2E-Automatisierung (Playwright) + YAML-Szenario-Framework | ✅ |
-| QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug | ✅ |
-| ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ | ⛔ verworfen* |
+| QS-01 | Testsystem-Dokumentation (`docs/`, `specs/08_testing.md`) |  |
+| QS-02 | Unit- & Integrationstests (Vitest) |  |
+| QS-03 | E2E-Automatisierung (Playwright) + YAML-Szenario-Framework |  |
+| QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug |  |
+| ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ | verworfen* |
 
 *\* QS-04 wurde bewusst nicht formal umgesetzt; der QS-Nachweis erfolgt stattdessen über
 **282 automatisierte Tests + CI-Gating + Code-Reviews**. Begründung & Konsequenz siehe
 [Kapitel 06 §4](06_qualitaetssicherung.md).*
 
-### 4.4 DevOps / Betrieb (nachträglich erfasst) ✅
+### 4.4 DevOps / Betrieb (nachträglich erfasst)
 
 | ID | Arbeitspaket | Status |
 |----|--------------|--------|
-| OPS-01 | CI/CD-Pipeline (GitHub Actions: Szenario-Tests, Desktop-Build, Deploy) | ✅ |
-| OPS-02 | Produktiv-/Staging-Deployment auf VPS (PM2, rsync, SSH) | ✅ |
-| OPS-03 | Electron-Desktop-Pakete (macOS `.dmg` / Windows `.exe`) | ✅ |
+| OPS-01 | CI/CD-Pipeline (GitHub Actions: Szenario-Tests, Desktop-Build, Deploy) |  |
+| OPS-02 | Produktiv-/Staging-Deployment auf VPS (PM2, rsync, SSH) |  |
+| OPS-03 | Electron-Desktop-Pakete (macOS `.dmg` / Windows `.exe`) |  |
 
-### 4.5 Optionale Zusatzpakete (über die Pflicht hinaus) ✅
+### 4.5 Optionale Zusatzpakete (über die Pflicht hinaus)
 
 | ID | Arbeitspaket | Status |
 |----|--------------|--------|
-| OPT-05 | 3D-Spielbrett (Three.js/R3F) + 2D/3D-Umschaltung | ✅ |
-| OPT-06 | Prozedurale 3D-Kachelgenerierung aus der Kachel-Topologie | ✅ |
-| OPT-07 | Menü-/UI-Theming (Medieval) + animierter GameShowcase | ✅ |
-| OPT-08 | Mobile-/Responsive-Layout (Touch, drag-to-place) | ✅ |
+| OPT-05 | 3D-Spielbrett (Three.js/R3F) + 2D/3D-Umschaltung |  |
+| OPT-06 | Prozedurale 3D-Kachelgenerierung aus der Kachel-Topologie |  |
+| OPT-07 | Menü-/UI-Theming (Medieval) + animierter GameShowcase |  |
+| OPT-08 | Mobile-/Responsive-Layout (Touch, drag-to-place) |  |
 
 **Verworfen / nicht umgesetzt (Archiv):** OPT-01 Großer Meeple · OPT-02 2.5D-CSS (durch
 echtes 3D ersetzt) · OPT-03 Erweiterungsfiguren · OPT-04 Android-Port · QS-04 Code-Metriken.
@@ -179,4 +179,4 @@ Die Qualitätssicherung adressiert beide QS-Dimensionen:
 
 ---
 
-➡️ Weiter mit **[Kapitel 03 — Architektur & Design](03_architektur-design.md)**
+Weiter mit **[Kapitel 03 — Architektur & Design](03_architektur-design.md)**

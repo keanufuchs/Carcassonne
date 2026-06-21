@@ -12,7 +12,7 @@ Es gibt **drei Wege**, Carcassonne zu starten:
 
 Die Anwendung ist dauerhaft als Web-App veröffentlicht:
 
-👉 **[https://carcassonne.spelk.de](https://carcassonne.spelk.de)**
+**[https://carcassonne.spelk.de](https://carcassonne.spelk.de)**
 
 Einfach im Browser öffnen, Spieler/Modi wählen, losspielen. Online-Multiplayer per
 Spiel-Code funktioniert direkt.
@@ -143,7 +143,7 @@ npm run lint           # ESLint
 ## Spiel starten (im Programm)
 
 1. **Spieleranzahl** wählen (2–5) und je Spieler einen **Modus** setzen
-   (👤 Mensch · 🎲 Zufall · 🧠 Heuristik · 🤖 Claude).
+   (Mensch · Zufall · Heuristik · Claude).
 2. **Lokal:** „Spiel starten" → Hot-Seat am selben Gerät.
    **Online:** „Create" → 5-stelligen **Spiel-Code** teilen; Mitspieler „Join" + Code; Host „Start Game".
 3. Kachel ziehen → drehen → auf ein legales Feld legen → optional Meeple setzen → Zug beenden.
@@ -162,4 +162,4 @@ npm run lint           # ESLint
 
 ---
 
-➡️ Weiter mit **[Kapitel 08 — Code-Leitfaden](08_code-leitfaden.md)**
+Weiter mit **[Kapitel 08 — Code-Leitfaden](08_code-leitfaden.md)**

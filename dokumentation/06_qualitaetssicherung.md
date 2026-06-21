@@ -129,9 +129,9 @@ Jedes Arbeitspaket durchläuft `Offen → In Bearbeitung → Review → Erledigt
 | Testfälle gesamt | **282** |
 | Testdateien (Vitest + Playwright) | **40** |
 | YAML-Regel-Szenarien | **11** |
-| CI-Gate aktiv | ✅ (`scenarios.yml`) |
+| CI-Gate aktiv | ja (`scenarios.yml`) |
 | Abdeckung | Unit + Integration + System/Szenario + E2E + KI-Tests |
 
 ---
 
-➡️ Weiter mit **[Kapitel 07 — Installation & Start](07_installation-start.md)**
+Weiter mit **[Kapitel 07 — Installation & Start](07_installation-start.md)**

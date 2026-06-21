@@ -174,4 +174,4 @@ einzige, gemeinsame Regel-Implementierung (kein Logik-Duplikat).
 
 ---
 
-➡️ Weiter mit **[Kapitel 06 — Qualitätssicherung](06_qualitaetssicherung.md)**
+Weiter mit **[Kapitel 06 — Qualitätssicherung](06_qualitaetssicherung.md)**

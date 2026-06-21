@@ -198,4 +198,4 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 
 ---
 
-➡️ Weiter mit **[Kapitel 04 — User Interface](04_user-interface.md)**
+Weiter mit **[Kapitel 04 — User Interface](04_user-interface.md)**

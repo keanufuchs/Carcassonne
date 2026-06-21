@@ -69,33 +69,33 @@ Die Anforderungen wurden aus der Aufgabenstellung abgeleitet und im agilen Backl
 (Notion) als Arbeitspakete geführt. Eine vollständige Auflistung mit Epics, User
 Stories und Status findet sich in **[Kapitel 02](02_anforderungen.md)**.
 
-### 4.1 Must-Haves (zwingend) — alle erfüllt ✅
+### 4.1 Must-Haves (zwingend) — alle erfüllt
 
 | ID | Anforderung | Status |
 |----|-------------|--------|
-| MH-01 | Kachelplatzierung mit Regelvalidierung (Kantenmatch, Drehung) | ✅ |
-| MH-02 | Feature-System: Stadt, Straße, Kloster, Feld (Merge/Union) | ✅ |
-| MH-03 | Meeple-System + Punktewertung (mid-game + end-game) | ✅ |
-| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler, lokal) | ✅ |
-| MH-05 | Einfacher, zufallsbasierter KI-Gegner | ✅ |
-| MH-06 | 2D-GUI als Electron-Desktop-App | ✅ |
-| MH-07 | Spielende + Endabrechnung | ✅ |
-| MH-08 | Spielfeld zoomen und verschieben | ✅ |
-| MH-09 | Session-Persistenz (Spielstand-Wiederaufnahme) | ✅ |
+| MH-01 | Kachelplatzierung mit Regelvalidierung (Kantenmatch, Drehung) |  |
+| MH-02 | Feature-System: Stadt, Straße, Kloster, Feld (Merge/Union) |  |
+| MH-03 | Meeple-System + Punktewertung (mid-game + end-game) |  |
+| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler, lokal) |  |
+| MH-05 | Einfacher, zufallsbasierter KI-Gegner |  |
+| MH-06 | 2D-GUI als Electron-Desktop-App |  |
+| MH-07 | Spielende + Endabrechnung |  |
+| MH-08 | Spielfeld zoomen und verschieben |  |
+| MH-09 | Session-Persistenz (Spielstand-Wiederaufnahme) |  |
 
 Plattform-Vorgabe: **Desktop-PC-Anwendung mit grafischer 2D-Oberfläche**, nur
 **regelkonforme Züge**, **lokaler Hot-Seat-Modus**, **einfacher KI-Gegner**, zunächst
 nur das **Basisspiel** (72 Kacheln).
 
-### 4.2 Pflicht-Erweiterungen (mind. 2 zu wählen) — beide erfüllt ✅
+### 4.2 Pflicht-Erweiterungen (mind. 2 zu wählen) — beide erfüllt
 
 Die Vorgaben verlangen **mindestens zwei** Erweiterungen. Gewählt wurden (Stakeholder-
 Entscheidung Meeting #1, 04.05.2026):
 
 | ID | Erweiterung | Begründung der Wahl | Status |
 |----|-------------|---------------------|--------|
-| **EW-01** | **Netzwerk-Multiplayer** | Höchster Spielwert; ermöglicht verteiltes Spielen. Als Client-Server-Modell mit autoritativem Backend umgesetzt. | ✅ |
-| **EW-02** | **Intelligenter KI-Agent** | Anspruchsvoller „guter" Gegner mittels LLM (Claude/OpenRouter) + Tool-Use über lokalen MCP-Server. | ✅ |
+| **EW-01** | **Netzwerk-Multiplayer** | Höchster Spielwert; ermöglicht verteiltes Spielen. Als Client-Server-Modell mit autoritativem Backend umgesetzt. |  |
+| **EW-02** | **Intelligenter KI-Agent** | Anspruchsvoller „guter" Gegner mittels LLM (Claude/OpenRouter) + Tool-Use über lokalen MCP-Server. |  |
 
 > Über die Pflicht hinaus wurden weitere optionale Pakete umgesetzt (3D-Board,
 > prozedurale Kacheln, Mobile-/Touch-Layout, Heuristik-KI) — siehe [Kapitel 02](02_anforderungen.md).
@@ -137,4 +137,4 @@ Ausführliches Glossar: [Kapitel 09](09_glossar-anhang.md).
 
 ---
 
-➡️ Weiter mit **[Kapitel 01 — Projektmanagement & Vorgehensweise](01_projektmanagement.md)**
+Weiter mit **[Kapitel 01 — Projektmanagement & Vorgehensweise](01_projektmanagement.md)**

@@ -121,4 +121,4 @@ Zuordnungen sind in der Git-Historie (Commits/PRs) und im Notion-Workspace dokum
 
 ---
 
-⬅️ Zurück zur **[Übersicht (README)](README.md)**
+Zurück zur **[Übersicht (README)](README.md)**

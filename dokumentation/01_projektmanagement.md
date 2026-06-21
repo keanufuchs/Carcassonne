@@ -66,7 +66,7 @@ zweite Person** (Tester ≠ Entwickler, gemäß QS-Vorgaben).
 
 ---
 
-## 3. Stakeholder-Meetings (4 von 4 ✅)
+## 3. Stakeholder-Meetings (4 von 4)
 
 Die Vorgaben verlangen **mindestens 4 Stakeholder-Updates**. Alle vier wurden
 durchgeführt; jedes mit lauffähiger Demo und Statusbericht.
@@ -171,4 +171,4 @@ nachvollziehbarste Entscheidung** treffen → ggf. Klärungspunkt fürs nächste
 
 ---
 
-➡️ Weiter mit **[Kapitel 02 — Anforderungen (agiles Pflichtenheft)](02_anforderungen.md)**
+Weiter mit **[Kapitel 02 — Anforderungen (agiles Pflichtenheft)](02_anforderungen.md)**
