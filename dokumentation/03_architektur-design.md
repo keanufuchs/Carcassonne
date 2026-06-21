@@ -190,7 +190,7 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 | UI-Build | **Vite** | Schneller Dev-Server, HMR, schlanke Builds. |
 | UI-Framework | **React 19** | Komponenten + Hooks; deklaratives Rendern des Snapshots. |
 | 3D | **Three.js / React-Three-Fiber** | Echtes 3D-Board (OPT-05/06) statt CSS-2.5D. |
-| Desktop | **Electron + electron-builder** | Windows/macOS-Pakete aus einer Web-Codebasis. |
+| Desktop | **Electron + electron-builder** | macOS-Pakete aus einer Web-Codebasis. |
 | Backend | **Node + Express + ws** | REST + WebSocket für autoritativen Multiplayer (EW-01). |
 | Tests | **Vitest + Playwright** | Unit/Integration + echte Browser-E2E/Szenarien. |
 | KI | **OpenAI-kompatibles LLM + MCP** | Flexibel (Claude/OpenRouter/Custom), Tool-Use, Fallback. |
