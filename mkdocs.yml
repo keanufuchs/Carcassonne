@@ -1,0 +1,56 @@
+site_name: Carcassonne — Projektdokumentation
+site_description: Abschlussdokumentation des Software-Entwicklungsprojekts Carcassonne
+repo_url: https://github.com/keanufuchs/Carcassonne
+docs_dir: docs
+
+theme:
+  name: material
+  language: de
+  palette:
+    - scheme: default
+      primary: green
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Dunkelmodus
+    - scheme: slate
+      primary: green
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Hellmodus
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - content.code.copy
+    - search.suggest
+
+plugins:
+  - search
+  - mermaid2
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Start: README.md
+  - 00 — Einleitung & Zielsetzung: 00_einleitung.md
+  - 01 — Projektmanagement: 01_projektmanagement.md
+  - 02 — Anforderungen: 02_anforderungen.md
+  - 03 — Architektur & Design: 03_architektur-design.md
+  - 04 — User Interface: 04_user-interface.md
+  - 05 — Implementierung: 05_implementierung.md
+  - 06 — Qualitätssicherung: 06_qualitaetssicherung.md
+  - 07 — Installation & Start: 07_installation-start.md
+  - 08 — Code-Leitfaden: 08_code-leitfaden.md
+  - 09 — Glossar & Anhang: 09_glossar-anhang.md
