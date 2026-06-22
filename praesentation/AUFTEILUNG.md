@@ -1,25 +1,26 @@
 # Aufteilung der Präsentation auf 4 Personen
 
 Gesamtzeit: 20 Minuten  
-Ziel: Jede Person spricht ca. 5 Minuten. Die Übergaben sind so gesetzt, dass jede Person einen inhaltlich geschlossenen Block hat.
+Folien: 29 (Folie 29 QR optional als Puffer)  
+Ziel: Jede Person spricht ca. 5 Minuten. Die Übergaben folgen den fünf Agenda-Blöcken und den drei Pflichtfragen in der Präsentation.
 
 ## Kurzüberblick
 
 | Person | Inhalt | Folien | Zeit |
 |--------|--------|--------|------|
-| Person 1 | Einstieg, Produkt, Rahmen, Anforderungen | Folien 1-6 | 5:00 min |
-| Person 2 | Prozess und Architektur-Grundlagen | Folien 7-13 | 5:00 min |
-| Person 3 | Designentscheidungen und Umsetzung | Folien 14-20 | 5:00 min |
-| Person 4 | Qualität, Start, Code-Einstieg, Abschluss | Folien 21-27 | 5:00 min |
+| Person 1 | Einstieg, Pflichtfrage 1 (Was & Warum?) | Folien 1–6 | 5:00 min |
+| Person 2 | Prozess & Anforderungen (Teil 2) | Folien 7–10 | 5:00 min |
+| Person 3 | Architektur, Design, Pflichtfrage 2 (Code-Einstieg?) | Folien 11–17 | 5:00 min |
+| Person 4 | Umsetzung, Start, Qualität, Abschluss | Folien 18–29 | 5:00 min |
 
-## Person 1 — Einstieg, Produkt, Rahmen, Anforderungen
+## Person 1 — Einstieg, Pflichtfrage 1 (Was & Warum?)
 
 Zeit: 5:00 Minuten  
-Folien 1-6:
+Folien 1–6:
 
 - 1: Titel
 - 2: Agenda
-- 3: Was soll das Ganze?
+- 3: Pflichtfrage 1 — Was & Warum?
 - 4: Das Produkt in einem Satz
 - 5: Rahmen des Projekts
 - 6: Anforderungen im Überblick
@@ -27,98 +28,100 @@ Folien 1-6:
 Inhaltlicher Fokus:
 
 - Kurz erklären, dass es um eine digitale Carcassonne-Umsetzung als Projektabgabe geht.
-- Produktidee in einem Satz: Kacheln legen, Meeple setzen, Punkte erzielen.
-- Rahmen klären: Web-App, Desktop-App, KI und Multiplayer als Erweiterungen.
-- Anforderungen knapp einordnen: Must-Haves erfüllt, Pflicht-Erweiterungen erfüllt.
+- Produktidee: vollständiges Basisspiel, Desktop & Web, 2–5 Spieler — Kacheln legen, Meeples setzen, Punkte erzielen.
+- Rahmen klären: SE-Projekt, Electron + Web, Notion als Single Source of Truth.
+- Anforderungen: **9 Must-Haves** und **3 Erweiterungen** (Netzwerk, Reasoning AI, 3D) — alle erfüllt; 3D agil aus Stakeholder-Feedback (#3).
 
 Übergabe:
 
-> "Nachdem klar ist, was wir gebaut haben und welche Anforderungen dahinterstanden, geht es jetzt darum, wie wir das Projekt organisiert und gesteuert haben."
+> „Klar ist, was wir gebaut haben und welche Anforderungen dahinterstanden. Als Nächstes: wie wir das Projekt organisiert und gesteuert haben."
 
-## Person 2 — Prozess und Architektur-Grundlagen
+## Person 2 — Prozess & Anforderungen (Teil 2)
 
 Zeit: 5:00 Minuten  
-Folien 7-13:
+Folien 7–10:
 
-- 7: Prozess & Anforderungen
-- 8: Vorgehensweise: agil
+- 7: Teil 2 — Prozess & Anforderungen
+- 8: Vorgehensweise: agil (Scrum-orientiert)
 - 9: 4 Stakeholder-Meetings als Review-Punkte
 - 10: Backlog statt klassischem Pflichtenheft
-- 11: Architektur & Design
+
+Inhaltlicher Fokus:
+
+- Agile Vorgehensweise erklären: kurze Schleifen, Demos, eingeplante Änderungen.
+- Stakeholder-Meetings als Review-Punkte — inkl. Meeting #3 (3D beschlossen) und #4 (Abnahme).
+- Backlog als lebendiges Pflichtenheft: 6 Epics, 22 User Stories, Arbeitspakete in Notion.
+- Bewusst **keine** Architektur hier — das folgt in Teil 3.
+
+Übergabe:
+
+> „Prozess und Anforderungen stehen. Jetzt die Architektur: Schichten, Domänenmodell und die zentralen Designentscheidungen."
+
+## Person 3 — Architektur, Design, Pflichtfrage 2 (Code-Einstieg?)
+
+Zeit: 5:00 Minuten  
+Folien 11–17:
+
+- 11: Teil 3 — Architektur & Design
 - 12: Strikte 4-Schichten-Architektur
 - 13: Domänenmodell: ein zentraler GameState
-
-Inhaltlicher Fokus:
-
-- Agile Vorgehensweise erklären: kurze Schleifen, Reviews, Anpassungen.
-- Stakeholder-Meetings als Kontrollpunkte darstellen.
-- Backlog als lebendiges Pflichtenheft erklären.
-- Architektur als Brücke zur Umsetzung einführen.
-- 4-Schichten-Modell und zentralen `GameState` als wichtigste Grundlage erklären.
-
-Übergabe:
-
-> "Auf dieser Architektur bauen die konkreten Designentscheidungen auf. Die nächsten Folien zeigen, wie daraus ein robuster Spielablauf und die eigentliche Umsetzung entstanden sind."
-
-## Person 3 — Designentscheidungen und Umsetzung
-
-Zeit: 5:00 Minuten  
-Folien 14-20:
-
 - 14: Spielzug als Zustandsautomat
 - 15: Zentrale Entscheidungen — begründet
-- 16: User Interface & Umsetzung
-- 17: Oberfläche — eine Codebasis, mehrere Ziele
-- 18: Spielkern & Wertung
-- 19: Reasoning AI — drei Stufen, mit Fallback
-- 20: Netzwerk-Multiplayer — autoritatives Backend
+- 16: Pflichtfrage 2 — Code-Einstieg?
+- 17: Dieselben Schichten — konkret im Code
 
 Inhaltlicher Fokus:
 
-- Spielzug als Zustandsautomat erklären: ziehen, legen, Meeple setzen, werten.
-- Die wichtigsten Designentscheidungen begründen, nicht jedes Detail aufzählen.
-- UI-Ansatz erklären: eine Codebasis, 2D/3D, Zoom und Pan.
-- Spielkern und Wertung als reine, testbare Logik hervorheben.
-- KI kurz erklären: mehrere Stufen plus Fallback.
-- Netzwerk-Multiplayer knapp: Server ist autoritativ, Clients senden Aktionen.
+- 4-Schichten-Modell: Electron → UI (React/Three.js) → Controller → Core.
+- Zentraler `GameState`, reine Funktionen, Meeples am Feature.
+- Spielzug als Zustandsautomat: PLACING_TILE → PLACING_MEEPLE → nächster Spieler / GAME_OVER.
+- Wichtigste Designentscheidungen begründen (Framework-freier Core, Feature-Graph, Client-Server, MCP-KI).
+- **Pflichtfrage 2:** Einstieg `electron/main.ts` → `App.tsx`, Schichten im Repo, Lesepfade für Logik/Wertung/KI/Tests.
 
 Übergabe:
 
-> "Damit ist gezeigt, wie das Spiel technisch umgesetzt ist. Zum Schluss geht es darum, wie wir die Qualität abgesichert haben und wie man das Projekt startet beziehungsweise im Code nachvollzieht."
+> „Architektur und Code-Einstieg sind geklärt. Jetzt zeigen wir die konkrete Umsetzung: UI, Spielkern, Netzwerk und KI."
 
-## Person 4 — Qualität, Start, Code-Einstieg, Abschluss
+## Person 4 — Umsetzung, Start, Qualität, Abschluss
 
 Zeit: 5:00 Minuten  
-Folien 21-27:
+Folien 18–29:
 
-- 21: Qualitätssicherung
-- 22: Testpyramide & Kennzahlen
-- 23: Start & Code-Einstieg
+- 18: Teil 4 — User Interface & Umsetzung
+- 19: Oberfläche — eine Codebasis, mehrere Ziele
+- 20: Spielkern & Wertung
+- 21: Netzwerk-Multiplayer — autoritatives Backend (EW-01)
+- 22: Reasoning AI — drei Stufen, mit Fallback (EW-02)
+- 23: Pflichtfrage 3 — App starten?
 - 24: Drei Wege
-- 25: Von außen nach innen
-- 26: Abnahmekriterien — erfüllt
-- 27: Vielen Dank
+- 25: Teil 5 — Qualitätssicherung
+- 26: Testpyramide & Kennzahlen
+- 27: Abnahmekriterien — erfüllt
+- 28: Vielen Dank
+- 29: Jetzt spielen (QR) — optional
 
 Inhaltlicher Fokus:
 
-- Testpyramide erklären: Unit-Tests für Kernlogik, ergänzende Tests für Integration/UI.
-- Kennzahlen nur als Beleg nennen, nicht einzeln vorlesen.
-- Drei Startwege zeigen: sofort spielen, aus dem Code, Desktop-App.
-- Code-Einstieg erklären: von außen nach innen lesen.
-- Abnahmekriterien als Abschluss nutzen: Projektziel erreicht.
-- Mit kurzem Fazit enden.
+- UI: eine Codebasis, 2D ↔ 3D, Zoom/Pan, nur legale Züge anklickbar.
+- Spielkern & Wertung als reine, testbare Logik (72-Kachel-Deck, Feature-Merge, mid-/end-game).
+- Netzwerk: autoritativer Server, derselbe Core wie Client.
+- KI: Zufall → Heuristik → Reasoning AI (MCP), mit Fallback.
+- **Pflichtfrage 3:** carcassonne.spelk.de, `npm run dev:full`, Desktop-App.
+- Testpyramide (Unit, YAML-Szenarien, E2E), CI-Gate; Kennzahlen nur als Beleg.
+- Abnahmekriterien: 9/9 Must-Haves, 3/3 Erweiterungen, v1.0.0, Live-Deployment.
+- QR-Folie nur nutzen, wenn Zeit übrig ist oder für die Fragerunde.
 
 Abschluss:
 
-> "Zusammengefasst haben wir eine spielbare Carcassonne-Version mit sauber getrenntem Spielkern, UI, KI- und Multiplayer-Erweiterung umgesetzt und die zentralen Abnahmekriterien erfüllt. Vielen Dank."
+> „Zusammengefasst: spielbare Carcassonne-Version mit sauber getrenntem Spielkern, drei Erweiterungen und erfüllten Abnahmekriterien — live unter carcassonne.spelk.de. Vielen Dank."
 
 ## Zeitpuffer
 
-Falls jemand schneller ist, nicht künstlich strecken. Den Puffer für Fragen oder eine ruhigere Abschlussfolie nutzen. Wenn die Zeit knapp wird, zuerst Detailbeispiele kürzen, nicht die Übergaben.
+Person 4 hat mehr Folien, aber Abschnittsfolien und QR sind kurz. Bei Zeitdruck zuerst kürzen: Detailbeispiele in Folien 20–22, nicht die Übergaben oder Pflichtfragen.
 
 Empfohlene Zielzeiten:
 
 - Person 1: 4:45 min + 0:15 Übergabe
 - Person 2: 4:45 min + 0:15 Übergabe
 - Person 3: 4:45 min + 0:15 Übergabe
-- Person 4: 4:30 min + 0:30 Abschluss
+- Person 4: 4:00 min Inhalt + 0:30 Abschluss/QR
