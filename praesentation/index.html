@@ -467,6 +467,38 @@
                 <li>testbar <strong>ohne Browser/DOM</strong></li>
                 <li>2D ↔ 3D, Web ↔ Desktop ohne Logik-Änderung</li>
               </ul>
+              <p class="tiny muted mt">→ Wo diese Schichten im Code liegen: nächste Folie (Pflichtfrage 3).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12b · Code-Einstieg (Pflichtfrage 3) — direkt nach der Architektur:
+              dieselben Schichten, jetzt konkret im Code -->
+      <section>
+        <span class="q-pill">Pflichtfrage 3 · Code-Einstieg?</span>
+        <h2 class="lead">Dieselben Schichten — konkret im Code</h2>
+        <div class="body">
+          <p class="statement">Einstieg: <code>electron/main.ts</code> → <code>src/App.tsx</code>. Jede Schicht
+            hat ihren festen Ort im Repository.</p>
+          <div class="lanes uneven mt2">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Schicht → Datei</div>
+              <ul class="facts">
+                <li><span class="k">Electron</span> <code>electron/main.ts</code></li>
+                <li><span class="k">UI</span> <code>App.tsx · BoardView.tsx</code></li>
+                <li><span class="k">Controller</span> <code>GameController.ts</code></li>
+                <li><span class="k">Core</span> <code>Game.ts · GameState.ts</code></li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>„Wie geht es weiter?"</div>
+              <ul class="dense small">
+                <li>Spiellogik lesen → <code>GameState.ts → Game.ts</code></li>
+                <li>Wertung ändern → <code>core/scoring/</code></li>
+                <li>KI verbessern → <code>ai/heuristic | intelligent</code></li>
+                <li>Regel-Test ergänzen → <code>tests/scenarios/*.yaml</code></li>
+              </ul>
             </div>
           </div>
         </div>
