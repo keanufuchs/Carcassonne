@@ -15,7 +15,7 @@ dist-electron
 release
 *.local
 
-
+.cursor/
 .claude/
 _temp/
 *.db
