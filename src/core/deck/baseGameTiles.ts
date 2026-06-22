@@ -30,15 +30,15 @@ export interface TileEntry {
   count: number;
 }
 
-// 72 draw tiles — does not include the start tile.
+// 72 land tiles in the base game (official distribution).
 export const BASE_GAME_DISTRIBUTION: TileEntry[] = [
   { prototype: TILE_A, count: 2 },
   { prototype: TILE_B, count: 4 },
   { prototype: TILE_C, count: 1 },
   { prototype: TILE_D, count: 4 },
   { prototype: TILE_E, count: 5 },
-  { prototype: TILE_F, count: 5 },
-  { prototype: TILE_G, count: 5 },
+  { prototype: TILE_F, count: 2 },
+  { prototype: TILE_G, count: 1 },
   { prototype: TILE_H, count: 3 },
   { prototype: TILE_I, count: 2 },
   { prototype: TILE_J, count: 3 },
@@ -68,18 +68,25 @@ export function buildRemainingTiles(): TilePrototype[] {
       tiles.push(prototype);
     }
   }
+  const startIdx = tiles.findIndex(t => t.id === START_TILE.id);
+  if (startIdx === -1) throw new Error('Start tile missing from distribution');
+  tiles.splice(startIdx, 1);
   return tiles;
 }
 
-/** Ordered draw-pile ids for the base game (72 tiles, excludes the start tile). */
+/** Ordered draw-pile ids for the base game (71 tiles — 72 land tiles minus the start tile). */
 export function buildBaseGameDeckIds(): string[] {
   return buildRemainingTiles().map(t => t.id);
 }
 
-/** Expected per-type counts in the base-game draw pile. */
-export const BASE_GAME_DECK_COUNTS: Readonly<Record<string, number>> = Object.fromEntries(
-  BASE_GAME_DISTRIBUTION.map(({ prototype, count }) => [prototype.id, count]),
-);
+/** Expected per-type counts in the base-game draw pile (start tile excluded). */
+export const BASE_GAME_DECK_COUNTS: Readonly<Record<string, number>> = (() => {
+  const counts: Record<string, number> = {};
+  for (const t of buildRemainingTiles()) {
+    counts[t.id] = (counts[t.id] ?? 0) + 1;
+  }
+  return counts;
+})();
 
 // Lookup of every prototype by its id (incl. the start tile). Used by the
 // scenario test bridge to resolve a YAML deck (["TILE-B", …]) into prototypes.

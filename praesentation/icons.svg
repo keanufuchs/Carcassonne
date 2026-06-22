@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pres-terracotta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d96a4a"/>
+      <stop offset="100%" stop-color="#a3472d"/>
+    </linearGradient>
+    <linearGradient id="pres-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe28a"/>
+      <stop offset="50%" stop-color="#d8a93f"/>
+      <stop offset="100%" stop-color="#9d6d15"/>
+    </linearGradient>
+    <linearGradient id="pres-trophy-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe699"/>
+      <stop offset="35%" stop-color="#d8a93f"/>
+      <stop offset="75%" stop-color="#b78525"/>
+      <stop offset="100%" stop-color="#8a6212"/>
+    </linearGradient>
+    <filter id="pres-meeple-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#281e12" flood-opacity="0.35"/>
+    </filter>
+    <filter id="pres-tile-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#281e12" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- App-Logo: Terrakotta-Kachel mit Meeple (aus public/favicon.svg) -->
+  <symbol id="logo" viewBox="0 0 100 100">
+    <rect x="6" y="10" width="88" height="84" rx="20" fill="#7f3420"/>
+    <rect x="6" y="6" width="88" height="84" rx="20" fill="url(#pres-terracotta)" stroke="url(#pres-gold)" stroke-width="4" filter="url(#pres-tile-shadow)"/>
+    <rect x="13" y="13" width="74" height="70" rx="14" stroke="url(#pres-gold)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" opacity="0.75"/>
+    <path
+      d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z"
+      fill="url(#pres-gold)"
+      stroke="#7f5411"
+      stroke-width="2"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      filter="url(#pres-meeple-shadow)"
+      transform="translate(17.5, 15.5) scale(0.65)"
+    />
+  </symbol>
+
+  <!-- Kachel-Icon: vereinfachte Carcassonne-Kachel -->
+  <symbol id="tile" viewBox="0 0 100 100">
+    <rect x="8" y="8" width="84" height="84" rx="10" fill="#f5f0e4" stroke="#4a5360" stroke-width="3" filter="url(#pres-tile-shadow)"/>
+    <rect x="8" y="8" width="84" height="42" fill="#7fbf6a"/>
+    <rect x="8" y="50" width="42" height="42" fill="#c9a66b"/>
+    <line x1="50" y1="100" x2="50" y2="50" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="72" cy="72" r="11" fill="#d6d6d6" stroke="#4a5360" stroke-width="1.5"/>
+  </symbol>
+
+  <!-- Meeple (aus src/ui/board/MeepleIcon.tsx) -->
+  <symbol id="meeple" viewBox="0 0 100 100">
+    <path
+      d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z"
+      fill="#0f766e"
+      stroke="#0a524c"
+      stroke-width="5"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      filter="url(#pres-meeple-shadow)"
+    />
+  </symbol>
+
+  <!-- Pokal (aus src/ui/icons/Icons.tsx - TrophyIcon) -->
+  <symbol id="trophy" viewBox="0 0 64 64">
+    <path d="M20 52h24v4a2 2 0 0 1-2 2H22a2 2 0 0 1-2-2v-4z" fill="#1c2330"/>
+    <path d="M25 44h14v8H25v-8z" fill="#4a5360"/>
+    <path d="M29 36h6v8h-6v-8z" fill="url(#pres-trophy-gold)"/>
+    <path d="M14 14h36v12c0 9.941-8.059 18-18 18S14 35.941 14 26V14z" fill="url(#pres-trophy-gold)" stroke="#1c2330" stroke-width="1"/>
+    <path d="M14 14h36v3H14v-3z" fill="#ffe699" opacity="0.4"/>
+    <path d="M14 18H8a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6v-3h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h6v-3z" fill="url(#pres-trophy-gold)" stroke="#1c2330" stroke-width="0.5"/>
+    <path d="M50 18h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-6v-3h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6v-3z" fill="url(#pres-trophy-gold)" stroke="#1c2330" stroke-width="0.5"/>
+    <path d="M32 20l2 4.5 4.5.5-3.5 3 1.5 4.5-4.5-2.5-4.5 2.5 1.5-4.5-3.5-3 4.5-.5z" fill="#fff9ee" opacity="0.9"/>
+  </symbol>
+
+  <!-- Haekchen fuer Checklisten -->
+  <symbol id="check" viewBox="0 0 24 24">
+    <path
+      d="M20 6L9 17l-5-5"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </symbol>
+</svg>
