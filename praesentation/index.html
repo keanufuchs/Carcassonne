@@ -218,49 +218,19 @@
         </div>
       </section>
 
-      <!-- 5 · Rahmen -->
+      <!-- 5 · Ziele & Anforderungen (zusammengeführt) -->
       <section>
         <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
-        <h2 class="lead">Rahmen des Projekts</h2>
-        <div class="body">
-          <div class="lanes uneven">
-            <div>
-              <div class="lane-h"><span class="mk charcoal"></span>Eckdaten</div>
-              <ul class="facts">
-                <li><span class="k">Auftraggeber</span> Prof. Dr. Martin Hüfner</li>
-                <li><span class="k">Team</span> Keanu · Neo · Paul · Jan</li>
-                <li><span class="k">Art</span> SE-Projekt · ganzer Zyklus</li>
-                <li><span class="k">Plattform</span> Electron-Desktop + Web</li>
-                <li><span class="k">Quelle</span> Notion = Single Source of Truth</li>
-              </ul>
-            </div>
-            <div class="claim">
-              <div class="lane-h"><span class="mk"></span>Zielbild</div>
-              <ul class="dense">
-                <li><strong>Regelkonform</strong> — nur gültige Züge</li>
-                <li><strong>Vollständige Wertung</strong> inkl. Wiesen</li>
-                <li><strong>Mehrere Modi</strong> — Hot-Seat · Netzwerk · KI</li>
-                <li><strong>Stabil</strong> — Partie ohne Absturz</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 6 · Anforderungen Überblick -->
-      <section>
-        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
-        <h2 class="lead">Anforderungen im Überblick</h2>
+        <h2 class="lead">Ziele &amp; Anforderungen</h2>
         <div class="body">
           <div class="lanes">
             <div>
-              <div class="lane-h"><span class="mk green"></span>9 Must-Haves <span class="badge ok">alle erfüllt</span></div>
+              <div class="lane-h"><span class="mk green"></span>Must-Haves <span class="badge ok">alle erfüllt</span></div>
               <ul class="dense small">
-                <li>Kachelplatzierung + Regelvalidierung</li>
-                <li>Feature-System: Stadt · Straße · Kloster · Feld</li>
-                <li>Meeples + Wertung (mid- &amp; end-game)</li>
-                <li>Hot-Seat (2–5) · Zufalls-KI · 2D-GUI</li>
-                <li>Spielende · Zoom/Pan · Persistenz</li>
+                <li><strong>Regelkonform</strong> — Kachelplatzierung + Regelvalidierung</li>
+                <li><strong>Vollständige Wertung</strong> — Stadt · Straße · Kloster · Wiesen</li>
+                <li><strong>Mehrere Modi</strong> — Hot-Seat (2–5) · Zufalls-KI · 2D-GUI</li>
+                <li><strong>Stabil</strong> — Spielende · Zoom/Pan · keine Abstürze</li>
               </ul>
             </div>
             <div>
@@ -290,47 +260,35 @@
         <span class="kicker">Projektmanagement</span>
         <h2 class="lead">Vorgehensweise: agil (Scrum-orientiert)</h2>
         <div class="body">
-          <div class="lanes uneven">
-            <table>
-              <tr>
-                <th>Kriterium</th>
-                <th>Klassisch</th>
-                <th>Agil <svg class="icon icon--check" aria-hidden="true">
-                    <use href="#check" />
-                  </svg></th>
-              </tr>
-              <tr>
-                <td>Anforderungen zu Beginn</td>
-                <td>hoch nötig</td>
-                <td><strong>Unschärfe ok</strong></td>
-              </tr>
-              <tr>
-                <td>Stakeholder</td>
-                <td>Anfang/Ende</td>
-                <td><strong>kontinuierlich</strong></td>
-              </tr>
-              <tr>
-                <td>Änderungen</td>
-                <td>teuer</td>
-                <td><strong>eingeplant</strong></td>
-              </tr>
-              <tr>
-                <td>Risiko-Features</td>
-                <td>spät sichtbar</td>
-                <td><strong>früh abgesichert</strong></td>
-              </tr>
-              <tr>
-                <td>Zwischenstände</td>
-                <td>spät</td>
-                <td><strong>jederzeit demofähig</strong></td>
-              </tr>
-            </table>
-            <div class="claim">
-              <div class="lane-h"><span class="mk"></span>Warum agil?</div>
-              <ul class="dense small">
-                <li>Aufgabe verlangt <strong>regelmäßige Demos</strong></li>
-                <li>Hochrisiko Netzwerk → iterativ absichern</li>
-                <li>Anforderungen <strong>schärften sich</strong> im Verlauf</li>
+          <div class="claim">
+            <div class="lane-h">Warum agil?</div>
+            <ul class="dense small">
+              <li>Aufgabe verlangt <strong>regelmäßige Demos</strong> — 4 Stakeholder-Meetings vorgegeben</li>
+              <li>Hochrisiko-Feature Netzwerk → iterativ absichern statt Big Bang</li>
+              <li>Anforderungen <strong>schärften sich</strong> im Verlauf (z. B. 3D erst in Meeting #3)</li>
+            </ul>
+          </div>
+          <div class="lanes mt2">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Klassisch</div>
+              <ul class="facts">
+                <li><span class="k">Anforderungen</span>vollständig fixiert</li>
+                <li><span class="k">Stakeholder</span>nur Anfang/Ende</li>
+                <li><span class="k">Änderungen</span>teuer</li>
+                <li><span class="k">Risiko</span>spät sichtbar</li>
+                <li><span class="k">Stände</span>spät</li>
+              </ul>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>Agil <svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg></div>
+              <ul class="facts">
+                <li><span class="k">Anforderungen</span><strong>Unschärfe ok</strong></li>
+                <li><span class="k">Stakeholder</span><strong>kontinuierlich</strong></li>
+                <li><span class="k">Änderungen</span><strong>eingeplant</strong></li>
+                <li><span class="k">Risiko</span><strong>früh abgesichert</strong></li>
+                <li><span class="k">Stände</span><strong>jederzeit demofähig</strong></li>
               </ul>
             </div>
           </div>
@@ -396,12 +354,12 @@
         <div class="body">
           <div class="lanes">
             <div>
-              <div class="lane-h"><span class="mk charcoal"></span>Was — Lastenheft</div>
-              <p class="small muted">Fix aus der Aufgabenstellung.</p>
+              <div class="lane-h"><span class="mk charcoal"></span>Klassisch — Lastenheft</div>
+              <p class="small muted">Statisches Dokument · Anforderungen zu Beginn vollständig fixiert.</p>
             </div>
             <div>
-              <div class="lane-h"><span class="mk green"></span>Wie — Backlog</div>
-              <p class="small muted">Statt Pflichtenheft · in Meeting&nbsp;#4 freigegeben.</p>
+              <div class="lane-h"><span class="mk green"></span>Agil — Backlog <svg class="icon icon--check" aria-hidden="true"><use href="#check" /></svg></div>
+              <p class="small muted">Lebendes Dokument · Anforderungen entstehen und verfeinern sich iterativ.</p>
             </div>
           </div>
           <div class="flow mt2">
@@ -718,7 +676,6 @@
               <ul class="dense small">
                 <li><strong>REST-API</strong> — erstellen, beitreten, Aktion</li>
                 <li><strong>WebSocket</strong> — Echtzeit-Broadcast (Port 3001)</li>
-                <li><strong>Polling-Fallback</strong> ohne WebSocket</li>
                 <li><strong>Persistenz</strong> — Beitritt per Code, Reconnect</li>
               </ul>
             </div>
@@ -798,7 +755,6 @@
             <div>
               <div class="lane-h"><span class="mk amber"></span>C · Desktop-App</div>
               <p class="small"><code>npm run electron:dev</code></p>
-              <p class="small muted">Paket: <code>electron:pack:mac</code></p>
             </div>
           </div>
           <p class="mt2 muted small"><code>dev:full</code> startet UI + Game-Server (3001) + MCP-AI (3002).
