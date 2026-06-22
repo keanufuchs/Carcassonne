@@ -455,14 +455,46 @@
         <span class="kicker">Design</span>
         <h2 class="lead">Domänenmodell: ein zentraler GameState</h2>
         <div class="body">
-          <div class="lanes">
+          <div class="lanes uneven">
             <div>
-              <div class="lane-h"><span class="mk blue"></span>Kernidee</div>
-              <ul class="dense small">
-                <li>Ein zentraler <code>GameState</code></li>
-                <li>Fortschreibung per <strong>reiner Funktionen</strong> — keine verstreuten Mutationen</li>
-              </ul>
-              <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
+              <div class="lane-h"><span class="mk blue"></span>Was ist ein „Feature"?</div>
+              <figure class="feature-fig">
+                <div class="ff-tiles">
+                  <!-- Kacheln inline aus public/tiles (tile-d, tile-u 90° gedreht, tile-d) -->
+                  <svg class="ff-tile" viewBox="0 0 100 100" role="img" aria-label="Kachel mit Straße und Stadt">
+                    <rect width="100" height="100" fill="#7fbf6a"/>
+                    <rect x="0" y="0" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="55" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="45" width="100" height="10" fill="#ffffff"/>
+                    <polygon points="0,0 100,0 50,25" fill="#c9b07a"/>
+                  </svg>
+                  <svg class="ff-tile rot90" viewBox="0 0 100 100" role="img" aria-label="Kachel mit gerader Straße">
+                    <rect width="100" height="100" fill="#7fbf6a"/>
+                    <rect x="0" y="0" width="45" height="100" fill="#7fbf6a"/>
+                    <rect x="55" y="0" width="45" height="100" fill="#7fbf6a"/>
+                    <rect x="45" y="0" width="10" height="100" fill="#ffffff"/>
+                  </svg>
+                  <svg class="ff-tile" viewBox="0 0 100 100" role="img" aria-label="Kachel mit Straße und Stadt">
+                    <rect width="100" height="100" fill="#7fbf6a"/>
+                    <rect x="0" y="0" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="55" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="45" width="100" height="10" fill="#ffffff"/>
+                    <polygon points="0,0 100,0 50,25" fill="#c9b07a"/>
+                  </svg>
+                  <span class="ff-road" aria-hidden="true"></span>
+                  <span class="ff-seam" style="left:33.333%"></span>
+                  <span class="ff-seam" style="left:66.666%"></span>
+                  <span class="ff-tag">1 Feature · Straße</span>
+                  <svg class="ff-meeple" viewBox="0 0 100 100" aria-label="Meeple des blauen Spielers" role="img">
+                    <path d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z"
+                      fill="var(--p-blue)" stroke="#fff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" />
+                  </svg>
+                </div>
+                <figcaption class="small muted">
+                  3 Kacheln · je ein Straßen-<strong>Segment</strong> → beim Legen zu <strong>einem
+                  Feature</strong> verschmolzen. Der Meeple macht Blau zum Besitzer.
+                </figcaption>
+              </figure>
             </div>
             <div class="claim">
               <div class="lane-h"><span class="mk"></span>Schlüssel-Entscheidung</div>
@@ -472,6 +504,7 @@
                 <li>korrektes <strong>Merging</strong> beim Anlegen</li>
                 <li>einfache <strong>Mehrheitswertung</strong></li>
               </ul>
+              <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
             </div>
           </div>
         </div>
@@ -482,27 +515,44 @@
         <span class="kicker">Design</span>
         <h2 class="lead">Spielzug als Zustandsautomat</h2>
         <div class="body">
-          <div class="flow">
-            <div class="step">
-              <div class="t">PLACING_TILE</div>
-              <div class="d">Kachel ziehen, drehen, legen</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">PLACING_MEEPLE</div>
-              <div class="d">Meeple setzen / überspringen</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">nächster Spieler</div>
-              <div class="d">zurück zu PLACING_TILE</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">GAME_OVER</div>
-              <div class="d">Endabrechnung</div>
-            </div>
-          </div>
+          <svg viewBox="0 0 930 175" style="width:100%;height:auto;display:block;overflow:visible" role="img" aria-label="FSM: PLACING_TILE → PLACING_MEEPLE → nächster Spieler → PLACING_TILE (Loop) und → GAME_OVER">
+            <defs>
+              <marker id="fsm-fwd" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#8b94a1"/>
+              </marker>
+              <marker id="fsm-back" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+                <polygon points="0 0, 12 6, 0 12" fill="#0f766e"/>
+              </marker>
+            </defs>
+            <!-- Box 1: PLACING_TILE -->
+            <rect x="8" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="8" y="15" width="190" height="5" rx="3" fill="#c1432e"/>
+            <text x="103" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">PLACING_TILE</text>
+            <text x="103" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Kachel ziehen, drehen, legen</text>
+            <!-- Arrow 1 → 2 -->
+            <line x1="198" y1="51" x2="235" y2="51" stroke="#8b94a1" stroke-width="1.5" marker-end="url(#fsm-fwd)"/>
+            <!-- Box 2: PLACING_MEEPLE -->
+            <rect x="238" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="238" y="15" width="190" height="5" rx="3" fill="#2f6db0"/>
+            <text x="333" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">PLACING_MEEPLE</text>
+            <text x="333" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Meeple setzen / überspringen</text>
+            <!-- Arrow 2 → 3 -->
+            <line x1="428" y1="51" x2="465" y2="51" stroke="#8b94a1" stroke-width="1.5" marker-end="url(#fsm-fwd)"/>
+            <!-- Box 3: nächster Spieler -->
+            <rect x="468" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="468" y="15" width="190" height="5" rx="3" fill="#b9831b"/>
+            <text x="563" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">nächster Spieler</text>
+            <text x="563" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">zurück zu PLACING_TILE</text>
+            <!-- Arrow 3 → 4 -->
+            <line x1="658" y1="51" x2="695" y2="51" stroke="#8b94a1" stroke-width="1.5" marker-end="url(#fsm-fwd)"/>
+            <!-- Box 4: GAME_OVER -->
+            <rect x="698" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="698" y="15" width="190" height="5" rx="3" fill="#2b2f38"/>
+            <text x="793" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">GAME_OVER</text>
+            <text x="793" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Endabrechnung</text>
+            <!-- Rückpfeil: nächster Spieler → PLACING_TILE -->
+            <path d="M 563,88 C 563,152 103,152 103,88" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#fsm-back)"/>
+          </svg>
           <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
             ausschließlich regelkonforme Züge.</p>
         </div>

@@ -1250,3 +1250,84 @@
   height: .82em;
   color: var(--ok);
 }
+/* ── Feature-Abbildung (Folie „Domänenmodell"): 3 Kacheln → 1 Feature ───── */
+.feature-fig {
+  margin: 2px 0 0;
+}
+
+.ff-tiles {
+  position: relative;
+  display: flex;
+  width: min(100%, 540px);
+  aspect-ratio: 3 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, .16), inset 0 0 0 1px rgba(28, 35, 48, .14);
+}
+
+.ff-tile {
+  display: block;
+  width: 33.3333%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ff-tile.rot90 {
+  transform: rotate(90deg);
+}
+
+/* Kachelgrenzen sichtbar machen — verdeutlicht „getrennte Kacheln" */
+.ff-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed rgba(28, 35, 48, .38);
+  pointer-events: none;
+}
+
+/* Die zusammenhängende Straße als EIN markiertes Feature */
+.ff-road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 43%;
+  height: 14%;
+  background: rgba(15, 118, 110, .42);
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, .85), 0 0 14px 3px rgba(15, 118, 110, .45);
+  pointer-events: none;
+}
+
+.ff-tag {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  font-size: clamp(11px, 1.45vw, 15px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  padding: 3px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(16, 24, 40, .25);
+  pointer-events: none;
+}
+
+.ff-meeple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 21%;
+  height: 21%;
+  transform: translate(-50%, -58%);
+  filter: drop-shadow(0 3px 3px rgba(16, 24, 40, .4));
+  pointer-events: none;
+}
+
+.feature-fig figcaption {
+  margin-top: 8px;
+  max-width: 540px;
+  line-height: 1.4;
+}
