@@ -87,6 +87,11 @@
       <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
         stroke-linejoin="round" />
     </symbol>
+    <symbol id="can-place" viewBox="0 0 100 100">
+      <rect x="4" y="4" width="92" height="92" rx="10" fill="#7fbf6a" stroke="#4a5360" stroke-width="3" filter="url(#pres-tile-shadow)" />
+      <rect x="46" y="42" width="54" height="16" fill="#e9e2cf" />
+      <line x1="48" y1="50" x2="100" y2="50" stroke="#fff" stroke-width="4" stroke-dasharray="6 5" />
+    </symbol>
   </svg>
   <div class="reveal">
     <div class="slides">
@@ -193,7 +198,7 @@
           <div class="journey mt2">
             <div class="jstop">
               <div class="jic green"><svg class="icon" aria-hidden="true">
-                  <use href="#tile" />
+                  <use href="#can-place" />
                 </svg></div>
               <div class="jt">Kacheln legen</div>
               <div class="jd">Landschaften regelkonform aneinanderlegen</div>
@@ -218,49 +223,19 @@
         </div>
       </section>
 
-      <!-- 5 · Rahmen -->
+      <!-- 5 · Ziele & Anforderungen (zusammengeführt) -->
       <section>
         <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
-        <h2 class="lead">Rahmen des Projekts</h2>
-        <div class="body">
-          <div class="lanes uneven">
-            <div>
-              <div class="lane-h"><span class="mk charcoal"></span>Eckdaten</div>
-              <ul class="facts">
-                <li><span class="k">Auftraggeber</span> Prof. Dr. Martin Hüfner</li>
-                <li><span class="k">Team</span> Keanu · Neo · Paul · Jan</li>
-                <li><span class="k">Art</span> SE-Projekt · ganzer Zyklus</li>
-                <li><span class="k">Plattform</span> Electron-Desktop + Web</li>
-                <li><span class="k">Quelle</span> Notion = Single Source of Truth</li>
-              </ul>
-            </div>
-            <div class="claim">
-              <div class="lane-h"><span class="mk"></span>Zielbild</div>
-              <ul class="dense">
-                <li><strong>Regelkonform</strong> — nur gültige Züge</li>
-                <li><strong>Vollständige Wertung</strong> inkl. Wiesen</li>
-                <li><strong>Mehrere Modi</strong> — Hot-Seat · Netzwerk · KI</li>
-                <li><strong>Stabil</strong> — Partie ohne Absturz</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 6 · Anforderungen Überblick -->
-      <section>
-        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
-        <h2 class="lead">Anforderungen im Überblick</h2>
+        <h2 class="lead">Ziele &amp; Anforderungen</h2>
         <div class="body">
           <div class="lanes">
             <div>
-              <div class="lane-h"><span class="mk green"></span>9 Must-Haves <span class="badge ok">alle erfüllt</span></div>
+              <div class="lane-h"><span class="mk green"></span>Must-Haves <span class="badge ok">alle erfüllt</span></div>
               <ul class="dense small">
-                <li>Kachelplatzierung + Regelvalidierung</li>
-                <li>Feature-System: Stadt · Straße · Kloster · Feld</li>
-                <li>Meeples + Wertung (mid- &amp; end-game)</li>
-                <li>Hot-Seat (2–5) · Zufalls-KI · 2D-GUI</li>
-                <li>Spielende · Zoom/Pan · Persistenz</li>
+                <li><strong>Regelkonform</strong> — Kachelplatzierung + Regelvalidierung</li>
+                <li><strong>Vollständige Wertung</strong> — Stadt · Straße · Kloster · Wiesen</li>
+                <li><strong>Mehrere Modi</strong> — Hot-Seat (2–5) · Zufalls-KI · 2D-GUI</li>
+                <li><strong>Stabil</strong> — Spielende · Zoom/Pan · keine Abstürze</li>
               </ul>
             </div>
             <div>
@@ -290,48 +265,50 @@
         <span class="kicker">Projektmanagement</span>
         <h2 class="lead">Vorgehensweise: agil (Scrum-orientiert)</h2>
         <div class="body">
-          <div class="lanes uneven">
-            <table>
-              <tr>
-                <th>Kriterium</th>
-                <th>Klassisch</th>
-                <th>Agil <svg class="icon icon--check" aria-hidden="true">
-                    <use href="#check" />
-                  </svg></th>
-              </tr>
-              <tr>
-                <td>Anforderungen zu Beginn</td>
-                <td>hoch nötig</td>
-                <td><strong>Unschärfe ok</strong></td>
-              </tr>
-              <tr>
-                <td>Stakeholder</td>
-                <td>Anfang/Ende</td>
-                <td><strong>kontinuierlich</strong></td>
-              </tr>
-              <tr>
-                <td>Änderungen</td>
-                <td>teuer</td>
-                <td><strong>eingeplant</strong></td>
-              </tr>
-              <tr>
-                <td>Risiko-Features</td>
-                <td>spät sichtbar</td>
-                <td><strong>früh abgesichert</strong></td>
-              </tr>
-              <tr>
-                <td>Zwischenstände</td>
-                <td>spät</td>
-                <td><strong>jederzeit demofähig</strong></td>
-              </tr>
-            </table>
-            <div class="claim">
-              <div class="lane-h"><span class="mk"></span>Warum agil?</div>
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>Warum agil?</div>
               <ul class="dense small">
-                <li>Aufgabe verlangt <strong>regelmäßige Demos</strong></li>
-                <li>Hochrisiko Netzwerk → iterativ absichern</li>
-                <li>Anforderungen <strong>schärften sich</strong> im Verlauf</li>
+                <li><strong>Regelmäßige Demos</strong> — 4 Stakeholder-Meetings vorgegeben</li>
+                <li>Hochrisiko Netzwerk → iterativ statt Big Bang</li>
+                <li>Anforderungen <strong>schärften sich</strong> (3D erst Meeting&nbsp;#3)</li>
               </ul>
+            </div>
+            <div>
+              <table>
+                <tr>
+                  <th>Kriterium</th>
+                  <th>Klassisch</th>
+                  <th>Agil <svg class="icon icon--check" aria-hidden="true">
+                      <use href="#check" />
+                    </svg></th>
+                </tr>
+                <tr>
+                  <td><strong>Anforderungen</strong></td>
+                  <td>fixiert</td>
+                  <td><strong>Unschärfe ok</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Stakeholder</strong></td>
+                  <td>nur Anfang/Ende</td>
+                  <td><strong>kontinuierlich</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Änderungen</strong></td>
+                  <td>teuer</td>
+                  <td><strong>eingeplant</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Risiko</strong></td>
+                  <td>spät sichtbar</td>
+                  <td><strong>früh abgesichert</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Stände</strong></td>
+                  <td>spät</td>
+                  <td><strong>jederzeit demofähig</strong></td>
+                </tr>
+              </table>
             </div>
           </div>
         </div>
@@ -396,12 +373,12 @@
         <div class="body">
           <div class="lanes">
             <div>
-              <div class="lane-h"><span class="mk charcoal"></span>Was — Lastenheft</div>
-              <p class="small muted">Fix aus der Aufgabenstellung.</p>
+              <div class="lane-h"><span class="mk charcoal"></span>Klassisch — Lastenheft</div>
+              <p class="small muted">Statisches Dokument · Anforderungen zu Beginn vollständig fixiert.</p>
             </div>
             <div>
-              <div class="lane-h"><span class="mk green"></span>Wie — Backlog</div>
-              <p class="small muted">Statt Pflichtenheft · in Meeting&nbsp;#4 freigegeben.</p>
+              <div class="lane-h"><span class="mk green"></span>Agil — Backlog <svg class="icon icon--check" aria-hidden="true"><use href="#check" /></svg></div>
+              <p class="small muted">Lebendes Dokument · Anforderungen entstehen und verfeinern sich iterativ.</p>
             </div>
           </div>
           <div class="flow mt2">
@@ -478,14 +455,46 @@
         <span class="kicker">Design</span>
         <h2 class="lead">Domänenmodell: ein zentraler GameState</h2>
         <div class="body">
-          <div class="lanes">
+          <div class="lanes uneven">
             <div>
-              <div class="lane-h"><span class="mk blue"></span>Kernidee</div>
-              <ul class="dense small">
-                <li>Ein zentraler <code>GameState</code></li>
-                <li>Fortschreibung per <strong>reiner Funktionen</strong> — keine verstreuten Mutationen</li>
-              </ul>
-              <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
+              <div class="lane-h"><span class="mk blue"></span>Was ist ein „Feature"?</div>
+              <figure class="feature-fig">
+                <div class="ff-tiles">
+                  <!-- Kacheln inline aus public/tiles (tile-d, tile-u 90° gedreht, tile-d) -->
+                  <svg class="ff-tile" viewBox="0 0 100 100" role="img" aria-label="Kachel mit Straße und Stadt">
+                    <rect width="100" height="100" fill="#7fbf6a"/>
+                    <rect x="0" y="0" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="55" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="45" width="100" height="10" fill="#ffffff"/>
+                    <polygon points="0,0 100,0 50,25" fill="#c9b07a"/>
+                  </svg>
+                  <svg class="ff-tile rot90" viewBox="0 0 100 100" role="img" aria-label="Kachel mit gerader Straße">
+                    <rect width="100" height="100" fill="#7fbf6a"/>
+                    <rect x="0" y="0" width="45" height="100" fill="#7fbf6a"/>
+                    <rect x="55" y="0" width="45" height="100" fill="#7fbf6a"/>
+                    <rect x="45" y="0" width="10" height="100" fill="#ffffff"/>
+                  </svg>
+                  <svg class="ff-tile" viewBox="0 0 100 100" role="img" aria-label="Kachel mit Straße und Stadt">
+                    <rect width="100" height="100" fill="#7fbf6a"/>
+                    <rect x="0" y="0" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="55" width="100" height="45" fill="#7fbf6a"/>
+                    <rect x="0" y="45" width="100" height="10" fill="#ffffff"/>
+                    <polygon points="0,0 100,0 50,25" fill="#c9b07a"/>
+                  </svg>
+                  <span class="ff-road" aria-hidden="true"></span>
+                  <span class="ff-seam" style="left:33.333%"></span>
+                  <span class="ff-seam" style="left:66.666%"></span>
+                  <span class="ff-tag">1 Feature · Straße</span>
+                  <svg class="ff-meeple" viewBox="0 0 100 100" aria-label="Meeple des blauen Spielers" role="img">
+                    <path d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z"
+                      fill="var(--p-blue)" stroke="#fff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" />
+                  </svg>
+                </div>
+                <figcaption class="small muted">
+                  3 Kacheln · je ein Straßen-<strong>Segment</strong> → beim Legen zu <strong>einem
+                  Feature</strong> verschmolzen. Der Meeple macht Blau zum Besitzer.
+                </figcaption>
+              </figure>
             </div>
             <div class="claim">
               <div class="lane-h"><span class="mk"></span>Schlüssel-Entscheidung</div>
@@ -495,6 +504,7 @@
                 <li>korrektes <strong>Merging</strong> beim Anlegen</li>
                 <li>einfache <strong>Mehrheitswertung</strong></li>
               </ul>
+              <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
             </div>
           </div>
         </div>
@@ -505,27 +515,42 @@
         <span class="kicker">Design</span>
         <h2 class="lead">Spielzug als Zustandsautomat</h2>
         <div class="body">
-          <div class="flow">
-            <div class="step">
-              <div class="t">PLACING_TILE</div>
-              <div class="d">Kachel ziehen, drehen, legen</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">PLACING_MEEPLE</div>
-              <div class="d">Meeple setzen / überspringen</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">nächster Spieler</div>
-              <div class="d">zurück zu PLACING_TILE</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">GAME_OVER</div>
-              <div class="d">Endabrechnung</div>
-            </div>
-          </div>
+          <svg viewBox="0 0 930 175" style="width:100%;height:auto;display:block;overflow:visible" role="img" aria-label="FSM: PLACING_TILE → PLACING_MEEPLE → nächster Spieler → PLACING_TILE (Loop) und → GAME_OVER">
+            <defs>
+              <marker id="fsm-fwd" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#8b94a1"/>
+              </marker>
+            </defs>
+            <!-- Box 1: PLACING_TILE -->
+            <rect x="8" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="8" y="15" width="190" height="5" rx="3" fill="#c1432e"/>
+            <text x="103" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">PLACING_TILE</text>
+            <text x="103" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Kachel ziehen, drehen, legen</text>
+            <!-- Arrow 1 → 2 -->
+            <line x1="198" y1="51" x2="235" y2="51" stroke="#8b94a1" stroke-width="1.5" marker-end="url(#fsm-fwd)"/>
+            <!-- Box 2: PLACING_MEEPLE -->
+            <rect x="238" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="238" y="15" width="190" height="5" rx="3" fill="#2f6db0"/>
+            <text x="333" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">PLACING_MEEPLE</text>
+            <text x="333" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Meeple setzen / überspringen</text>
+            <!-- Arrow 2 → 3 -->
+            <line x1="428" y1="51" x2="465" y2="51" stroke="#8b94a1" stroke-width="1.5" marker-end="url(#fsm-fwd)"/>
+            <!-- Box 3: nächster Spieler -->
+            <rect x="468" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="468" y="15" width="190" height="5" rx="3" fill="#b9831b"/>
+            <text x="563" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">nächster Spieler</text>
+            <text x="563" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">zurück zu PLACING_TILE</text>
+            <!-- Arrow 3 → 4 -->
+            <line x1="658" y1="51" x2="695" y2="51" stroke="#8b94a1" stroke-width="1.5" marker-end="url(#fsm-fwd)"/>
+            <!-- Box 4: GAME_OVER -->
+            <rect x="698" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
+            <rect x="698" y="15" width="190" height="5" rx="3" fill="#2b2f38"/>
+            <text x="793" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">GAME_OVER</text>
+            <text x="793" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Endabrechnung</text>
+            <!-- Rückpfeil: nächster Spieler → PLACING_TILE -->
+            <path d="M 563,88 C 563,152 103,152 103,100" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 3"/>
+            <polygon points="103,87 97,100 109,100" fill="#0f766e"/>
+          </svg>
           <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
             ausschließlich regelkonforme Züge.</p>
         </div>
@@ -718,7 +743,6 @@
               <ul class="dense small">
                 <li><strong>REST-API</strong> — erstellen, beitreten, Aktion</li>
                 <li><strong>WebSocket</strong> — Echtzeit-Broadcast (Port 3001)</li>
-                <li><strong>Polling-Fallback</strong> ohne WebSocket</li>
                 <li><strong>Persistenz</strong> — Beitritt per Code, Reconnect</li>
               </ul>
             </div>
@@ -798,7 +822,6 @@
             <div>
               <div class="lane-h"><span class="mk amber"></span>C · Desktop-App</div>
               <p class="small"><code>npm run electron:dev</code></p>
-              <p class="small muted">Paket: <code>electron:pack:mac</code></p>
             </div>
           </div>
           <p class="mt2 muted small"><code>dev:full</code> startet UI + Game-Server (3001) + MCP-AI (3002).
