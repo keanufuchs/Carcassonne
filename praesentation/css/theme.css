@@ -427,12 +427,108 @@
   margin-top: .25em;
 }
 
+/* Schritte sehen aus wie Kacheln auf der Straße: farbige Meeple-Kante oben
+   (zyklisch in Spielerfarben — wie die nummerierten Stopps in der Agenda).
+   Pfeile stehen an geraden Kind-Positionen, Schritte an ungeraden. */
+.flow .step {
+  border-top: 4px solid var(--accent);
+  position: relative;
+}
+
+.flow .step:nth-child(1) {
+  border-top-color: var(--p-red);
+}
+
+.flow .step:nth-child(3) {
+  border-top-color: var(--p-blue);
+}
+
+.flow .step:nth-child(5) {
+  border-top-color: var(--p-amber);
+}
+
+.flow .step:nth-child(7) {
+  border-top-color: var(--p-green);
+}
+
+.flow .step:nth-child(9) {
+  border-top-color: var(--p-charcoal);
+}
+
+/* Pfeil = Sandstraßen-Segment mit gepunkteter Petrol-Mittellinie (wie Agenda-Weg) */
 .flow .arrow {
   display: flex;
   align-items: center;
-  color: var(--accent);
-  font-size: 1.3em;
-  padding: 0 8px;
+  align-self: center;
+  position: relative;
+  font-size: 0;
+  /* Glyph („→" / „·") ausblenden — die Straße ersetzt ihn */
+  min-width: 38px;
+  padding: 0 4px;
+}
+
+.flow .arrow::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at center, var(--accent) 1.1px, transparent 1.7px) left center / 9px 6px repeat-x,
+    #e7e0ce;
+  opacity: .7;
+}
+
+/* ── Kanten-Match-Visualisierung (Spielkern: canPlace) ──────────────────── */
+.tile-match {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.tile-match .tm-tile {
+  width: 64px;
+  height: 64px;
+}
+
+.tile-match .tm-join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--ok-bg);
+  color: var(--ok);
+  margin: 0 2px;
+}
+
+.tile-match .tm-join .icon--check {
+  width: 16px;
+  height: 16px;
+  color: var(--ok);
+}
+
+.tile-match .tm-cap {
+  margin-left: 14px;
+  font-size: .72em;
+  color: var(--ink-soft);
+  max-width: 16em;
+  line-height: 1.35;
+}
+
+.tile-match .tm-cap code {
+  font-size: .9em;
 }
 
 /* ── Agenda als „Reise" (serpentiner Weg) ───────────────────────────────── */
@@ -505,18 +601,41 @@
   line-height: 1.3;
 }
 
-/* Pflichtfrage-Markierung auf dem Weg */
-.agenda-flow .stop .pf-flag {
-  display: inline-block;
-  margin-top: .35em;
-  font-size: .52em;
+/* Pflichtfragen als Flaggen-Marker entlang der Straße (quer zu den Themen) */
+.agenda-flow .pf-dot {
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+.agenda-flow .pf-pole {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.agenda-flow .pf-badge {
+  fill: var(--accent);
+  filter: drop-shadow(0 2px 4px rgba(15, 118, 110, .35));
+}
+
+.agenda-flow .pf-badge-txt {
+  fill: #fff;
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .01em;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.agenda-flow .pf-cap {
+  fill: var(--accent);
+  font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
-  letter-spacing: .02em;
-  color: #fff;
-  background: var(--accent);
-  padding: .25em .7em;
-  border-radius: 999px;
-  box-shadow: 0 2px 5px rgba(15, 118, 110, .35);
+  font-size: 13px;
+  text-anchor: middle;
+  dominant-baseline: central;
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */
