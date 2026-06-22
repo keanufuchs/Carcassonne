@@ -186,95 +186,92 @@
       <section>
         <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
         <h2 class="lead">Das Produkt in einem Satz</h2>
-        <p style="font-size:1.05em;">Eine <strong>vollständige, regelkonforme</strong> Umsetzung von
-          <em>Carcassonne</em> (Basisspiel) — <strong>Desktop &amp; Web</strong>, für <strong>2–5 Spieler</strong>.
-        </p>
-        <div class="grid cols-3 mt2">
-          <div class="card">
-            <h3><svg class="icon icon--inline" aria-hidden="true">
-                <use href="#tile" />
-              </svg> Kacheln legen</h3>
-            <p>Landschaften regelkonform aneinanderlegen.</p>
-          </div>
-          <div class="card">
-            <h3><svg class="icon icon--inline" aria-hidden="true">
-                <use href="#meeple" />
-              </svg> Meeples setzen</h3>
-            <p>Gebiete beanspruchen — Städte, Straßen, Klöster, Wiesen.</p>
-          </div>
-          <div class="card">
-            <h3><svg class="icon icon--inline" aria-hidden="true">
-                <use href="#trophy" />
-              </svg> Punkten</h3>
-            <p>Wertung bei Fertigstellung + Endabrechnung.</p>
+        <div class="body">
+          <p class="statement">Eine <strong>vollständige, regelkonforme</strong> Umsetzung von
+            <em>Carcassonne</em> (Basisspiel) — <strong>Desktop &amp; Web</strong>, für <strong>2–5 Spieler</strong>.
+          </p>
+          <div class="journey mt2">
+            <div class="jstop">
+              <div class="jic green"><svg class="icon" aria-hidden="true">
+                  <use href="#tile" />
+                </svg></div>
+              <div class="jt">Kacheln legen</div>
+              <div class="jd">Landschaften regelkonform aneinanderlegen</div>
+            </div>
+            <div class="jlink"></div>
+            <div class="jstop">
+              <div class="jic"><svg class="icon" aria-hidden="true">
+                  <use href="#meeple" />
+                </svg></div>
+              <div class="jt">Meeples setzen</div>
+              <div class="jd">Städte · Straßen · Klöster · Wiesen beanspruchen</div>
+            </div>
+            <div class="jlink"></div>
+            <div class="jstop">
+              <div class="jic amber"><svg class="icon" aria-hidden="true">
+                  <use href="#trophy" />
+                </svg></div>
+              <div class="jt">Punkten</div>
+              <div class="jd">Wertung bei Fertigstellung + Endabrechnung</div>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- 5 · Rahmen -->
       <section>
-        <span class="q-pill">Pflichtfrage 1/3 · Was soll das Ganze?</span>
+        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
         <h2 class="lead">Rahmen des Projekts</h2>
-        <div class="grid cols-2">
-          <div>
-            <table>
-              <tr>
-                <td><strong>Auftraggeber</strong></td>
-                <td>Prof. Dr. Martin Hüfner (Kunde &amp; Stakeholder)</td>
-              </tr>
-              <tr>
-                <td><strong>Team</strong></td>
-                <td>Keanu · Neo · Paul · Jan</td>
-              </tr>
-              <tr>
-                <td><strong>Art</strong></td>
-                <td>SE-Projekt · ganzer Entwicklungszyklus</td>
-              </tr>
-              <tr>
-                <td><strong>Plattform</strong></td>
-                <td>Electron-Desktop + Web</td>
-              </tr>
-              <tr>
-                <td><strong>Quelle</strong></td>
-                <td>Notion = Single Source of Truth</td>
-              </tr>
-            </table>
-          </div>
-          <div class="card accent">
-            <h3>Zielbild</h3>
-            <ul class="dense">
-              <li><strong>Regelkonform</strong> — nur gültige Züge möglich</li>
-              <li><strong>Vollständige Wertung</strong> inkl. Wiesen</li>
-              <li><strong>Mehrere Modi</strong> — Hot-Seat, Netzwerk, KI</li>
-              <li><strong>Stabil</strong> — Partie läuft ohne Absturz durch</li>
-            </ul>
+        <div class="body">
+          <div class="lanes uneven">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Eckdaten</div>
+              <ul class="facts">
+                <li><span class="k">Auftraggeber</span> Prof. Dr. Martin Hüfner</li>
+                <li><span class="k">Team</span> Keanu · Neo · Paul · Jan</li>
+                <li><span class="k">Art</span> SE-Projekt · ganzer Zyklus</li>
+                <li><span class="k">Plattform</span> Electron-Desktop + Web</li>
+                <li><span class="k">Quelle</span> Notion = Single Source of Truth</li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Zielbild</div>
+              <ul class="dense">
+                <li><strong>Regelkonform</strong> — nur gültige Züge</li>
+                <li><strong>Vollständige Wertung</strong> inkl. Wiesen</li>
+                <li><strong>Mehrere Modi</strong> — Hot-Seat · Netzwerk · KI</li>
+                <li><strong>Stabil</strong> — Partie ohne Absturz</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- 6 · Anforderungen Überblick -->
       <section>
-        <span class="q-pill">Pflichtfrage 1/3 · Was soll das Ganze?</span>
+        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
         <h2 class="lead">Anforderungen im Überblick</h2>
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>9 Must-Haves <span class="badge ok">alle erfüllt</span></h3>
-            <ul class="dense small">
-              <li>Kachelplatzierung mit Regelvalidierung</li>
-              <li>Feature-System: Stadt · Straße · Kloster · Feld</li>
-              <li>Meeples + Wertung (mid- &amp; end-game)</li>
-              <li>Hot-Seat (2–5), Zufalls-KI, 2D-GUI</li>
-              <li>Spielende, Zoom/Pan, Persistenz</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3>3 Erweiterungen <span class="badge ok">alle erfüllt</span></h3>
-            <ul class="dense small">
-              <li><strong>EW-01 Netzwerk-Multiplayer</strong><br />Client-Server, autoritatives Backend</li>
-              <li><strong>EW-02 Reasoning AI</strong><br />LLM-Agent mit Tool-Use über MCP</li>
-              <li><strong>EW-03 3D-Darstellung</strong> <span class="badge">agil entstanden</span><br />ungeplant — aus Stakeholder-Feedback (#3)</li>
-            </ul>
-            <p class="tiny muted mt">EW-01/02 zu Beginn bestätigt · 3D aus Feedback. Extra: prozedurale Kacheln, Mobile-Layout, Heuristik-KI.</p>
+        <div class="body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>9 Must-Haves <span class="badge ok">alle erfüllt</span></div>
+              <ul class="dense small">
+                <li>Kachelplatzierung + Regelvalidierung</li>
+                <li>Feature-System: Stadt · Straße · Kloster · Feld</li>
+                <li>Meeples + Wertung (mid- &amp; end-game)</li>
+                <li>Hot-Seat (2–5) · Zufalls-KI · 2D-GUI</li>
+                <li>Spielende · Zoom/Pan · Persistenz</li>
+              </ul>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk amber"></span>3 Erweiterungen <span class="badge ok">alle erfüllt</span></div>
+              <ul class="dense small">
+                <li><strong>EW-01 Netzwerk-Multiplayer</strong> — Client-Server</li>
+                <li><strong>EW-02 Reasoning AI</strong> — LLM + Tool-Use (MCP)</li>
+                <li><strong>EW-03 3D-Darstellung</strong> <span class="badge">agil entstanden</span></li>
+              </ul>
+              <p class="tiny muted mt">EW-01/02 zu Beginn bestätigt · 3D aus Stakeholder-Feedback (#3).</p>
+            </div>
           </div>
         </div>
       </section>
@@ -292,48 +289,50 @@
       <section>
         <span class="kicker">Projektmanagement</span>
         <h2 class="lead">Vorgehensweise: agil (Scrum-orientiert)</h2>
-        <div class="grid cols-2">
-          <table>
-            <tr>
-              <th>Kriterium</th>
-              <th>Klassisch</th>
-              <th>Agil <svg class="icon icon--check" aria-hidden="true">
-                  <use href="#check" />
-                </svg></th>
-            </tr>
-            <tr>
-              <td>Anforderungen zu Beginn</td>
-              <td>hoch nötig</td>
-              <td><strong>Unschärfe ok</strong></td>
-            </tr>
-            <tr>
-              <td>Stakeholder</td>
-              <td>Anfang/Ende</td>
-              <td><strong>kontinuierlich</strong></td>
-            </tr>
-            <tr>
-              <td>Änderungen</td>
-              <td>teuer</td>
-              <td><strong>eingeplant</strong></td>
-            </tr>
-            <tr>
-              <td>Risiko-Features</td>
-              <td>spät sichtbar</td>
-              <td><strong>früh abgesichert</strong></td>
-            </tr>
-            <tr>
-              <td>Zwischenstände</td>
-              <td>spät</td>
-              <td><strong>jederzeit demofähig</strong></td>
-            </tr>
-          </table>
-          <div class="card accent">
-            <h3>Warum agil?</h3>
-            <ul class="dense small">
-              <li>Aufgabe verlangt <strong>regelmäßige Demos</strong></li>
-              <li>Hochrisiko-Feature Netzwerk → iterativ absichern</li>
-              <li>Anforderungen <strong>schärften sich</strong> im Verlauf</li>
-            </ul>
+        <div class="body">
+          <div class="lanes uneven">
+            <table>
+              <tr>
+                <th>Kriterium</th>
+                <th>Klassisch</th>
+                <th>Agil <svg class="icon icon--check" aria-hidden="true">
+                    <use href="#check" />
+                  </svg></th>
+              </tr>
+              <tr>
+                <td>Anforderungen zu Beginn</td>
+                <td>hoch nötig</td>
+                <td><strong>Unschärfe ok</strong></td>
+              </tr>
+              <tr>
+                <td>Stakeholder</td>
+                <td>Anfang/Ende</td>
+                <td><strong>kontinuierlich</strong></td>
+              </tr>
+              <tr>
+                <td>Änderungen</td>
+                <td>teuer</td>
+                <td><strong>eingeplant</strong></td>
+              </tr>
+              <tr>
+                <td>Risiko-Features</td>
+                <td>spät sichtbar</td>
+                <td><strong>früh abgesichert</strong></td>
+              </tr>
+              <tr>
+                <td>Zwischenstände</td>
+                <td>spät</td>
+                <td><strong>jederzeit demofähig</strong></td>
+              </tr>
+            </table>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Warum agil?</div>
+              <ul class="dense small">
+                <li>Aufgabe verlangt <strong>regelmäßige Demos</strong></li>
+                <li>Hochrisiko Netzwerk → iterativ absichern</li>
+                <li>Anforderungen <strong>schärften sich</strong> im Verlauf</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -342,6 +341,7 @@
       <section>
         <span class="kicker">Projektmanagement</span>
         <h2 class="lead">4 Stakeholder-Meetings als Review-Punkte</h2>
+        <div class="body">
         <table>
           <tr>
             <th>Meeting</th>
@@ -386,40 +386,43 @@
             <div class="t">Backlog neu</div>
           </div>
         </div>
+        </div>
       </section>
 
       <!-- 10 · Anforderungen agiles Pflichtenheft -->
       <section>
         <span class="kicker">Anforderungen</span>
         <h2 class="lead">Backlog statt klassischem Pflichtenheft</h2>
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>Was — Lastenheft</h3>
-            <p class="small">Fix aus der Aufgabenstellung.</p>
+        <div class="body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Was — Lastenheft</div>
+              <p class="small muted">Fix aus der Aufgabenstellung.</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>Wie — Backlog</div>
+              <p class="small muted">Statt Pflichtenheft · in Meeting&nbsp;#4 freigegeben.</p>
+            </div>
           </div>
-          <div class="card accent">
-            <h3>Wie — statt Pflichtenheft</h3>
-            <p class="small">Backlog · in Meeting&nbsp;#4 freigegeben.</p>
+          <div class="flow mt2">
+            <div class="step">
+              <div class="t">6 Epics</div>
+              <div class="d">CORE · UI · MULTI · AI · QS · DOC</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">22 User Stories</div>
+              <div class="d">mit Akzeptanzkriterien</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Arbeitspakete</div>
+              <div class="d">in Notion, mit Status</div>
+            </div>
           </div>
+          <p class="mt2 muted small"><strong>Eine</strong> Quelle, keine Doppel-Spezifikation — viele Stories entstanden
+            erst durch Feedback.</p>
         </div>
-        <div class="flow mt2">
-          <div class="step">
-            <div class="t">6 Epics</div>
-            <div class="d">CORE · UI · MULTI · AI · QS · DOC</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">22 User Stories</div>
-            <div class="d">mit Akzeptanzkriterien</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">Arbeitspakete</div>
-            <div class="d">in Notion, mit Status</div>
-          </div>
-        </div>
-        <p class="mt2 muted small">Vorteil: <strong>eine</strong> Quelle, keine Doppel-Spezifikation · viele Stories
-          entstanden erst durch Feedback.</p>
       </section>
 
       <!-- 11 · ABSCHNITT Design -->
@@ -435,36 +438,37 @@
       <section>
         <span class="kicker">Architektur</span>
         <h2 class="lead">Strikte 4-Schichten-Architektur</h2>
-        <div class="grid cols-2">
-          <div class="stack">
-            <div class="layer dim">
-              <div class="lname">Electron</div>
-              <div class="ldesc">App-Lifecycle, Desktop-Fenster</div>
+        <div class="body">
+          <div class="lanes uneven">
+            <div class="stack">
+              <div class="layer dim">
+                <div class="lname">Electron</div>
+                <div class="ldesc">App-Lifecycle, Desktop-Fenster</div>
+              </div>
+              <div class="layer">
+                <div class="lname">UI · React + CSS / Three.js</div>
+                <div class="ldesc">nur Rendering</div>
+              </div>
+              <div class="layer">
+                <div class="lname">Controller</div>
+                <div class="ldesc">Befehle + Pub/Sub</div>
+              </div>
+              <div class="layer">
+                <div class="lname">Core · reines TypeScript</div>
+                <div class="ldesc">Regeln, State, Scoring</div>
+              </div>
             </div>
-            <div class="layer">
-              <div class="lname">UI · React + CSS / Three.js</div>
-              <div class="ldesc">nur Rendering</div>
+            <div>
+              <div class="lane-h"><span class="mk"></span>Leitprinzip</div>
+              <p class="small">Jede Schicht importiert <strong>nur von darunter</strong> — keine Vermischung der
+                Belange.</p>
+              <ul class="dense small mt">
+                <li>Kern <strong>framework-unabhängig</strong></li>
+                <li>testbar <strong>ohne Browser/DOM</strong></li>
+                <li>2D ↔ 3D, Web ↔ Desktop ohne Logik-Änderung</li>
+              </ul>
+              <p class="tiny muted mt">Durchgesetzt per ESLint <code>no-restricted-paths</code>.</p>
             </div>
-            <div class="layer">
-              <div class="lname">Controller</div>
-              <div class="ldesc">Befehle + Pub/Sub</div>
-            </div>
-            <div class="layer">
-              <div class="lname">Core · reines TypeScript</div>
-              <div class="ldesc">Regeln, State, Scoring</div>
-            </div>
-          </div>
-          <div class="card accent">
-            <h3>Leitprinzip</h3>
-            <p class="small">Jede Schicht importiert <strong>nur von darunter</strong> — keine Vermischung der Belange.
-            </p>
-            <h3 class="mt">Warum?</h3>
-            <ul class="dense small">
-              <li>Spielkern <strong>framework-unabhängig</strong></li>
-              <li>vollständig testbar <strong>ohne Browser/DOM</strong></li>
-              <li>2D ↔ 3D, Web ↔ Desktop ohne Logik-Änderung</li>
-            </ul>
-            <p class="tiny muted mt">Durchgesetzt per ESLint-Regel <code>no-restricted-paths</code>.</p>
           </div>
         </div>
       </section>
@@ -473,23 +477,25 @@
       <section>
         <span class="kicker">Design</span>
         <h2 class="lead">Domänenmodell: ein zentraler GameState</h2>
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>Kernidee</h3>
-            <ul class="dense small">
-              <li>Ein zentraler <code>GameState</code></li>
-              <li>Fortschreibung per <strong>reiner Funktionen</strong> — keine verstreuten Mutationen</li>
-            </ul>
-            <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
-          </div>
-          <div class="card accent">
-            <h3>Schlüssel-Entscheidung</h3>
-            <p class="small"><strong>Meeples leben am Feature</strong>, nicht an der Kachel oder im globalen State.</p>
-            <ul class="dense small">
-              <li>„Wem gehört ein Gebiet?" ist <strong>lokal</strong></li>
-              <li>korrektes <strong>Merging</strong> beim Anlegen</li>
-              <li>einfache <strong>Mehrheitswertung</strong></li>
-            </ul>
+        <div class="body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>Kernidee</div>
+              <ul class="dense small">
+                <li>Ein zentraler <code>GameState</code></li>
+                <li>Fortschreibung per <strong>reiner Funktionen</strong> — keine verstreuten Mutationen</li>
+              </ul>
+              <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Schlüssel-Entscheidung</div>
+              <p class="small"><strong>Meeples leben am Feature</strong> — nicht an der Kachel oder im globalen State.</p>
+              <ul class="dense small">
+                <li>„Wem gehört ein Gebiet?" ist <strong>lokal</strong></li>
+                <li>korrektes <strong>Merging</strong> beim Anlegen</li>
+                <li>einfache <strong>Mehrheitswertung</strong></li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -498,35 +504,38 @@
       <section>
         <span class="kicker">Design</span>
         <h2 class="lead">Spielzug als Zustandsautomat</h2>
-        <div class="flow">
-          <div class="step">
-            <div class="t">PLACING_TILE</div>
-            <div class="d">Kachel ziehen, drehen, legen</div>
+        <div class="body">
+          <div class="flow">
+            <div class="step">
+              <div class="t">PLACING_TILE</div>
+              <div class="d">Kachel ziehen, drehen, legen</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">PLACING_MEEPLE</div>
+              <div class="d">Meeple setzen / überspringen</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">nächster Spieler</div>
+              <div class="d">zurück zu PLACING_TILE</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">GAME_OVER</div>
+              <div class="d">Endabrechnung</div>
+            </div>
           </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">PLACING_MEEPLE</div>
-            <div class="d">Meeple setzen / überspringen</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">nächster Spieler</div>
-            <div class="d">zurück zu PLACING_TILE</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">GAME_OVER</div>
-            <div class="d">Endabrechnung</div>
-          </div>
+          <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
+            ausschließlich regelkonforme Züge (MH-01).</p>
         </div>
-        <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
-          ausschließlich regelkonforme Züge (MH-01).</p>
       </section>
 
       <!-- 15 · Design-Entscheidungen -->
       <section>
         <span class="kicker">Design</span>
         <h2 class="lead">Zentrale Entscheidungen — begründet</h2>
+        <div class="body">
         <table>
           <tr>
             <th>Entscheidung</th>
@@ -557,6 +566,7 @@
             <td>Wartbarkeit — Verteilung als Daten, nicht hartkodiert</td>
           </tr>
         </table>
+        </div>
       </section>
 
       <!-- 16 · ABSCHNITT Umsetzung -->
@@ -572,49 +582,52 @@
       <section>
         <span class="kicker">User Interface</span>
         <h2 class="lead">Oberfläche — eine Codebasis, mehrere Ziele</h2>
-        <div class="flow small">
-          <div class="step">
-            <div class="t">Setup</div>
-            <div class="d">Spieler &amp; Modi</div>
+        <div class="body">
+          <div class="flow small">
+            <div class="step">
+              <div class="t">Setup</div>
+              <div class="d">Spieler &amp; Modi</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Lobby</div>
+              <div class="d">Online via Code</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Game</div>
+              <div class="d">Board + HUD</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">End-Game</div>
+              <div class="d">Endabrechnung</div>
+            </div>
           </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">Lobby</div>
-            <div class="d">Online via Code</div>
+          <div class="lanes cols-3 mt2">
+            <div>
+              <div class="lane-h"><span class="mk red"></span>Reines Layer</div>
+              <p class="small muted">keine Spiellogik — rendert nur den Snapshot.</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>2D ↔ 3D</div>
+              <p class="small muted">umschaltbar; 3D prozedural aus der Topologie (Three.js).</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>Zoom &amp; Pan</div>
+              <p class="small muted">große Partien überblicken; Touch/Mobile-fähig.</p>
+            </div>
           </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">Game</div>
-            <div class="d">Board + HUD</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">End-Game</div>
-            <div class="d">Endabrechnung</div>
-          </div>
+          <p class="mt2 muted small">Regelkonformität ist sichtbar: <strong>nur legale Felder</strong> und Meeple-Plätze
+            sind anklickbar (Geister-Vorschau).</p>
         </div>
-        <div class="grid cols-3 mt2">
-          <div class="card">
-            <h3>Reines Layer</h3>
-            <p>keine Spiellogik — rendert nur den Snapshot.</p>
-          </div>
-          <div class="card">
-            <h3>2D ↔ 3D</h3>
-            <p>umschaltbar; 3D prozedural aus der Topologie (Three.js).</p>
-          </div>
-          <div class="card">
-            <h3>Zoom &amp; Pan</h3>
-            <p>große Partien überblicken; Touch/Mobile-fähig.</p>
-          </div>
-        </div>
-        <p class="mt2 muted small">Regelkonformität ist sichtbar: <strong>nur legale Felder</strong> und Meeple-Plätze
-          sind anklickbar (Geister-Vorschau).</p>
       </section>
 
       <!-- 18 · Spielkern & Wertung -->
       <section>
         <span class="kicker">Implementierung</span>
         <h2 class="lead">Spielkern &amp; Wertung</h2>
+        <div class="body">
         <div class="tile-match">
           <svg class="tm-tile" viewBox="0 0 100 100" aria-hidden="true">
             <rect x="4" y="4" width="92" height="92" rx="10" fill="#7fbf6a" stroke="#4a5360" stroke-width="3" />
@@ -632,9 +645,9 @@
           <span class="tm-cap"><code>canPlace</code>: Kanten müssen passen — Straße trifft Straße, Stadt trifft
             Stadt, Wiese trifft Wiese.</span>
         </div>
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>Spielkern (reine Funktionen)</h3>
+        <div class="lanes mt2">
+          <div>
+            <div class="lane-h"><span class="mk blue"></span>Spielkern (reine Funktionen)</div>
             <ul class="dense small">
               <li><strong>72-Kachel-Deck</strong> — datengesteuert</li>
               <li><strong>canPlace</strong> — Nachbar + Kantenmatch</li>
@@ -642,15 +655,16 @@
               <li><strong>Completion</strong> — fertige Gebiete erkennen</li>
             </ul>
           </div>
-          <div class="card">
-            <h3>Wertung</h3>
+          <div>
+            <div class="lane-h"><span class="mk amber"></span>Wertung</div>
             <ul class="dense small">
               <li><strong>mid-game</strong> — Straße/Stadt/Kloster bei Abschluss</li>
               <li><strong>end-game</strong> — unvollständige Gebiete</li>
-              <li><strong>Wiesen</strong> — 3 Pkt je fertige Stadt (anspruchsvollster Teil)</li>
+              <li><strong>Wiesen</strong> — 3 Pkt je fertige Stadt</li>
               <li><strong>Mehrheit</strong> — meiste Meeples gewinnen</li>
             </ul>
           </div>
+        </div>
         </div>
       </section>
 
@@ -658,20 +672,22 @@
       <section>
         <span class="kicker">Erweiterung EW-01</span>
         <h2 class="lead">Netzwerk-Multiplayer — autoritatives Backend</h2>
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>Server</h3>
-            <ul class="dense small">
-              <li><strong>REST-API</strong> — erstellen, beitreten, Aktion</li>
-              <li><strong>WebSocket</strong> — Echtzeit-Broadcast (Port 3001)</li>
-              <li><strong>Polling-Fallback</strong> für Umgebungen ohne WS</li>
-              <li><strong>Persistenz</strong> — Beitritt per Spiel-Code, Reconnect</li>
-            </ul>
-          </div>
-          <div class="card accent">
-            <h3>Kernprinzip</h3>
-            <p class="small">Der Server validiert jede Aktion über <strong>denselben Core</strong>
-              wie der Client — <strong>eine</strong> Regel-Implementierung, kein Duplikat.</p>
+        <div class="body">
+          <div class="lanes uneven">
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>Server</div>
+              <ul class="dense small">
+                <li><strong>REST-API</strong> — erstellen, beitreten, Aktion</li>
+                <li><strong>WebSocket</strong> — Echtzeit-Broadcast (Port 3001)</li>
+                <li><strong>Polling-Fallback</strong> ohne WebSocket</li>
+                <li><strong>Persistenz</strong> — Beitritt per Code, Reconnect</li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Kernprinzip</div>
+              <p class="small">Der Server validiert jede Aktion über <strong>denselben Core</strong> wie der Client —
+                <strong>eine</strong> Regel-Implementierung, kein Duplikat.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -680,36 +696,37 @@
       <section>
         <span class="kicker">Erweiterung EW-02</span>
         <h2 class="lead">Reasoning AI — drei Stufen, mit Fallback</h2>
-        <div class="flow small">
-          <div class="step">
-            <div class="t">Zufall</div>
-            <div class="d">zufälliger legaler Zug</div>
+        <div class="body">
+          <div class="flow small">
+            <div class="step">
+              <div class="t">Zufall</div>
+              <div class="d">zufälliger legaler Zug</div>
+            </div>
+            <div class="arrow">·</div>
+            <div class="step">
+              <div class="t">Heuristik</div>
+              <div class="d">Greedy, ohne API-Key</div>
+            </div>
+            <div class="arrow">·</div>
+            <div class="step">
+              <div class="t">Reasoning AI</div>
+              <div class="d">LLM + MCP-Tool-Use</div>
+            </div>
           </div>
-          <div class="arrow">·</div>
-          <div class="step">
-            <div class="t">Heuristik</div>
-            <div class="d">Greedy, ohne API-Key</div>
-          </div>
-          <div class="arrow">·</div>
-          <div class="step">
-            <div class="t">Reasoning AI</div>
-            <div class="d">LLM + MCP-Tool-Use</div>
-          </div>
-        </div>
-        <div class="grid cols-2 mt2">
-          <div class="card">
-            <h3>LLM ruft Analyse-Tools (MCP)</h3>
-            <ul class="dense small">
-              <li><code>list_legal_moves</code></li>
-              <li><code>get_board_features</code></li>
-              <li><code>get_player_status</code></li>
-            </ul>
-          </div>
-          <div class="card accent">
-            <h3>Robustheit (US-A3)</h3>
-            <p class="small">Kein Key, Timeout oder ungültiger Zug → automatischer
-              <strong>Fallback auf Heuristik</strong>. <strong>Kein Absturz.</strong>
-            </p>
+          <div class="lanes mt2">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>LLM ruft Analyse-Tools (MCP)</div>
+              <ul class="dense small">
+                <li><code>list_legal_moves</code></li>
+                <li><code>get_board_features</code></li>
+                <li><code>get_player_status</code></li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Robustheit (US-A3)</div>
+              <p class="small">Kein Key, Timeout oder ungültiger Zug → automatischer <strong>Fallback auf
+                  Heuristik</strong>. <strong>Kein Absturz.</strong></p>
+            </div>
           </div>
         </div>
       </section>
@@ -725,27 +742,29 @@
 
       <!-- Wie starten -->
       <section>
-        <span class="q-pill">Pflichtfrage 2 ·App starten?</span>
+        <span class="q-pill">Pflichtfrage 2 · App starten?</span>
         <h2 class="lead">Drei Wege</h2>
-        <div class="grid cols-3">
-          <div class="card accent">
-            <h3>A · Sofort spielen</h3>
-            <p class="small">Ohne Installation im Browser:</p>
-            <p class="small"><strong>carcassonne.spelk.de</strong></p>
+        <div class="body">
+          <div class="lanes cols-3">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>A · Sofort spielen <span class="badge ok">empfohlen</span></div>
+              <p class="small">Ohne Installation im Browser:</p>
+              <p class="small"><strong>carcassonne.spelk.de</strong></p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>B · Aus dem Code</div>
+              <p class="small muted">Node ≥ 22.12</p>
+              <p class="small"><code>npm install</code><br /><code>npm run dev:full</code><br />→ localhost:5173</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk amber"></span>C · Desktop-App</div>
+              <p class="small"><code>npm run electron:dev</code></p>
+              <p class="small muted">Paket: <code>electron:pack:mac</code></p>
+            </div>
           </div>
-          <div class="card">
-            <h3>B · Aus dem Code</h3>
-            <p class="small">Node ≥ 22.12</p>
-            <p class="small"><code>npm install</code><br /><code>npm run dev:full</code><br />→ localhost:5173</p>
-          </div>
-          <div class="card">
-            <h3>C · Desktop-App</h3>
-            <p class="small"><code>npm run electron:dev</code></p>
-            <p class="small">Paket: <code>electron:pack:mac</code></p>
-          </div>
+          <p class="mt2 muted small"><code>dev:full</code> startet UI + Game-Server (3001) + MCP-AI (3002).
+            Hot-Seat &amp; einfache KI laufen auch ohne Server; KI-Key ist optional.</p>
         </div>
-        <p class="mt2 muted small"><code>dev:full</code> startet UI + Game-Server (3001) + MCP-AI (3002).
-          Hot-Seat &amp; einfache KI laufen auch ohne Server; KI-Key ist optional (Fallback greift).</p>
       </section>
 
       <!-- 21 · ABSCHNITT Qualität -->
@@ -761,43 +780,46 @@
       <section>
         <span class="kicker">Qualitätssicherung</span>
         <h2 class="lead">Testpyramide &amp; Kennzahlen</h2>
-        <div class="grid cols-2">
-          <div class="stack">
-            <div class="layer">
-              <div class="lname">E2E · Playwright</div>
-              <div class="ldesc">Vollpartien mit Zufalls-KI</div>
+        <div class="body">
+          <div class="lanes uneven">
+            <div class="stack">
+              <div class="layer">
+                <div class="lname">E2E · Playwright</div>
+                <div class="ldesc">Vollpartien mit Zufalls-KI</div>
+              </div>
+              <div class="layer">
+                <div class="lname">System / Szenario · YAML</div>
+                <div class="ldesc">echte Regeln gegen echte Engine</div>
+              </div>
+              <div class="layer">
+                <div class="lname">Unit · Vitest</div>
+                <div class="ldesc">Core: tile · feature · scoring · meeple · deck</div>
+              </div>
             </div>
-            <div class="layer">
-              <div class="lname">System / Szenario · YAML</div>
-              <div class="ldesc">echte Regeln gegen echte Engine</div>
-            </div>
-            <div class="layer">
-              <div class="lname">Integration · Vitest</div>
-              <div class="ldesc">Controller-Flows, Zugzyklen</div>
-            </div>
-            <div class="layer">
-              <div class="lname">Unit · Vitest</div>
-              <div class="ldesc">Core: tile, feature, scoring</div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>CI-Gate &amp; Reviews</div>
+              <ul class="dense small">
+                <li><strong>GitHub Actions</strong> blockt Merges bei roten Tests</li>
+                <li>Reviews durch zweite Person</li>
+                <li><strong>Validierung</strong> (Demos) + <strong>Verifikation</strong> (Tests)</li>
+              </ul>
             </div>
           </div>
-          <div class="grid">
-            <div class="card stat">
-              <div class="num">282</div>
-              <div class="lbl">Testfälle</div>
+          <div class="stat-band mt2">
+            <div class="s">
+              <div class="n">30</div>
+              <div class="l">Unit-Tests (Core)</div>
             </div>
-            <div class="card stat">
-              <div class="num">40</div>
-              <div class="lbl">Testdateien</div>
+            <div class="s">
+              <div class="n">11</div>
+              <div class="l">YAML-Szenarien</div>
             </div>
-            <div class="card stat">
-              <div class="num">11</div>
-              <div class="lbl">YAML-Szenarien</div>
+            <div class="s">
+              <div class="n">E2E</div>
+              <div class="l">Playwright-Vollpartien</div>
             </div>
           </div>
         </div>
-        <p class="mt2 muted small"><strong>CI-Gate</strong> (GitHub Actions) blockiert Merges bei roten Tests.
-          Reviews durch zweite Person · QS = <strong>Validierung</strong> (Demos) + <strong>Verifikation</strong>
-          (Tests).</p>
       </section>
 
       <!-- ABSCHNITT Pflichtfrage 3 -->
@@ -812,44 +834,37 @@
       <!-- 25 · Code-Einstieg -->
       <section>
         <span class="q-pill">Pflichtfrage 3 · Code-Einstieg?</span>
-        <h2 class="lead">Von außen nach innen</h2>
-        <div class="flow small">
-          <div class="step">
-            <div class="t">electron/main.ts</div>
-            <div class="d">Desktop-Fenster</div>
+        <h2 class="lead">Empfohlener Lesepfad</h2>
+        <div class="body">
+          <p class="statement">Start: <code>electron/main.ts</code> bzw. <code>src/App.tsx</code>. Wer die
+            <strong>Spiellogik</strong> verstehen will, liest in dieser Reihenfolge:</p>
+          <div class="flow small mt2">
+            <div class="step">
+              <div class="t">GameState.ts</div>
+              <div class="d">Datenmodell</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Game.ts</div>
+              <div class="d">Spiel-API</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">GameController.ts</div>
+              <div class="d">Fluss + Pub/Sub</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">BoardView.tsx</div>
+              <div class="d">Rendering</div>
+            </div>
           </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">src/App.tsx</div>
-            <div class="d">UI-Verdrahtung</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">GameController.ts</div>
-            <div class="d">Befehle + Pub/Sub</div>
-          </div>
-          <div class="arrow">→</div>
-          <div class="step">
-            <div class="t">core/game/Game.ts</div>
-            <div class="d">Spielregeln</div>
-          </div>
-        </div>
-        <div class="grid cols-2 mt2">
-          <div class="card">
-            <h3>Empfohlener Lesepfad</h3>
-            <ul class="dense small">
-              <li><code>GameState.ts</code> — Datenmodell</li>
-              <li><code>Game.ts</code> — Spiel-API</li>
-              <li><code>GameController.ts</code> — Fluss</li>
-              <li><code>BoardView.tsx</code> — Rendering</li>
-            </ul>
-          </div>
-          <div class="card">
-            <h3>„Wie geht es weiter?"</h3>
+          <div class="claim mt2">
+            <div class="lane-h"><span class="mk"></span>„Wie geht es weiter?"</div>
             <ul class="dense small">
               <li>Wertung ändern → <code>core/scoring/</code></li>
-              <li>KI verbessern → <code>ai/heuristic|intelligent</code></li>
-              <li>Regel-Test → <code>tests/scenarios/*.yaml</code></li>
+              <li>KI verbessern → <code>ai/heuristic | intelligent</code></li>
+              <li>Regel-Test ergänzen → <code>tests/scenarios/*.yaml</code></li>
             </ul>
           </div>
         </div>
@@ -859,48 +874,50 @@
       <section>
         <span class="kicker">Ergebnis</span>
         <h2 class="lead">Abnahmekriterien — erfüllt</h2>
-        <div class="grid cols-2">
-          <ul class="dense small">
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+        <div class="body">
+          <div class="lanes">
+            <ul class="checklist small">
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> Alle Must-Haves implementiert &amp; getestet</li>
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>Alle Must-Haves implementiert &amp; getestet</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> 3 Erweiterungen stabil (Netzwerk + KI + 3D)</li>
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>3 Erweiterungen stabil (Netzwerk + KI + 3D)</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> Testsystem dokumentiert</li>
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>Testsystem dokumentiert</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> E2E automatisiert &amp; CI-gated</li>
-          </ul>
-          <ul class="dense small">
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>E2E automatisiert &amp; CI-gated</li>
+            </ul>
+            <ul class="checklist small">
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> Electron-App (macOS CI) + Web-Deployment</li>
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>Electron-App (macOS CI) + Web-Deployment</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> Demo in Meeting #4 bestanden</li>
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>Demo in Meeting #4 bestanden</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> Release <strong>v0.1.0</strong> getaggt</li>
-            <li><span class="check"><svg class="icon icon--check" aria-hidden="true">
+                </svg>Release <strong>v0.1.0</strong> getaggt</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg></span> Live unter carcassonne.spelk.de</li>
-          </ul>
-        </div>
-        <div class="grid cols-3 mt2">
-          <div class="card stat">
-            <div class="num">9/9</div>
-            <div class="lbl">Must-Haves</div>
+                </svg>Live unter carcassonne.spelk.de</li>
+            </ul>
           </div>
-          <div class="card stat">
-            <div class="num">3/3</div>
-            <div class="lbl">Erweiterungen</div>
-          </div>
-          <div class="card stat">
-            <div class="num">282</div>
-            <div class="lbl">Tests grün</div>
+          <div class="stat-band mt2">
+            <div class="s">
+              <div class="n">9/9</div>
+              <div class="l">Must-Haves</div>
+            </div>
+            <div class="s">
+              <div class="n">3/3</div>
+              <div class="l">Erweiterungen</div>
+            </div>
+            <div class="s">
+              <div class="n">30</div>
+              <div class="l">Tests grün</div>
+            </div>
           </div>
         </div>
       </section>
@@ -947,6 +964,7 @@
       minScale: 0.2,
       maxScale: 1.6,
       hash: true,
+      display: 'flex',
       slideNumber: 'c/t',
       transition: 'fade',
       transitionSpeed: 'fast',

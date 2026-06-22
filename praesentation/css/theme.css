@@ -923,3 +923,330 @@
   margin: .32em 0;
   font-size: .9em;
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   CARCASSONNE LAYOUT-SYSTEM (v2)
+   Weniger isolierte Boxen — zusammenhängende Folien über Linien, Bahnen
+   und Spielerfarben. Motiv: die gepunktete Petrol-Straße aus der Agenda.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Vertikale Balance: Kopf oben, Hauptinhalt mittig ───────────────────── */
+.reveal .slides>section {
+  flex-direction: column;
+}
+
+.reveal .slides>section>.body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Pills/Kicker dürfen im Flex-Container nicht auf volle Breite gedehnt werden */
+.reveal .slides>section>.q-pill,
+.reveal .slides>section>.kicker {
+  align-self: flex-start;
+}
+
+/* Sonderfolien zentrieren ihren Inhalt selbst (Titel/Abschnitt/QR) */
+.reveal .slides>section:has(>.title-slide),
+.reveal .slides>section:has(>.section-slide),
+.reveal .slides>section:has(>.qr-slide) {
+  justify-content: center;
+}
+
+/* ── Bahnen: zusammenhängende Spalten, getrennt durch eine gepunktete
+      Petrol-Straße statt durch Kartenrahmen ─────────────────────────────── */
+.lanes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  align-items: start;
+}
+
+.lanes.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.lanes.uneven {
+  grid-template-columns: 1.25fr 1fr;
+}
+
+.lanes>* {
+  padding: 2px 34px;
+  min-width: 0;
+}
+
+.lanes>*:first-child {
+  padding-left: 2px;
+}
+
+.lanes>*:last-child {
+  padding-right: 2px;
+}
+
+/* gepunktete vertikale Straße als Trenner (wie Agenda-Mittellinie) */
+.lanes>*+* {
+  background-image: radial-gradient(circle, rgba(15, 118, 110, .5) 1.4px, transparent 1.9px);
+  background-size: 7px 13px;
+  background-position: left top;
+  background-repeat: repeat-y;
+}
+
+/* Bahnenkopf mit Kachel-Marker in Spielerfarbe */
+.lane-h {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .35em .5em;
+  margin: 0 0 .5em;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: .98em;
+  letter-spacing: -.01em;
+}
+
+.lane-h .mk {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  background: var(--accent);
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .65), 0 1px 2px rgba(16, 24, 40, .18);
+}
+
+.mk.red {
+  background: var(--p-red);
+}
+
+.mk.blue {
+  background: var(--p-blue);
+}
+
+.mk.amber {
+  background: var(--p-amber);
+}
+
+.mk.green {
+  background: var(--p-green);
+}
+
+.mk.charcoal {
+  background: var(--p-charcoal);
+}
+
+.lane-h .badge {
+  margin-left: auto;
+}
+
+/* ── Hervorgehobenes Gebiet ("claim") — der EINE Akzent pro Folie ───────── */
+.claim {
+  position: relative;
+  background: var(--accent-bg);
+  border: 1px solid rgba(15, 118, 110, .32);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+}
+
+.claim .lane-h {
+  color: var(--accent);
+}
+
+.claim .lane-h .mk {
+  background: var(--accent);
+}
+
+/* ── Reise: große Konzept-Stopps auf der Straße (statt 3 Karten) ────────── */
+.journey {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+}
+
+.journey .jstop {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.journey .jic {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto .5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 2px solid var(--line-2);
+  border-radius: 24px;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, .08);
+}
+
+.journey .jic .icon {
+  width: 52px;
+  height: 52px;
+}
+
+.journey .jic.red {
+  border-color: var(--p-red);
+}
+
+.journey .jic.blue {
+  border-color: var(--p-blue);
+}
+
+.journey .jic.green {
+  border-color: var(--p-green);
+}
+
+.journey .jic.amber {
+  border-color: var(--p-amber);
+}
+
+.journey .jt {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: .98em;
+}
+
+.journey .jd {
+  font-size: .76em;
+  color: var(--ink-muted);
+  margin-top: .25em;
+  line-height: 1.4;
+}
+
+/* Straßen-Verbindung zwischen den Stopps (Agenda-Mittellinie, horizontal) */
+.journey .jlink {
+  flex: 0 0 58px;
+  align-self: flex-start;
+  height: 6px;
+  margin-top: 43px;
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at center, var(--accent) 1.1px, transparent 1.7px) left center / 9px 6px repeat-x,
+    #e7e0ce;
+  opacity: .8;
+}
+
+/* ── Lead-Statement (prägnanter Kernsatz, prominent) ────────────────────── */
+.statement {
+  font-size: 1.12em;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  max-width: 22em;
+  padding-left: 18px;
+  border-left: 6px solid;
+  border-image: linear-gradient(180deg, var(--p-red), var(--p-amber), var(--p-green)) 1;
+}
+
+/* ── Kacheln-Reihe für gleichwertige Punkte (leichte Trennlinien) ───────── */
+.reveal .facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reveal .facts li {
+  display: flex;
+  gap: .6em;
+  align-items: baseline;
+  padding: .42em 0;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.reveal .facts li:last-child {
+  border-bottom: 0;
+}
+
+.reveal .facts li::before {
+  content: none;
+}
+
+.reveal .facts li .k {
+  flex: 0 0 8.5em;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ── Kennzahl-Band: Statistiken ohne Einzelkästen ───────────────────────── */
+.stat-band {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 0;
+}
+
+.stat-band .s {
+  flex: 1;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.stat-band .s+.s {
+  border-left: 1px solid var(--line);
+}
+
+.stat-band .s .n {
+  font-size: 2.1em;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -.03em;
+  line-height: 1;
+}
+
+.stat-band .s .l {
+  font-size: .66em;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: .3em;
+}
+
+/* ── Check-Liste in zwei Spalten ohne Box ───────────────────────────────── */
+.reveal .checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reveal .checklist li {
+  position: relative;
+  padding: .46em 0 .46em 2em;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+
+.reveal .checklist li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .5em;
+  width: 1.35em;
+  height: 1.35em;
+  border-radius: 7px;
+  background: var(--ok-bg);
+}
+
+.reveal .checklist li .icon--check {
+  position: absolute;
+  left: .26em;
+  top: .74em;
+  width: .82em;
+  height: .82em;
+  color: var(--ok);
+}
