@@ -1,6 +1,6 @@
 # Deck
 
-Das Deck verwaltet den Vorrat an Kacheln, die im Spielverlauf gezogen werden. Es besteht aus einem festen Starttile (das immer bei `{0,0}` liegt) und 72 zufällig gemischten Spielkacheln (A–X nach offiziellem Carcassonne-Standard).
+Das Deck verwaltet den Vorrat an Kacheln, die im Spielverlauf gezogen werden. Es besteht aus einem festen Starttile (das immer bei `{0,0}` liegt) und 71 zufällig gemischten Spielkacheln (A–X nach offiziellem Carcassonne-Standard — 72 Landkacheln minus Startkachel).
 
 ## Datenstruktur
 
@@ -15,7 +15,7 @@ interface Deck {
 
 ## Kachelverteilung (`baseGameTiles.ts`)
 
-Das offizielle Grundspiel enthält 72 Ziehkacheln (ohne Startkachel):
+Das offizielle Grundspiel enthält 72 Landkacheln; die Startkachel wird vor Spielbeginn aus dem Nachziehstapel entfernt → **71 Ziehkacheln**:
 
 | Kachel | Anzahl | Kachel | Anzahl |
 |--------|--------|--------|--------|

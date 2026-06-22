@@ -467,7 +467,6 @@
                 <li>testbar <strong>ohne Browser/DOM</strong></li>
                 <li>2D ↔ 3D, Web ↔ Desktop ohne Logik-Änderung</li>
               </ul>
-              <p class="tiny muted mt">Durchgesetzt per ESLint <code>no-restricted-paths</code>.</p>
             </div>
           </div>
         </div>
@@ -527,7 +526,7 @@
             </div>
           </div>
           <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
-            ausschließlich regelkonforme Züge (MH-01).</p>
+            ausschließlich regelkonforme Züge.</p>
         </div>
       </section>
 
@@ -822,54 +821,6 @@
         </div>
       </section>
 
-      <!-- ABSCHNITT Pflichtfrage 3 -->
-      <section data-footer="false">
-        <div class="section-slide">
-          <div class="num">PFLICHTFRAGE 3</div>
-          <h2>Code-Einstieg?</h2>
-          <p class="muted">Einstiegspunkt — und wie es weitergeht</p>
-        </div>
-      </section>
-
-      <!-- 25 · Code-Einstieg -->
-      <section>
-        <span class="q-pill">Pflichtfrage 3 · Code-Einstieg?</span>
-        <h2 class="lead">Empfohlener Lesepfad</h2>
-        <div class="body">
-          <p class="statement">Start: <code>electron/main.ts</code> bzw. <code>src/App.tsx</code>. Wer die
-            <strong>Spiellogik</strong> verstehen will, liest in dieser Reihenfolge:</p>
-          <div class="flow small mt2">
-            <div class="step">
-              <div class="t">GameState.ts</div>
-              <div class="d">Datenmodell</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">Game.ts</div>
-              <div class="d">Spiel-API</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">GameController.ts</div>
-              <div class="d">Fluss + Pub/Sub</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="step">
-              <div class="t">BoardView.tsx</div>
-              <div class="d">Rendering</div>
-            </div>
-          </div>
-          <div class="claim mt2">
-            <div class="lane-h"><span class="mk"></span>„Wie geht es weiter?"</div>
-            <ul class="dense small">
-              <li>Wertung ändern → <code>core/scoring/</code></li>
-              <li>KI verbessern → <code>ai/heuristic | intelligent</code></li>
-              <li>Regel-Test ergänzen → <code>tests/scenarios/*.yaml</code></li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
       <!-- 26 · Status -->
       <section>
         <span class="kicker">Ergebnis</span>
@@ -899,7 +850,7 @@
                 </svg>Demo in Meeting #4 bestanden</li>
               <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
-                </svg>Release <strong>v0.1.0</strong> getaggt</li>
+                </svg>Release <strong>v1.0.0</strong> getaggt</li>
               <li><svg class="icon icon--check" aria-hidden="true">
                   <use href="#check" />
                 </svg>Live unter carcassonne.spelk.de</li>
@@ -931,7 +882,7 @@
           <h1 style="font-size:2.2em;">Vielen Dank</h1>
           <div class="sub">Fragen? — Gerne auch live spielen.</div>
           <div class="team">Keanu · Neo · Paul · Jan</div>
-          <div class="meta"><strong>carcassonne.spelk.de</strong> · Release v0.1.0 · 22.06.2026</div>
+          <div class="meta"><strong>carcassonne.spelk.de</strong> · Release v1.0.0 · 22.06.2026</div>
         </div>
       </section>
 

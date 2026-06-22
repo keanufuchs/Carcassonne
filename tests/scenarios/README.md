@@ -49,7 +49,7 @@ Each test attaches a **`scenario-report`** HTML file (main artifact): scenario d
 | `description` | no | Human-readable summary |
 | `players` | yes | 2–5 player names (hot-seat order) |
 | `steps` | yes* | One entry per turn, in deck order (*leer bei `deckFrom`) |
-| `deckFrom` | no | `base-game` — kanonischer 79-Kachel-Nachziehstapel |
+| `deckFrom` | no | `base-game` — kanonischer 71-Kachel-Nachziehstapel |
 | `padding` | no | Extra deck tiles after the last step so the game stays mid-game |
 | `autoPlay` | no | `{ seed }` — deterministischer Komplettdurchlauf bis `GAME_OVER` nach den `steps` (für Vollpartie-Tests; `steps` darf leer sein) |
 | `endGame` | no | If `true`, runner calls `endGame()` before asserting |
@@ -104,12 +104,12 @@ expect:
 ```yaml
 name: full-game-playthrough
 players: [Alice, Bob]
-deckFrom: base-game     # 79-Kachel-Stapel, ungemischt → deterministisch
+deckFrom: base-game     # 71-Kachel-Stapel, ungemischt → deterministisch
 steps: []               # alle Züge erzeugt der geseedete Auto-Play
 autoPlay: { seed: 1 }   # gleicher Seed → exakt gleiche Partie
 expect:
   phase: GAME_OVER
-  placedTiles: 80
+  placedTiles: 72
   deckRemaining: 0
   scores: { Alice: 25, Bob: 17 }
 ```
