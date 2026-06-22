@@ -520,9 +520,6 @@
               <marker id="fsm-fwd" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
                 <polygon points="0 0, 10 3.5, 0 7" fill="#8b94a1"/>
               </marker>
-              <marker id="fsm-back" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="userSpaceOnUse">
-                <polygon points="0 0, 12 6, 0 12" fill="#0f766e"/>
-              </marker>
             </defs>
             <!-- Box 1: PLACING_TILE -->
             <rect x="8" y="15" width="190" height="72" rx="10" fill="white" stroke="#e5e7e1" stroke-width="1.5"/>
@@ -551,7 +548,8 @@
             <text x="793" y="48" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="700" font-size="13" fill="#1c2330">GAME_OVER</text>
             <text x="793" y="68" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="10" fill="#8b94a1">Endabrechnung</text>
             <!-- Rückpfeil: nächster Spieler → PLACING_TILE -->
-            <path d="M 563,88 C 563,152 103,152 103,88" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#fsm-back)"/>
+            <path d="M 563,88 C 563,152 103,152 103,100" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 3"/>
+            <polygon points="103,87 97,100 109,100" fill="#0f766e"/>
           </svg>
           <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
             ausschließlich regelkonforme Züge.</p>
