@@ -26,9 +26,9 @@
     "test:scenarios": "playwright test scenarios.spec.ts",
     "electron:compile": "esbuild electron/main.ts --bundle --platform=node --target=node22 --external:electron --outfile=dist-electron/main.js --format=esm",
     "electron:dev": "npm run electron:compile && electron .",
-    "electron:pack": "npm run electron:compile && electron-builder",
-    "electron:pack:mac": "npm run electron:compile && electron-builder --mac",
-    "electron:pack:win": "npm run electron:compile && electron-builder --win"
+    "electron:pack": "npm run electron:compile && electron-builder --publish never",
+    "electron:pack:mac": "npm run electron:compile && electron-builder --mac --publish never",
+    "electron:pack:win": "npm run electron:compile && electron-builder --win --publish never"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

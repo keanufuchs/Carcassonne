@@ -43,8 +43,6 @@ jobs:
 
       - name: Build & package
         run: npm run ${{ matrix.pack }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
