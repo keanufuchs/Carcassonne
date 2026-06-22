@@ -139,15 +139,15 @@
               <circle class="pf-dot" cx="637.5" cy="205" r="7" />
               <line class="pf-pole" x1="637.5" y1="205" x2="637.5" y2="179" />
               <rect class="pf-badge" x="613.5" y="153" width="48" height="26" rx="13" />
-              <text class="pf-badge-txt" x="637.5" y="166">PF 2</text>
+              <text class="pf-badge-txt" x="637.5" y="166">PF 3</text>
               <text class="pf-cap" x="637.5" y="141">App starten?</text>
             </g>
             <g class="pf-marker">
-              <circle class="pf-dot" cx="832.5" cy="205" r="7" />
-              <line class="pf-pole" x1="832.5" y1="205" x2="832.5" y2="179" />
-              <rect class="pf-badge" x="808.5" y="153" width="48" height="26" rx="13" />
-              <text class="pf-badge-txt" x="832.5" y="166">PF 3</text>
-              <text class="pf-cap" x="832.5" y="141">Code-Einstieg?</text>
+              <circle class="pf-dot" cx="442.5" cy="205" r="7" />
+              <line class="pf-pole" x1="442.5" y1="205" x2="442.5" y2="179" />
+              <rect class="pf-badge" x="418.5" y="153" width="48" height="26" rx="13" />
+              <text class="pf-badge-txt" x="442.5" y="166">PF 2</text>
+              <text class="pf-cap" x="442.5" y="141">Code-Einstieg?</text>
             </g>
           </svg>
           <div class="stop" style="left:15%; top:0;">
@@ -156,7 +156,7 @@
           </div>
           <div class="stop" style="left:34.5%; top:82%;">
             <div class="lbl">Design</div>
-            <div class="dsc">Architektur &amp; Modell</div>
+            <div class="dsc">Architektur · Modell · Code</div>
           </div>
           <div class="stop" style="left:54%; top:0;">
             <div class="lbl">Umsetzung</div>
@@ -467,38 +467,7 @@
                 <li>testbar <strong>ohne Browser/DOM</strong></li>
                 <li>2D ↔ 3D, Web ↔ Desktop ohne Logik-Änderung</li>
               </ul>
-              <p class="tiny muted mt">→ Wo diese Schichten im Code liegen: nächste Folie (Pflichtfrage 3).</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 12b · Code-Einstieg (Pflichtfrage 3) — direkt nach der Architektur:
-              dieselben Schichten, jetzt konkret im Code -->
-      <section>
-        <span class="q-pill">Pflichtfrage 3 · Code-Einstieg?</span>
-        <h2 class="lead">Dieselben Schichten — konkret im Code</h2>
-        <div class="body">
-          <p class="statement">Einstieg: <code>electron/main.ts</code> → <code>src/App.tsx</code>. Jede Schicht
-            hat ihren festen Ort im Repository.</p>
-          <div class="lanes uneven mt2">
-            <div>
-              <div class="lane-h"><span class="mk charcoal"></span>Schicht → Datei</div>
-              <ul class="facts">
-                <li><span class="k">Electron</span> <code>electron/main.ts</code></li>
-                <li><span class="k">UI</span> <code>App.tsx · BoardView.tsx</code></li>
-                <li><span class="k">Controller</span> <code>GameController.ts</code></li>
-                <li><span class="k">Core</span> <code>Game.ts · GameState.ts</code></li>
-              </ul>
-            </div>
-            <div class="claim">
-              <div class="lane-h"><span class="mk"></span>„Wie geht es weiter?"</div>
-              <ul class="dense small">
-                <li>Spiellogik lesen → <code>GameState.ts → Game.ts</code></li>
-                <li>Wertung ändern → <code>core/scoring/</code></li>
-                <li>KI verbessern → <code>ai/heuristic | intelligent</code></li>
-                <li>Regel-Test ergänzen → <code>tests/scenarios/*.yaml</code></li>
-              </ul>
+              <p class="tiny muted mt">→ Wo diese Schichten im Code liegen: Pflichtfrage 2 am Ende von Teil 3.</p>
             </div>
           </div>
         </div>
@@ -597,6 +566,45 @@
             <td>Wartbarkeit — Verteilung als Daten, nicht hartkodiert</td>
           </tr>
         </table>
+        </div>
+      </section>
+
+      <!-- ABSCHNITT Pflichtfrage 2 · Code-Einstieg (am Ende von Teil 3, nach Design) -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">PFLICHTFRAGE 2</div>
+          <h2>Code-Einstieg?</h2>
+          <p class="muted">Einstiegspunkt — und wie es weitergeht</p>
+        </div>
+      </section>
+
+      <!-- Code-Einstieg: dieselben Schichten, jetzt konkret im Code -->
+      <section>
+        <span class="q-pill">Pflichtfrage 2 · Code-Einstieg?</span>
+        <h2 class="lead">Dieselben Schichten — konkret im Code</h2>
+        <div class="body">
+          <p class="statement">Einstieg: <code>electron/main.ts</code> → <code>src/App.tsx</code>. Jede Schicht
+            hat ihren festen Ort im Repository.</p>
+          <div class="lanes uneven mt2">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Schicht → Datei</div>
+              <ul class="facts">
+                <li><span class="k">Electron</span> <code>electron/main.ts</code></li>
+                <li><span class="k">UI</span> <code>App.tsx · BoardView.tsx</code></li>
+                <li><span class="k">Controller</span> <code>GameController.ts</code></li>
+                <li><span class="k">Core</span> <code>Game.ts · GameState.ts</code></li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>„Wie geht es weiter?"</div>
+              <ul class="dense small">
+                <li>Spiellogik lesen → <code>GameState.ts → Game.ts</code></li>
+                <li>Wertung ändern → <code>core/scoring/</code></li>
+                <li>KI verbessern → <code>ai/heuristic | intelligent</code></li>
+                <li>Regel-Test ergänzen → <code>tests/scenarios/*.yaml</code></li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -754,7 +762,7 @@
               </ul>
             </div>
             <div class="claim">
-              <div class="lane-h"><span class="mk"></span>Robustheit (US-A3)</div>
+              <div class="lane-h"><span class="mk"></span>Robustheit</div>
               <p class="small">Kein Key, Timeout oder ungültiger Zug → automatischer <strong>Fallback auf
                   Heuristik</strong>. <strong>Kein Absturz.</strong></p>
             </div>
@@ -765,7 +773,7 @@
       <!-- ABSCHNITT Pflichtfrage 2 (nach Umsetzung: erst Produkt zeigen, dann starten) -->
       <section data-footer="false">
         <div class="section-slide">
-          <div class="num">PFLICHTFRAGE 2</div>
+          <div class="num">PFLICHTFRAGE 3</div>
           <h2>App starten?</h2>
           <p class="muted">Drei Wege — Web, Quellcode, Desktop</p>
         </div>
@@ -773,7 +781,7 @@
 
       <!-- Wie starten -->
       <section>
-        <span class="q-pill">Pflichtfrage 2 · App starten?</span>
+        <span class="q-pill">Pflichtfrage 3 · App starten?</span>
         <h2 class="lead">Drei Wege</h2>
         <div class="body">
           <div class="lanes cols-3">
