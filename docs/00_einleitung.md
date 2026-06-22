@@ -29,7 +29,7 @@ unterschiedlicher Stärke.
 | **Art**                        | Studentisches Software-Engineering-Projekt, das den **gesamten Entwicklungszyklus** durchläuft. |
 | **Bewertung**                  | Je 50 % Dokumentation und Abschlusspräsentation.                                                |
 | **Abschlusspräsentation**      | 22.06.2026                                                                                      |
-| **Finaler Release**            | `v0.1.0` (21.06.2026), zusätzlich als Web-App live.                                             |
+| **Finaler Release**            | `v1.0.0` (22.06.2026), zusätzlich als Web-App live.                                             |
 | **Anforderungsquelle**         | Notion-Workspace *Carcassonne* als verbindliche Single Source of Truth.                         |
 
 

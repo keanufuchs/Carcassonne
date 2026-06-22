@@ -147,11 +147,11 @@ Versionsableitung: `feat` → MINOR, `fix`/`perf` → PATCH, Breaking Change →
 ### 5.3 Versionierung & realer Release-Stand
 
 `v1.0.0` war als *erster finaler Release* definiert; im Projektverlauf wurden iterative
-Dev-Tags (`v0.1.0`–`v0.5.0`) sowie ein Stakeholder-Tag (`stakeholder-v3-2026-06-01`)
+Dev-Tags (`v0.1.0`–`v0.6.0`) sowie Stakeholder-Tags (`stakeholder-v3-2026-06-01`)
 zur **internen Meilenstein-Steuerung** verwendet.
 
 > **Realitätsabgleich (verbindlich):** Der für die Abgabe maßgebliche, öffentlich
-> getaggte Release ist `**v0.1.0*`* (Git-Tag auf `main` + GitHub Release, 21.06.2026),
+> getaggte Release ist **`v1.0.0`** (Git-Tag auf `main` + GitHub Release, 22.06.2026),
 > ergänzt um das Live-Deployment auf
 > [carcassonne.spelk.de](https://carcassonne.spelk.de). Die übrigen in Meetings/Backlog
 > genannten Versionen dienten der internen Planung.

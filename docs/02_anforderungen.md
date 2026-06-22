@@ -135,7 +135,7 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 > YAML-Szenario-Framework, CI-Gate) erfolgte **erst kurz vor Meeting #4**.
 
 *\* QS-04 wurde bewusst nicht formal umgesetzt; der QS-Nachweis erfolgt stattdessen über
-**282 automatisierte Tests + CI-Gating + Code-Reviews**. Begründung & Konsequenz siehe
+**50 automatisierte Tests + CI-Gating + Code-Reviews**. Begründung & Konsequenz siehe
 [Kapitel 06 §4](06_qualitaetssicherung.md).*
 
 ### 4.4 DevOps / Betrieb (nachträglich erfasst)
@@ -167,7 +167,7 @@ Die Qualitätssicherung adressiert beide QS-Dimensionen:
 | Dimension | Frage | Nachweis im Projekt |
 |-----------|-------|---------------------|
 | **Validierung** | Erfüllt die Software die Wünsche des Kunden? | 4 Stakeholder-Demos; Abnahme der Akzeptanzkriterien in Meeting #4. |
-| **Verifikation** | Ist die Spezifikation korrekt umgesetzt? | 282 automatisierte Tests (Unit/Integration/E2E/Szenarien), CI-Gate, Code-Reviews. |
+| **Verifikation** | Ist die Spezifikation korrekt umgesetzt? | 50 automatisierte Tests (Unit/E2E/Szenarien), CI-Gate, Code-Reviews. |
 
 ---
 

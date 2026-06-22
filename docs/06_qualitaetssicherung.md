@@ -16,7 +16,7 @@ Vertiefung: [`specs/08_testing.md`](../specs/08_testing.md),
 | Daten/Programm getrennt (datengesteuert) | konstruktiv | Kachelverteilung als Daten; keine Hartkodierung. |
 | Transparente Dokumentation | konstruktiv | `/specs`, `/docs`, dieses Dokument. |
 | Reviews (Tester ≠ Entwickler) | analytisch | Pull-Request-Reviews durch zweite Person. |
-| Automatisierte Tests | analytisch | **282 Tests / 40 Dateien** + 11 Szenarien. |
+| Automatisierte Tests | analytisch | **50 Tests / 7 Dateien** + 11 Szenarien. |
 | CI-Gating | analytisch | GitHub Actions blockiert Merges bei roten Tests. |
 
 ---
@@ -83,7 +83,7 @@ npx playwright show-report                       # HTML-Report
 Die ursprüngliche Vorgabe forderte formale Code-Metriken (McCabe < 15, Halstead, C0/C1).
 
 > **Entscheidung & Begründung:** Das formale Metrik-Paket **QS-04 wurde verworfen**. Der
-> Qualitätsnachweis wird stattdessen über **282 automatisierte Tests, CI-Gating und
+> Qualitätsnachweis wird stattdessen über **50 automatisierte Tests, CI-Gating und
 > verpflichtende Code-Reviews** geführt. Begründung: aussagekräftige, ausführbare Tests
 > sichern Korrektheit und Wartbarkeit unmittelbarer ab als statische Metrik-Reports; die
 > Schichtenarchitektur und kleine reine Funktionen halten die zyklomatische Komplexität
@@ -131,11 +131,11 @@ Jedes Arbeitspaket durchläuft `Offen → In Bearbeitung → Review → Erledigt
 
 | Kennzahl | Wert |
 |----------|------|
-| Testfälle gesamt | **282** |
-| Testdateien (Vitest + Playwright) | **40** |
+| Testfälle gesamt | **50** (32 Vitest + 18 Playwright) |
+| Testdateien (Vitest + Playwright) | **7** |
 | YAML-Regel-Szenarien | **11** |
 | CI-Gate aktiv | ja (`scenarios.yml`) |
-| Abdeckung | Unit + Integration + System/Szenario + E2E + KI-Tests |
+| Abdeckung | Unit + Szenario + E2E |
 
 ---
 
