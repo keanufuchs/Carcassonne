@@ -3,7 +3,7 @@
 > Abschlussdokumentation des Software-Entwicklungsprojekts **Carcassonne**
 > (Electron-Desktop- & Web-App, Basisspiel + 2 Erweiterungen).
 >
-> **Stand:** 21.06.2026 · **Release:** `v0.1.0` · **Live:** [carcassonne.spelk.de](https://carcassonne.spelk.de)
+> **Stand:** 22.06.2026 · **Release:** `v1.0.0` · **Live:** [carcassonne.spelk.de](https://carcassonne.spelk.de) · **Doku:** [GitHub Pages](https://keanufuchs.github.io/Carcassonne/)
 > **Single Source of Truth (Anforderungen/Tasks):** Notion-Workspace *Carcassonne*
 
 ---
@@ -73,5 +73,5 @@ Vollständige Anleitung inkl. Desktop-App und KI-Konfiguration: **[Kapitel 07](0
 | Spielkern | Framework-unabhängiges TypeScript (reine Funktionen) |
 | Erweiterungen | EW-01 Netzwerk-Multiplayer · EW-02 Reasoning AI (LLM + MCP) |
 | Vorgehen | Agil (Scrum-orientiert), Notion als Backlog, 4 Stakeholder-Reviews |
-| Qualität | 282 automatisierte Tests (40 Dateien), CI-Gate, Code-Reviews |
-| Release | `v0.1.0` (Git-Tag auf `main` + GitHub Release, 21.06.2026) |
+| Qualität | 50 automatisierte Tests (7 Dateien) + 11 YAML-Szenarien, CI-Gate, Code-Reviews |
+| Release | `v1.0.0` (Git-Tag auf `main` + GitHub Release, 22.06.2026) |

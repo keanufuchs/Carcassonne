@@ -74,12 +74,12 @@
 | 11.05.2026 | Stakeholder-Meeting #2 |
 | 01.06.2026 | Stakeholder-Meeting #3 |
 | ~10.06.2026 | Stakeholder-Meeting #4 (Pre-Release Demo, Freigabe agile Doku, **Abnahme E2E/QS-03**) |
-| 21.06.2026 | **Release `v0.1.0`** (Git-Tag auf `main` + GitHub Release) · Live: carcassonne.spelk.de |
+| 22.06.2026 | **Release `v1.0.0`** (Git-Tag auf `main` + GitHub Release) · Live: carcassonne.spelk.de · Doku: [GitHub Pages](https://keanufuchs.github.io/Carcassonne/) |
 | 22.06.2026 | Abschlusspräsentation + Doku-Abgabe |
 
-> **Versionierungshinweis:** Maßgeblicher öffentlicher Release ist **`v0.1.0`**. Im
-> Repository vorhandene weitere Tags (`v0.2.0`–`v0.5.0`, `stakeholder-v3-2026-06-01`)
-> waren interne Planungs-Meilensteine (siehe [Kapitel 01 §5.3](01_projektmanagement.md)).
+> **Versionierungshinweis:** Maßgeblicher öffentlicher Release ist **`v1.0.0`**. Frühere
+> Dev-Tags (`v0.1.0`–`v0.6.0`, `stakeholder-v3-2026-06-01`) waren interne
+> Planungs-Meilensteine (siehe [Kapitel 01 §5.3](01_projektmanagement.md)).
 
 ---
 
@@ -108,7 +108,7 @@
 |--------|--------|
 | Notion-Workspace *Carcassonne* | Single Source of Truth: Backlog, User Stories, Meeting-Protokolle |
 | [carcassonne.spelk.de](https://carcassonne.spelk.de) | Live-Web-App |
-| GitHub-Repository / Release `v0.1.0` | Quellcode, CI, Release-Artefakte |
+| GitHub-Repository / Release `v1.0.0` | Quellcode, CI, Release-Artefakte (DMG/EXE) |
 
 ---
 
