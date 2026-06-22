@@ -1,95 +1,96 @@
 # Carcassonne
 
-Digital implementation of the Carcassonne base game — Electron + React + TypeScript.
+Digital implementation of the Carcassonne base game — React + TypeScript, playable in the browser, as a desktop app, and over the network.
 
-**Notion (Single Source of Truth):** [Carcassonne Workspace](https://www.notion.so/Carcassonne-dfae27f8f8af839c9c1281293e1a5af7)
+**Notion (Single Source of Truth):** [Carcassonne Workspace](https://app.notion.com/p/Carcassonne-1c5e27f8f8af828b8f4c01711d86bf9d)
 
-## Quick Start
+---
+
+## Play
+
+### 🌐 Web — no installation
+
+The game is published as a live web app:
+
+**[https://carcassonne.spelk.de](https://carcassonne.spelk.de)**
+
+Open it in any browser, pick players and modes, and start playing. Online multiplayer via game code works out of the box.
+
+### 💻 Desktop clients (Windows & macOS)
+
+Native desktop builds wrap the live web app in an Electron window — always up to date, no local server required.
+
+| Platform | Package | Build command |
+|----------|---------|---------------|
+| Windows | `.exe` installer (NSIS, x64) | `npm run electron:pack:win` |
+| macOS | `.dmg` (Intel x64 + Apple Silicon arm64) | `npm run electron:pack:mac` |
+
+Packaged installers are written to the `release/` folder.
+
+---
+
+## Local Development
+
+### Requirements
+
+| Tool | Version |
+|------|---------|
+| Node.js | ≥ 22.12.0 |
+| npm | bundled with Node |
+
+### Quick start
 
 ```bash
 npm install
-npm run dev:full   # starts all servers (game + MCP AI)
+npm run dev:full   # UI + game/network server + MCP AI server
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
+
+- `npm run dev` is enough for local play (hot-seat, random/heuristic AI).
+- `npm run dev:full` is required for **network multiplayer** and the **Reasoning AI**.
 
 ---
 
 ## AI Modes
 
-When starting a local game, each player can be set to one of four modes:
+When starting a game, each player can be set to one of four modes:
 
 | Mode | Description |
 |------|-------------|
 | 👤 Human | Manual play |
 | 🎲 Random AI | Places tiles randomly |
 | 🧠 Heuristic AI | Rule-based strategy (no API key needed) |
-| 🤖 Claude AI | Claude uses game-analysis tools to pick the best move |
+| 🤖 Reasoning AI | An LLM uses game-analysis tools to pick the best move |
+
+The first three modes work everywhere with no configuration. The Reasoning AI needs an LLM endpoint (see below). If no endpoint is configured — or a request times out — the Reasoning AI **falls back to the Heuristic AI automatically**, so it never crashes.
 
 ---
 
-## Claude AI Setup
+## Reasoning AI Setup
 
-The Claude AI mode calls any **OpenAI-compatible** `/v1/chat/completions` API with tool use. Two providers are supported — set one in `.env`:
-
-### Option A — Custom endpoint (RH Köln, OpenAI, Ollama, …)
-
-Takes priority when both base URL and API key are set:
+The Reasoning AI calls any **OpenAI-compatible** `/v1/chat/completions` API that supports **tool use / function calling**. Configure it in `.env` (template: `.env.example`):
 
 ```bash
 # .env
 VITE_AI_BASE_URL=https://api.ai.rh-koeln.de/v1
 VITE_AI_API_KEY=your-key-here
-# Comma-separated list of models selectable per player in the setup screen
+# Comma-separated list of models selectable per player in the setup screen.
+# The first entry is the default.
 VITE_AI_MODELS=openai-gpt-oss-120b,gemma-4-31b-it,qwen3.6-35b-a3b
 ```
 
-The full URL `https://api.ai.rh-koeln.de/v1/chat/completions` also works as `VITE_AI_BASE_URL` — the `/chat/completions` suffix is stripped automatically.
+Notes:
 
-When several models are configured via `VITE_AI_MODELS`, each **Reasoning AI** player gets a model dropdown in the setup screen. The first entry is the default. `VITE_AI_MODEL` still works for a single model and is prepended to the list.
-
-### Option B — OpenRouter
-
-[OpenRouter](https://openrouter.ai) — one API key for Claude, GPT-4o, Llama, Mistral, Gemini and hundreds of other models.
-
-```bash
-# .env
-VITE_OPENROUTER_API_KEY=sk-or-v1-...
-
-# Optional: change the model (default: anthropic/claude-sonnet-4-6)
-VITE_AI_MODEL=anthropic/claude-sonnet-4-6
-```
-
-> OpenRouter has a generous free tier and pay-as-you-go pricing. `anthropic/claude-sonnet-4-6` costs ~$3/M tokens.
-
-### Use a different model (optional)
-
-Any model that supports **tool use / function calling** works. OpenRouter examples:
-
-| Model | ID |
-|-------|----|
-| Claude Sonnet 4.6 (default) | `anthropic/claude-sonnet-4-6` |
-| GPT-4o | `openai/gpt-4o` |
-| GPT-4o mini | `openai/gpt-4o-mini` |
-| Llama 3.3 70B | `meta-llama/llama-3.3-70b-instruct` |
-| Mistral Large | `mistralai/mistral-large` |
-| Gemini 2.0 Flash | `google/gemini-2.0-flash-001` |
-
-### Start the app
-
-```bash
-npm run dev:full
-```
-
-If no API key is set (or the request times out), the Claude AI falls back to **Heuristic AI** automatically — no crash, no error.
+- The full URL `https://api.ai.rh-koeln.de/v1/chat/completions` also works as `VITE_AI_BASE_URL` — the `/chat/completions` suffix is stripped automatically.
+- When several models are configured via `VITE_AI_MODELS`, each Reasoning AI player gets a model dropdown in the setup screen.
+- `VITE_AI_MODEL` still works for a single model and is prepended to the list.
 
 ---
 
 ## MCP AI Server
 
-The Claude AI communicates with a local **MCP (Model Context Protocol) server** that provides game-analysis tools to Claude.
-
-### What it does
+The Reasoning AI communicates with a local **MCP (Model Context Protocol) server** that exposes game-analysis tools.
 
 The MCP server runs on **port 3002** and exposes three tools:
 
@@ -99,35 +100,24 @@ The MCP server runs on **port 3002** and exposes three tools:
 | `get_board_features` | Cities, roads, monasteries with meeple ownership |
 | `get_player_status` | Scores, meeple counts, tiles remaining |
 
-Claude calls these tools during its turn to understand the board before deciding where to place a tile.
-
-### Start manually
+The model calls these tools during its turn to understand the board before deciding where to place a tile.
 
 ```bash
-npm run mcp
+npm run mcp                          # start manually
+curl http://localhost:3002/health    # health check
 ```
 
-```
-Carcassonne MCP AI Server on :3002
-Tools: list_legal_moves, get_board_features, get_player_status
-Health: http://localhost:3002/health
-```
+The MCP server is **optional** — if it is not running, the same tools are executed locally as a fallback.
 
-### Test it
+---
 
-```bash
-curl http://localhost:3002/health
-```
+## Network Multiplayer
 
-```json
-{
-  "status": "ok",
-  "name": "carcassonne-mcp",
-  "tools": ["list_legal_moves", "get_board_features", "get_player_status"]
-}
-```
+1. One player clicks **Create** and shares the 5-letter game code.
+2. Other players click **Join** and enter the code.
+3. The host clicks **Start Game**.
 
-The MCP server is **optional** — if it is not running, Claude executes the same tools locally as a fallback.
+The game/WebSocket server runs on port 3001 (deployed to Vercel in production). On a LAN, other devices can join via `http://<your-ip>:5173`.
 
 ---
 
@@ -139,21 +129,15 @@ The MCP server is **optional** — if it is not running, Claude executes the sam
 | `npm run server` | Start game/WebSocket server (port 3001) |
 | `npm run mcp` | Start MCP AI server (port 3002) |
 | `npm run dev:full` | Start all three servers concurrently |
+| `npm run build` | Production build (web + API bundle) |
+| `npm run electron:dev` | Run the Electron desktop app in dev |
+| `npm run electron:pack:win` | Build the Windows installer |
+| `npm run electron:pack:mac` | Build the macOS `.dmg` |
 | `npm test` | Run unit tests (Vitest) |
 | `npm run test:watch` | Unit tests in watch mode |
 | `npm run test:e2e` | E2E tests (Playwright) |
-| `npm run build` | Production build |
+| `npm run test:scenarios` | YAML rule-scenario tests (Playwright) |
 | `npm run lint` | ESLint check |
-
----
-
-## Network Multiplayer
-
-1. One player clicks **Create** and shares the 5-letter game code
-2. Other players click **Join** and enter the code
-3. The host clicks **Start Game**
-
-The game server runs on port 3001. On a LAN, other devices can join via `http://<your-ip>:5173`.
 
 ---
 
@@ -168,7 +152,10 @@ src/
 server/
   index.ts      — Game + WebSocket server (port 3001)
   mcp-ai.ts     — MCP AI analysis server (port 3002)
+electron/       — Electron main process (loads carcassonne.spelk.de)
+api/            — Vercel serverless entry for the game API
 specs/          — Architecture and domain specs
+dokumentation/  — Project documentation (German)
 docs/           — Test system documentation, meeting prep
 ```
 
@@ -178,9 +165,11 @@ docs/           — Test system documentation, meeting prep
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_AI_BASE_URL` | For custom LLM | OpenAI-compatible base URL, e.g. `https://api.ai.rh-koeln.de/v1` |
-| `VITE_AI_API_KEY` | With `VITE_AI_BASE_URL` | API key for the custom endpoint |
-| `VITE_OPENROUTER_API_KEY` | For OpenRouter | OpenRouter API key (prefix `sk-or-`); used when custom URL/key are not set |
-| `VITE_AI_MODEL` | No | Model ID for the active provider (default: `anthropic/claude-sonnet-4-6`) |
+| `VITE_AI_BASE_URL` | For Reasoning AI | OpenAI-compatible base URL, e.g. `https://api.ai.rh-koeln.de/v1` |
+| `VITE_AI_API_KEY` | With `VITE_AI_BASE_URL` | API key for the endpoint |
+| `VITE_AI_MODELS` | No | Comma-separated models offered in the setup screen (first = default) |
+| `VITE_AI_MODEL` | No | Single model override, prepended to `VITE_AI_MODELS` |
+| `VITE_API_URL` | No | REST API base URL (empty = same-origin via Vite proxy) |
+| `VITE_WS_URL` | No | WebSocket URL (empty = derived from origin; LAN-capable) |
 | `PORT` | No | Game server port (default: 3001) |
 | `MCP_PORT` | No | MCP AI server port (default: 3002) |

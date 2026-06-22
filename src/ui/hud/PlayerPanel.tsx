@@ -22,7 +22,10 @@ export function PlayerPanel({ players, currentPlayerIndex }: Props) {
             data-meeples={p.meeplesAvailable}
             style={active ? { borderColor: p.color, background: `color-mix(in srgb, ${p.color} 12%, var(--cream))` } : undefined}
           >
-            <MeepleIcon color={p.color} size={18} />
+            <span className="pmeeple-token" title={`${p.meeplesAvailable} meeples available`}>
+              <MeepleIcon color={p.color} size={18} />
+              <span className="pmeeple-badge">{p.meeplesAvailable}</span>
+            </span>
             <span className="pname">{p.name}</span>
             {active && <span className="turn-flag" style={{ color: p.color }}>Turn</span>}
             <span className="pscore">{p.score}</span>

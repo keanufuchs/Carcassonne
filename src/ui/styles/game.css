@@ -182,6 +182,11 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+/* Count badge overlaid on the player's meeple token. The desktop sidebar has
+   room for the full `.pmeeples` row, so the badge is mobile-only — hidden here
+   and switched on inside `.mobile-topbar` below. */
+.player-chip .pmeeple-token { position: relative; display: inline-flex; flex-shrink: 0; }
+.player-chip .pmeeple-badge { display: none; }
 .turn-flag {
   margin-left: auto;
   font-size: 9px;
@@ -628,12 +633,33 @@
   }
   /* Progressive disclosure: inactive players collapse to colour-token + score.
      The repeated "Random AI" name is redundant — the meeple colour is the
-     identity. Score is the one thing worth a constant glance. The active
-     player keeps its meeple supply so you can always see how many meeples you
-     have left on your turn (issue: mobile meeple count); inactive players drop
-     it to keep all 5 players on one un-scrolled row. */
-  .mobile-topbar .player-chip:not(.active) .pmeeples { display: none; }
-  .mobile-topbar .player-chip.active .pmeeples { font-size: 13px; }
+     identity. Score is the one thing worth a constant glance. Every player's
+     meeple supply must stay visible (issue: mobile meeple count), but a second
+     number + mini-meeple per chip would force the 5-player row to scroll. So
+     the supply rides as a small badge on the colour token — the token already
+     reads as "this player's meeples", so the count costs ~no width and all
+     players keep both score and supply on one un-scrolled row. */
+  .mobile-topbar .player-chip .pmeeples { display: none; }
+  .mobile-topbar .player-chip .pmeeple-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: -6px;
+    bottom: -5px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    border-radius: 8px;
+    border: 1.5px solid var(--cream);
+    background: var(--ink);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    box-shadow: var(--shadow-sm);
+  }
   .mobile-topbar .player-chip:not(.active) .pname { display: none; }
   .mobile-topbar .player-chip:not(.active) .pscore { font-size: 14px; }
   /* Only the player whose turn it is keeps its name. */
@@ -670,6 +696,14 @@
     gap: 12px;
     padding: 8px 10px;
     padding-bottom: max(8px, env(safe-area-inset-bottom));
+    /* Constant height across all three states. The bar swaps between the tile
+       preview (own turn, ~92px), the opponent-waiting banner (shortest) and the
+       meeple choice list (tallest, ~100px). Without a floor the bar resized per
+       state, nudging the flex:1 board area up/down. min-height is sized to fit
+       the tallest content and tracks the safe-area inset so it always wins over
+       the intrinsic content height — keeping the board perfectly still. */
+    min-height: calc(108px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
     background: linear-gradient(180deg, var(--panel) 0%, var(--parchment) 100%);
     border-top: 1px solid var(--panel-edge);
     box-shadow: 0 -3px 14px rgba(40, 30, 18, 0.14);

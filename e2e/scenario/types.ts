@@ -51,7 +51,7 @@ export interface Scenario {
   description?: string;
   players: string[];
   steps: ScenarioStep[];
-  /** Use the canonical 72-tile base-game draw pile (ignores step-derived deck). */
+  /** Use the canonical 71-tile base-game draw pile (ignores step-derived deck). */
   deckFrom?: 'base-game';
   /**
    * Drive a complete, deterministic playthrough to GAME_OVER after the (usually

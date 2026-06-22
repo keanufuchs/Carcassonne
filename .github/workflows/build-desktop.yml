@@ -53,3 +53,36 @@ jobs:
           path: ${{ matrix.pattern }}
           retention-days: 30
           if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download macOS DMG
+        uses: actions/download-artifact@v4
+        with:
+          name: carcassonne-macos-dmg
+          path: release-assets
+
+      - name: Download Windows EXE
+        uses: actions/download-artifact@v4
+        with:
+          name: carcassonne-windows-exe
+          path: release-assets
+
+      - name: List release assets
+        run: ls -la release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Carcassonne ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

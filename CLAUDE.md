@@ -6,7 +6,7 @@
 
 Das Notion-Workspace ist die **verbindliche Single Source of Truth** für alle Anforderungen, Aufgaben, Entscheidungen und Projektstände:
 
-**Notion-URL:** `https://app.notion.com/p/Carcassonne-3567c6754a298090a159face9651122f`
+**Notion-URL:** `https://app.notion.com/p/Carcassonne-1c5e27f8f8af828b8f4c01711d86bf9d`
 
 Jede Implementierung muss auf mindestens einer der folgenden Quellen basieren:
 

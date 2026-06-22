@@ -234,9 +234,9 @@ export interface Deck {
 
 ### 3.6.1 Distribution
 
-The base-game distribution lives in `core/deck/baseGameTiles.ts` as a literal array of `(prototype, count)` pairs, expanded into 72 instances + 1 designated start tile. Each prototype is included `count` times (clones share the same prototype reference but yield distinct `TileId`s when placed).
+The base-game distribution lives in `core/deck/baseGameTiles.ts` as a literal array of `(prototype, count)` pairs totalling **72 land tiles**. One designated start tile (`START_TILE`) is removed from the draw pile at game setup, leaving **71 tiles** in `remaining[]`. Each prototype is included `count` times in the box (clones share the same prototype reference but yield distinct `TileId`s when placed).
 
-> The exact prototype list and counts are an implementation detail of the data file, not the spec. They follow the standard published base-game distribution and **must total 72 land tiles plus 1 start tile**.
+> The exact prototype list and counts are an implementation detail of the data file, not the spec. They follow the standard published base-game distribution and **must total 72 land tiles** (71 in the draw pile + 1 start tile on the board).
 
 ### 3.6.2 Operations
 

@@ -13,9 +13,10 @@ dist-ssr
 api/*.js
 dist-electron
 release
+site/
 *.local
 
-
+.cursor/
 .claude/
 _temp/
 *.db

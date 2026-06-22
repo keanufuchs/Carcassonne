@@ -1,7 +1,7 @@
 name: full-game-playthrough
 description: >
   Eine vollständige Partie wird regelkonform bis zum Spielende durchgespielt.
-  Über den kanonischen 79-Kachel-Nachziehstapel (deckFrom: base-game) führt ein
+  Über den kanonischen 71-Kachel-Nachziehstapel (deckFrom: base-game) führt ein
   deterministischer, geseedeter Auto-Play (autoPlay.seed) jeden Zug aus: ziehen,
   legen, optional Meeple setzen — alles durch die echte Engine validiert. Jede von
   der Engine abgelehnte Aktion bricht den Lauf ab (kein Regelbruch, kein Absturz).
@@ -10,7 +10,7 @@ description: >
 
 players: [Alice, Bob]
 
-# Kanonischer Basisspiel-Stapel (79 Nachziehkacheln, ungemischt → deterministisch).
+# Kanonischer Basisspiel-Stapel (71 Nachziehkacheln, ungemischt → deterministisch).
 deckFrom: base-game
 
 # Leer: die Züge werden vollständig vom deterministischen Auto-Play erzeugt.
@@ -22,6 +22,6 @@ autoPlay:
 
 expect:
   phase: GAME_OVER
-  placedTiles: 80          # 79 gelegte Nachziehkacheln + Startkachel
+  placedTiles: 72          # 71 gelegte Nachziehkacheln + Startkachel
   deckRemaining: 0         # Stapel vollständig aufgebraucht
-  scores: { Alice: 25, Bob: 17 }
+  scores: { Alice: 32, Bob: 49 }

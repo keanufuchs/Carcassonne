@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carcassonne — Projektpräsentation</title>
+
+  <!-- Reveal.js Core (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css" />
+  <!-- Schrift -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
+  <!-- Eigenes Theme -->
+  <link rel="stylesheet" href="css/theme.css" />
+</head>
+
+<body>
+  <!-- Inline-SVG-Sprite (auch per file:// nutzbar; icons.svg = bearbeitbare Quelle) -->
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <linearGradient id="pres-terracotta" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#d96a4a" />
+        <stop offset="100%" stop-color="#a3472d" />
+      </linearGradient>
+      <linearGradient id="pres-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffe28a" />
+        <stop offset="50%" stop-color="#d8a93f" />
+        <stop offset="100%" stop-color="#9d6d15" />
+      </linearGradient>
+      <linearGradient id="pres-trophy-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffe699" />
+        <stop offset="35%" stop-color="#d8a93f" />
+        <stop offset="75%" stop-color="#b78525" />
+        <stop offset="100%" stop-color="#8a6212" />
+      </linearGradient>
+      <filter id="pres-meeple-shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#281e12" flood-opacity="0.35" />
+      </filter>
+      <filter id="pres-tile-shadow" x="-15%" y="-15%" width="130%" height="130%">
+        <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#281e12" flood-opacity="0.25" />
+      </filter>
+    </defs>
+    <symbol id="logo" viewBox="0 0 100 100">
+      <rect x="6" y="10" width="88" height="84" rx="20" fill="#7f3420" />
+      <rect x="6" y="6" width="88" height="84" rx="20" fill="url(#pres-terracotta)" stroke="url(#pres-gold)"
+        stroke-width="4" filter="url(#pres-tile-shadow)" />
+      <rect x="13" y="13" width="74" height="70" rx="14" stroke="url(#pres-gold)" stroke-width="1.5"
+        stroke-dasharray="4 3" fill="none" opacity="0.75" />
+      <path
+        d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z"
+        fill="url(#pres-gold)" stroke="#7f5411" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#pres-meeple-shadow)" transform="translate(17.5, 15.5) scale(0.65)" />
+    </symbol>
+    <symbol id="tile" viewBox="0 0 100 100">
+      <rect x="8" y="8" width="84" height="84" rx="10" fill="#f5f0e4" stroke="#4a5360" stroke-width="3"
+        filter="url(#pres-tile-shadow)" />
+      <rect x="8" y="8" width="84" height="42" fill="#7fbf6a" />
+      <rect x="8" y="50" width="42" height="42" fill="#c9a66b" />
+      <line x1="50" y1="100" x2="50" y2="50" stroke="#ffffff" stroke-width="9" stroke-linecap="round" />
+      <circle cx="72" cy="72" r="11" fill="#d6d6d6" stroke="#4a5360" stroke-width="1.5" />
+    </symbol>
+    <symbol id="meeple" viewBox="0 0 100 100">
+      <path
+        d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z"
+        fill="#0f766e" stroke="#0a524c" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#pres-meeple-shadow)" />
+    </symbol>
+    <symbol id="trophy" viewBox="0 0 64 64">
+      <path d="M20 52h24v4a2 2 0 0 1-2 2H22a2 2 0 0 1-2-2v-4z" fill="#1c2330" />
+      <path d="M25 44h14v8H25v-8z" fill="#4a5360" />
+      <path d="M29 36h6v8h-6v-8z" fill="url(#pres-trophy-gold)" />
+      <path d="M14 14h36v12c0 9.941-8.059 18-18 18S14 35.941 14 26V14z" fill="url(#pres-trophy-gold)" stroke="#1c2330"
+        stroke-width="1" />
+      <path d="M14 14h36v3H14v-3z" fill="#ffe699" opacity="0.4" />
+      <path d="M14 18H8a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6v-3h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h6v-3z"
+        fill="url(#pres-trophy-gold)" stroke="#1c2330" stroke-width="0.5" />
+      <path d="M50 18h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-6v-3h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-6v-3z"
+        fill="url(#pres-trophy-gold)" stroke="#1c2330" stroke-width="0.5" />
+      <path d="M32 20l2 4.5 4.5.5-3.5 3 1.5 4.5-4.5-2.5-4.5 2.5 1.5-4.5-3.5-3 4.5-.5z" fill="#fff9ee" opacity="0.9" />
+    </symbol>
+    <symbol id="check" viewBox="0 0 24 24">
+      <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+        stroke-linejoin="round" />
+    </symbol>
+  </svg>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1 · TITEL -->
+      <section data-footer="false">
+        <div class="title-slide">
+          <div class="game"><svg class="icon icon--logo" aria-hidden="true">
+              <use href="#logo" />
+            </svg></div>
+          <h1>Carcassonne</h1>
+          <div class="sub">Digitale Umsetzung des Brettspiels — Basisspiel + 3 Erweiterungen</div>
+          <div class="team">Keanu · Neo · Paul · Jan</div>
+          <div class="meta">Abschlusspräsentation · 22.06.2026</div>
+        </div>
+      </section>
+
+      <!-- 2 · AGENDA -->
+      <section>
+        <span class="kicker">Überblick</span>
+        <h2 class="lead">Agenda</h2>
+        <div class="agenda-flow">
+          <svg class="road" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path class="road-base"
+              d="M50 110 L150 110 C247.5 110 247.5 300 345 300 C442.5 300 442.5 110 540 110 C637.5 110 637.5 300 735 300 C832.5 300 832.5 110 930 110" />
+            <path class="road-line"
+              d="M50 110 L150 110 C247.5 110 247.5 300 345 300 C442.5 300 442.5 110 540 110 C637.5 110 637.5 300 735 300 C832.5 300 832.5 110 930 110" />
+            <!-- 5 Themen-Stopps auf der Straße -->
+            <g>
+              <circle class="node" cx="150" cy="110" r="30" style="fill:var(--p-red)" />
+              <text class="node-num" x="150" y="110">1</text>
+              <circle class="node" cx="345" cy="300" r="30" style="fill:var(--p-blue)" />
+              <text class="node-num" x="345" y="300">2</text>
+              <circle class="node" cx="540" cy="110" r="30" style="fill:var(--p-amber)" />
+              <text class="node-num" x="540" y="110">3</text>
+              <circle class="node" cx="735" cy="300" r="30" style="fill:var(--p-green)" />
+              <text class="node-num" x="735" y="300">4</text>
+              <circle class="node" cx="930" cy="110" r="30" style="fill:var(--p-charcoal)" />
+              <text class="node-num" x="930" y="110">5</text>
+            </g>
+            <!-- 3 Pflichtfragen als Flaggen quer zur Straße (kein eigener Themenblock) -->
+            <g class="pf-marker">
+              <circle class="pf-dot" cx="52" cy="110" r="7" />
+              <line class="pf-pole" x1="52" y1="110" x2="52" y2="84" />
+              <rect class="pf-badge" x="28" y="58" width="48" height="26" rx="13" />
+              <text class="pf-badge-txt" x="52" y="71">PF 1</text>
+              <text class="pf-cap" x="52" y="46">Was &amp; Warum?</text>
+            </g>
+            <g class="pf-marker">
+              <circle class="pf-dot" cx="637.5" cy="205" r="7" />
+              <line class="pf-pole" x1="637.5" y1="205" x2="637.5" y2="179" />
+              <rect class="pf-badge" x="613.5" y="153" width="48" height="26" rx="13" />
+              <text class="pf-badge-txt" x="637.5" y="166">PF 3</text>
+              <text class="pf-cap" x="637.5" y="141">App starten?</text>
+            </g>
+            <g class="pf-marker">
+              <circle class="pf-dot" cx="442.5" cy="205" r="7" />
+              <line class="pf-pole" x1="442.5" y1="205" x2="442.5" y2="179" />
+              <rect class="pf-badge" x="418.5" y="153" width="48" height="26" rx="13" />
+              <text class="pf-badge-txt" x="442.5" y="166">PF 2</text>
+              <text class="pf-cap" x="442.5" y="141">Code-Einstieg?</text>
+            </g>
+          </svg>
+          <div class="stop" style="left:15%; top:0;">
+            <div class="lbl">Prozess</div>
+            <div class="dsc">Vorgehen &amp; Stakeholder</div>
+          </div>
+          <div class="stop" style="left:34.5%; top:82%;">
+            <div class="lbl">Design</div>
+            <div class="dsc">Architektur · Modell · Code</div>
+          </div>
+          <div class="stop" style="left:54%; top:0;">
+            <div class="lbl">Umsetzung</div>
+            <div class="dsc">UI · Kern · KI · Netz</div>
+          </div>
+          <div class="stop" style="left:73.5%; top:82%;">
+            <div class="lbl">Qualität</div>
+            <div class="dsc">Tests &amp; Kennzahlen</div>
+          </div>
+          <div class="stop" style="left:93%; top:0;">
+            <div class="lbl">Ergebnis</div>
+            <div class="dsc">Abnahmekriterien</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · ABSCHNITT: Was soll das Ganze -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">PFLICHTFRAGE 1</div>
+          <h2>Was & Warum?</h2>
+          <p class="muted">Rahmen, Ziele und Anforderungen</p>
+        </div>
+      </section>
+
+      <!-- 4 · Produkt in einem Satz -->
+      <section>
+        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
+        <h2 class="lead">Das Produkt in einem Satz</h2>
+        <div class="body">
+          <p class="statement">Eine <strong>vollständige, regelkonforme</strong> Umsetzung von
+            <em>Carcassonne</em> (Basisspiel) — <strong>Desktop &amp; Web</strong>, für <strong>2–5 Spieler</strong>.
+          </p>
+          <div class="journey mt2">
+            <div class="jstop">
+              <div class="jic green"><svg class="icon" aria-hidden="true">
+                  <use href="#tile" />
+                </svg></div>
+              <div class="jt">Kacheln legen</div>
+              <div class="jd">Landschaften regelkonform aneinanderlegen</div>
+            </div>
+            <div class="jlink"></div>
+            <div class="jstop">
+              <div class="jic"><svg class="icon" aria-hidden="true">
+                  <use href="#meeple" />
+                </svg></div>
+              <div class="jt">Meeples setzen</div>
+              <div class="jd">Städte · Straßen · Klöster · Wiesen beanspruchen</div>
+            </div>
+            <div class="jlink"></div>
+            <div class="jstop">
+              <div class="jic amber"><svg class="icon" aria-hidden="true">
+                  <use href="#trophy" />
+                </svg></div>
+              <div class="jt">Punkten</div>
+              <div class="jd">Wertung bei Fertigstellung + Endabrechnung</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 · Rahmen -->
+      <section>
+        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
+        <h2 class="lead">Rahmen des Projekts</h2>
+        <div class="body">
+          <div class="lanes uneven">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Eckdaten</div>
+              <ul class="facts">
+                <li><span class="k">Auftraggeber</span> Prof. Dr. Martin Hüfner</li>
+                <li><span class="k">Team</span> Keanu · Neo · Paul · Jan</li>
+                <li><span class="k">Art</span> SE-Projekt · ganzer Zyklus</li>
+                <li><span class="k">Plattform</span> Electron-Desktop + Web</li>
+                <li><span class="k">Quelle</span> Notion = Single Source of Truth</li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Zielbild</div>
+              <ul class="dense">
+                <li><strong>Regelkonform</strong> — nur gültige Züge</li>
+                <li><strong>Vollständige Wertung</strong> inkl. Wiesen</li>
+                <li><strong>Mehrere Modi</strong> — Hot-Seat · Netzwerk · KI</li>
+                <li><strong>Stabil</strong> — Partie ohne Absturz</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 · Anforderungen Überblick -->
+      <section>
+        <span class="q-pill">Pflichtfrage 1 · Was & Warum?</span>
+        <h2 class="lead">Anforderungen im Überblick</h2>
+        <div class="body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>9 Must-Haves <span class="badge ok">alle erfüllt</span></div>
+              <ul class="dense small">
+                <li>Kachelplatzierung + Regelvalidierung</li>
+                <li>Feature-System: Stadt · Straße · Kloster · Feld</li>
+                <li>Meeples + Wertung (mid- &amp; end-game)</li>
+                <li>Hot-Seat (2–5) · Zufalls-KI · 2D-GUI</li>
+                <li>Spielende · Zoom/Pan · Persistenz</li>
+              </ul>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk amber"></span>3 Erweiterungen <span class="badge ok">alle erfüllt</span></div>
+              <ul class="dense small">
+                <li><strong>EW-01 Netzwerk-Multiplayer</strong> — Client-Server</li>
+                <li><strong>EW-02 Reasoning AI</strong> — LLM + Tool-Use (MCP)</li>
+                <li><strong>EW-03 3D-Darstellung</strong> <span class="badge">agil entstanden</span></li>
+              </ul>
+              <p class="tiny muted mt">EW-01/02 zu Beginn bestätigt · 3D aus Stakeholder-Feedback (#3).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 · ABSCHNITT Prozess -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">TEIL 2</div>
+          <h2>Prozess &amp; Anforderungen</h2>
+          <p class="muted">Vorgehensweise · Stakeholder · Product Backlog</p>
+        </div>
+      </section>
+
+      <!-- 8 · Vorgehensweise -->
+      <section>
+        <span class="kicker">Projektmanagement</span>
+        <h2 class="lead">Vorgehensweise: agil (Scrum-orientiert)</h2>
+        <div class="body">
+          <div class="lanes uneven">
+            <table>
+              <tr>
+                <th>Kriterium</th>
+                <th>Klassisch</th>
+                <th>Agil <svg class="icon icon--check" aria-hidden="true">
+                    <use href="#check" />
+                  </svg></th>
+              </tr>
+              <tr>
+                <td>Anforderungen zu Beginn</td>
+                <td>hoch nötig</td>
+                <td><strong>Unschärfe ok</strong></td>
+              </tr>
+              <tr>
+                <td>Stakeholder</td>
+                <td>Anfang/Ende</td>
+                <td><strong>kontinuierlich</strong></td>
+              </tr>
+              <tr>
+                <td>Änderungen</td>
+                <td>teuer</td>
+                <td><strong>eingeplant</strong></td>
+              </tr>
+              <tr>
+                <td>Risiko-Features</td>
+                <td>spät sichtbar</td>
+                <td><strong>früh abgesichert</strong></td>
+              </tr>
+              <tr>
+                <td>Zwischenstände</td>
+                <td>spät</td>
+                <td><strong>jederzeit demofähig</strong></td>
+              </tr>
+            </table>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Warum agil?</div>
+              <ul class="dense small">
+                <li>Aufgabe verlangt <strong>regelmäßige Demos</strong></li>
+                <li>Hochrisiko Netzwerk → iterativ absichern</li>
+                <li>Anforderungen <strong>schärften sich</strong> im Verlauf</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 · Stakeholder + Feedback -->
+      <section>
+        <span class="kicker">Projektmanagement</span>
+        <h2 class="lead">4 Stakeholder-Meetings als Review-Punkte</h2>
+        <div class="body">
+        <table>
+          <tr>
+            <th>Meeting</th>
+            <th>Datum</th>
+            <th>Kerninhalt</th>
+          </tr>
+          <tr>
+            <td><strong>#1 Kickoff</strong></td>
+            <td>04.05.</td>
+            <td>2 Erweiterungen bestätigt · Zoom/Pan &amp; E2E gefordert</td>
+          </tr>
+          <tr>
+            <td><strong>#2</strong></td>
+            <td>11.05.</td>
+            <td>GUI abgenommen · KI &amp; Netzwerk vertieft</td>
+          </tr>
+          <tr>
+            <td><strong>#3</strong></td>
+            <td>01.06.</td>
+            <td>Netzwerk stabil · KI-Demo · Optik-Kritik → <strong>3D beschlossen</strong></td>
+          </tr>
+          <tr>
+            <td><strong>#4 Pre-Release</strong></td>
+            <td>15.06.</td>
+            <td>Abnahme-Demo · E2E &amp; 3D abgenommen · Backlog frei</td>
+          </tr>
+        </table>
+        <div class="flow mt2 small">
+          <div class="step">
+            <div class="t">Inkrement</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="step">
+            <div class="t">Review</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="step">
+            <div class="t">Feedback</div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="step">
+            <div class="t">Backlog neu</div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 10 · Anforderungen agiles Pflichtenheft -->
+      <section>
+        <span class="kicker">Anforderungen</span>
+        <h2 class="lead">Backlog statt klassischem Pflichtenheft</h2>
+        <div class="body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Was — Lastenheft</div>
+              <p class="small muted">Fix aus der Aufgabenstellung.</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>Wie — Backlog</div>
+              <p class="small muted">Statt Pflichtenheft · in Meeting&nbsp;#4 freigegeben.</p>
+            </div>
+          </div>
+          <div class="flow mt2">
+            <div class="step">
+              <div class="t">6 Epics</div>
+              <div class="d">CORE · UI · MULTI · AI · QS · DOC</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">22 User Stories</div>
+              <div class="d">mit Akzeptanzkriterien</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Arbeitspakete</div>
+              <div class="d">in Notion, mit Status</div>
+            </div>
+          </div>
+          <p class="mt2 muted small"><strong>Eine</strong> Quelle, keine Doppel-Spezifikation — viele Stories entstanden
+            erst durch Feedback.</p>
+        </div>
+      </section>
+
+      <!-- 11 · ABSCHNITT Design -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">TEIL 3</div>
+          <h2>Architektur &amp; Design</h2>
+          <p class="muted">Schichten · Domänenmodell · Entscheidungen</p>
+        </div>
+      </section>
+
+      <!-- 12 · Schichtenarchitektur -->
+      <section>
+        <span class="kicker">Architektur</span>
+        <h2 class="lead">Strikte 4-Schichten-Architektur</h2>
+        <div class="body">
+          <div class="lanes uneven">
+            <div class="stack">
+              <div class="layer dim">
+                <div class="lname">Electron</div>
+                <div class="ldesc">App-Lifecycle, Desktop-Fenster</div>
+              </div>
+              <div class="layer">
+                <div class="lname">UI · React + CSS / Three.js</div>
+                <div class="ldesc">nur Rendering</div>
+              </div>
+              <div class="layer">
+                <div class="lname">Controller</div>
+                <div class="ldesc">Befehle + Pub/Sub</div>
+              </div>
+              <div class="layer">
+                <div class="lname">Core · reines TypeScript</div>
+                <div class="ldesc">Regeln, State, Scoring</div>
+              </div>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk"></span>Leitprinzip</div>
+              <p class="small">Jede Schicht importiert <strong>nur von darunter</strong> — keine Vermischung der
+                Belange.</p>
+              <ul class="dense small mt">
+                <li>Kern <strong>framework-unabhängig</strong></li>
+                <li>testbar <strong>ohne Browser/DOM</strong></li>
+                <li>2D ↔ 3D, Web ↔ Desktop ohne Logik-Änderung</li>
+              </ul>
+              <p class="tiny muted mt">→ Wo diese Schichten im Code liegen: Pflichtfrage 2 am Ende von Teil 3.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13 · Domänenmodell -->
+      <section>
+        <span class="kicker">Design</span>
+        <h2 class="lead">Domänenmodell: ein zentraler GameState</h2>
+        <div class="body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>Kernidee</div>
+              <ul class="dense small">
+                <li>Ein zentraler <code>GameState</code></li>
+                <li>Fortschreibung per <strong>reiner Funktionen</strong> — keine verstreuten Mutationen</li>
+              </ul>
+              <p class="small mt"><code>GameState → Board → Feature → MeeplePlacement</code></p>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Schlüssel-Entscheidung</div>
+              <p class="small"><strong>Meeples leben am Feature</strong> — nicht an der Kachel oder im globalen State.</p>
+              <ul class="dense small">
+                <li>„Wem gehört ein Gebiet?" ist <strong>lokal</strong></li>
+                <li>korrektes <strong>Merging</strong> beim Anlegen</li>
+                <li>einfache <strong>Mehrheitswertung</strong></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14 · FSM Spielablauf -->
+      <section>
+        <span class="kicker">Design</span>
+        <h2 class="lead">Spielzug als Zustandsautomat</h2>
+        <div class="body">
+          <div class="flow">
+            <div class="step">
+              <div class="t">PLACING_TILE</div>
+              <div class="d">Kachel ziehen, drehen, legen</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">PLACING_MEEPLE</div>
+              <div class="d">Meeple setzen / überspringen</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">nächster Spieler</div>
+              <div class="d">zurück zu PLACING_TILE</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">GAME_OVER</div>
+              <div class="d">Endabrechnung</div>
+            </div>
+          </div>
+          <p class="mt2 muted small">Controller erlaubt <strong>nur phasen-gültige Befehle</strong> →
+            ausschließlich regelkonforme Züge.</p>
+        </div>
+      </section>
+
+      <!-- 15 · Design-Entscheidungen -->
+      <section>
+        <span class="kicker">Design</span>
+        <h2 class="lead">Zentrale Entscheidungen — begründet</h2>
+        <div class="body">
+        <table>
+          <tr>
+            <th>Entscheidung</th>
+            <th>Begründung</th>
+          </tr>
+          <tr>
+            <td><strong>Framework-freier Core</strong></td>
+            <td>testbar ohne DOM; wiederverwendbar in Web/Desktop/Server/KI</td>
+          </tr>
+          <tr>
+            <td><strong>Reine Funktionen</strong> (state) → Result</td>
+            <td>deterministisch, leicht serialisierbar/persistierbar</td>
+          </tr>
+          <tr>
+            <td><strong>Feature-Graph (Union/Merge)</strong></td>
+            <td>inkrementell &amp; effizient — Gebiete wachsen lokal</td>
+          </tr>
+          <tr>
+            <td><strong>Client-Server</strong> statt P2P</td>
+            <td>autoritatives Backend = einfache Sync, weniger Cheating</td>
+          </tr>
+          <tr>
+            <td><strong>KI über MCP-Tool-Use</strong></td>
+            <td>strukturierte Analyse → bessere, nachvollziehbare Züge</td>
+          </tr>
+          <tr>
+            <td><strong>Datengesteuerte Kacheln</strong></td>
+            <td>Wartbarkeit — Verteilung als Daten, nicht hartkodiert</td>
+          </tr>
+        </table>
+        </div>
+      </section>
+
+      <!-- ABSCHNITT Pflichtfrage 2 · Code-Einstieg (am Ende von Teil 3, nach Design) -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">PFLICHTFRAGE 2</div>
+          <h2>Code-Einstieg?</h2>
+          <p class="muted">Einstiegspunkt — und wie es weitergeht</p>
+        </div>
+      </section>
+
+      <!-- Code-Einstieg: dieselben Schichten, jetzt konkret im Code -->
+      <section>
+        <span class="q-pill">Pflichtfrage 2 · Code-Einstieg?</span>
+        <h2 class="lead">Dieselben Schichten — konkret im Code</h2>
+        <div class="body">
+          <p class="statement">Einstieg: <code>electron/main.ts</code> → <code>src/App.tsx</code>. Jede Schicht
+            hat ihren festen Ort im Repository.</p>
+          <div class="lanes uneven mt2">
+            <div>
+              <div class="lane-h"><span class="mk charcoal"></span>Schicht → Datei</div>
+              <ul class="facts">
+                <li><span class="k">Electron</span> <code>electron/main.ts</code></li>
+                <li><span class="k">UI</span> <code>App.tsx · BoardView.tsx</code></li>
+                <li><span class="k">Controller</span> <code>GameController.ts</code></li>
+                <li><span class="k">Core</span> <code>Game.ts · GameState.ts</code></li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>„Wie geht es weiter?"</div>
+              <ul class="dense small">
+                <li>Spiellogik lesen → <code>GameState.ts → Game.ts</code></li>
+                <li>Wertung ändern → <code>core/scoring/</code></li>
+                <li>KI verbessern → <code>ai/heuristic | intelligent</code></li>
+                <li>Regel-Test ergänzen → <code>tests/scenarios/*.yaml</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 16 · ABSCHNITT Umsetzung -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">TEIL 4</div>
+          <h2>User Interface &amp; Umsetzung</h2>
+          <p class="muted">Oberfläche · Spielkern · KI · Netzwerk</p>
+        </div>
+      </section>
+
+      <!-- 17 · UI -->
+      <section>
+        <span class="kicker">User Interface</span>
+        <h2 class="lead">Oberfläche — eine Codebasis, mehrere Ziele</h2>
+        <div class="body">
+          <div class="flow small">
+            <div class="step">
+              <div class="t">Setup</div>
+              <div class="d">Spieler &amp; Modi</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Lobby</div>
+              <div class="d">Online via Code</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">Game</div>
+              <div class="d">Board + HUD</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="step">
+              <div class="t">End-Game</div>
+              <div class="d">Endabrechnung</div>
+            </div>
+          </div>
+          <div class="lanes cols-3 mt2">
+            <div>
+              <div class="lane-h"><span class="mk red"></span>Reines Layer</div>
+              <p class="small muted">keine Spiellogik — rendert nur den Snapshot.</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>2D ↔ 3D</div>
+              <p class="small muted">umschaltbar; 3D prozedural aus der Topologie (Three.js).</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>Zoom &amp; Pan</div>
+              <p class="small muted">große Partien überblicken; Touch/Mobile-fähig.</p>
+            </div>
+          </div>
+          <p class="mt2 muted small">Regelkonformität ist sichtbar: <strong>nur legale Felder</strong> und Meeple-Plätze
+            sind anklickbar (Geister-Vorschau).</p>
+        </div>
+      </section>
+
+      <!-- 18 · Spielkern & Wertung -->
+      <section>
+        <span class="kicker">Implementierung</span>
+        <h2 class="lead">Spielkern &amp; Wertung</h2>
+        <div class="body">
+        <div class="tile-match">
+          <svg class="tm-tile" viewBox="0 0 100 100" aria-hidden="true">
+            <rect x="4" y="4" width="92" height="92" rx="10" fill="#7fbf6a" stroke="#4a5360" stroke-width="3" />
+            <rect x="46" y="42" width="54" height="16" fill="#e9e2cf" />
+            <line x1="48" y1="50" x2="100" y2="50" stroke="#fff" stroke-width="4" stroke-dasharray="6 5" />
+          </svg>
+          <span class="tm-join"><svg class="icon icon--check" aria-hidden="true">
+              <use href="#check" />
+            </svg></span>
+          <svg class="tm-tile" viewBox="0 0 100 100" aria-hidden="true">
+            <rect x="4" y="4" width="92" height="92" rx="10" fill="#7fbf6a" stroke="#4a5360" stroke-width="3" />
+            <rect x="0" y="42" width="54" height="16" fill="#e9e2cf" />
+            <line x1="0" y1="50" x2="52" y2="50" stroke="#fff" stroke-width="4" stroke-dasharray="6 5" />
+          </svg>
+          <span class="tm-cap"><code>canPlace</code>: Kanten müssen passen — Straße trifft Straße, Stadt trifft
+            Stadt, Wiese trifft Wiese.</span>
+        </div>
+        <div class="lanes mt2">
+          <div>
+            <div class="lane-h"><span class="mk blue"></span>Spielkern (reine Funktionen)</div>
+            <ul class="dense small">
+              <li><strong>72-Kachel-Deck</strong> — datengesteuert</li>
+              <li><strong>canPlace</strong> — Nachbar + Kantenmatch</li>
+              <li><strong>Feature-Merge</strong> — Union-Find-Semantik</li>
+              <li><strong>Completion</strong> — fertige Gebiete erkennen</li>
+            </ul>
+          </div>
+          <div>
+            <div class="lane-h"><span class="mk amber"></span>Wertung</div>
+            <ul class="dense small">
+              <li><strong>mid-game</strong> — Straße/Stadt/Kloster bei Abschluss</li>
+              <li><strong>end-game</strong> — unvollständige Gebiete</li>
+              <li><strong>Wiesen</strong> — 3 Pkt je fertige Stadt</li>
+              <li><strong>Mehrheit</strong> — meiste Meeples gewinnen</li>
+            </ul>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- 19 · EW-01 Netzwerk -->
+      <section>
+        <span class="kicker">Erweiterung EW-01</span>
+        <h2 class="lead">Netzwerk-Multiplayer — autoritatives Backend</h2>
+        <div class="body">
+          <div class="lanes uneven">
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>Server</div>
+              <ul class="dense small">
+                <li><strong>REST-API</strong> — erstellen, beitreten, Aktion</li>
+                <li><strong>WebSocket</strong> — Echtzeit-Broadcast (Port 3001)</li>
+                <li><strong>Polling-Fallback</strong> ohne WebSocket</li>
+                <li><strong>Persistenz</strong> — Beitritt per Code, Reconnect</li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Kernprinzip</div>
+              <p class="small">Der Server validiert jede Aktion über <strong>denselben Core</strong> wie der Client —
+                <strong>eine</strong> Regel-Implementierung, kein Duplikat.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 20 · EW-02 KI -->
+      <section>
+        <span class="kicker">Erweiterung EW-02</span>
+        <h2 class="lead">Reasoning AI — drei Stufen, mit Fallback</h2>
+        <div class="body">
+          <div class="flow small">
+            <div class="step">
+              <div class="t">Zufall</div>
+              <div class="d">zufälliger legaler Zug</div>
+            </div>
+            <div class="arrow">·</div>
+            <div class="step">
+              <div class="t">Heuristik</div>
+              <div class="d">Greedy, ohne API-Key</div>
+            </div>
+            <div class="arrow">·</div>
+            <div class="step">
+              <div class="t">Reasoning AI</div>
+              <div class="d">LLM + MCP-Tool-Use</div>
+            </div>
+          </div>
+          <div class="lanes mt2">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>LLM ruft Analyse-Tools (MCP)</div>
+              <ul class="dense small">
+                <li><code>list_legal_moves</code></li>
+                <li><code>get_board_features</code></li>
+                <li><code>get_player_status</code></li>
+              </ul>
+            </div>
+            <div class="claim">
+              <div class="lane-h"><span class="mk"></span>Robustheit</div>
+              <p class="small">Kein Key, Timeout oder ungültiger Zug → automatischer <strong>Fallback auf
+                  Heuristik</strong>. <strong>Kein Absturz.</strong></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABSCHNITT Pflichtfrage 2 (nach Umsetzung: erst Produkt zeigen, dann starten) -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">PFLICHTFRAGE 3</div>
+          <h2>App starten?</h2>
+          <p class="muted">Drei Wege — Web, Quellcode, Desktop</p>
+        </div>
+      </section>
+
+      <!-- Wie starten -->
+      <section>
+        <span class="q-pill">Pflichtfrage 3 · App starten?</span>
+        <h2 class="lead">Drei Wege</h2>
+        <div class="body">
+          <div class="lanes cols-3">
+            <div>
+              <div class="lane-h"><span class="mk green"></span>A · Sofort spielen <span class="badge ok">empfohlen</span></div>
+              <p class="small">Ohne Installation im Browser:</p>
+              <p class="small"><strong>carcassonne.spelk.de</strong></p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk blue"></span>B · Aus dem Code</div>
+              <p class="small muted">Node ≥ 22.12</p>
+              <p class="small"><code>npm install</code><br /><code>npm run dev:full</code><br />→ localhost:5173</p>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk amber"></span>C · Desktop-App</div>
+              <p class="small"><code>npm run electron:dev</code></p>
+              <p class="small muted">Paket: <code>electron:pack:mac</code></p>
+            </div>
+          </div>
+          <p class="mt2 muted small"><code>dev:full</code> startet UI + Game-Server (3001) + MCP-AI (3002).
+            Hot-Seat &amp; einfache KI laufen auch ohne Server; KI-Key ist optional.</p>
+        </div>
+      </section>
+
+      <!-- 21 · ABSCHNITT Qualität -->
+      <section data-footer="false">
+        <div class="section-slide">
+          <div class="num">TEIL 5</div>
+          <h2>Qualitätssicherung</h2>
+          <p class="muted">Teststrategie · CI/CD · Kennzahlen</p>
+        </div>
+      </section>
+
+      <!-- 22 · QS -->
+      <section>
+        <span class="kicker">Qualitätssicherung</span>
+        <h2 class="lead">Testpyramide &amp; Kennzahlen</h2>
+        <div class="body">
+          <div class="lanes uneven">
+            <div class="stack">
+              <div class="layer">
+                <div class="lname">E2E · Playwright</div>
+                <div class="ldesc">Vollpartien mit Zufalls-KI</div>
+              </div>
+              <div class="layer">
+                <div class="lname">System / Szenario · YAML</div>
+                <div class="ldesc">echte Regeln gegen echte Engine</div>
+              </div>
+              <div class="layer">
+                <div class="lname">Unit · Vitest</div>
+                <div class="ldesc">Core: tile · feature · scoring · meeple · deck</div>
+              </div>
+            </div>
+            <div>
+              <div class="lane-h"><span class="mk green"></span>CI-Gate &amp; Reviews</div>
+              <ul class="dense small">
+                <li><strong>GitHub Actions</strong> blockt Merges bei roten Tests</li>
+                <li>Reviews durch zweite Person</li>
+                <li><strong>Validierung</strong> (Demos) + <strong>Verifikation</strong> (Tests)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="stat-band mt2">
+            <div class="s">
+              <div class="n">30</div>
+              <div class="l">Unit-Tests (Core)</div>
+            </div>
+            <div class="s">
+              <div class="n">11</div>
+              <div class="l">YAML-Szenarien</div>
+            </div>
+            <div class="s">
+              <div class="n">E2E</div>
+              <div class="l">Playwright-Vollpartien</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 26 · Status -->
+      <section>
+        <span class="kicker">Ergebnis</span>
+        <h2 class="lead">Abnahmekriterien — erfüllt</h2>
+        <div class="body">
+          <div class="lanes">
+            <ul class="checklist small">
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>Alle Must-Haves implementiert &amp; getestet</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>3 Erweiterungen stabil (Netzwerk + KI + 3D)</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>Testsystem dokumentiert</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>E2E automatisiert &amp; CI-gated</li>
+            </ul>
+            <ul class="checklist small">
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>Electron-App (macOS CI) + Web-Deployment</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>Demo in Meeting #4 bestanden</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>Release <strong>v1.0.0</strong> getaggt</li>
+              <li><svg class="icon icon--check" aria-hidden="true">
+                  <use href="#check" />
+                </svg>Live unter carcassonne.spelk.de</li>
+            </ul>
+          </div>
+          <div class="stat-band mt2">
+            <div class="s">
+              <div class="n">9/9</div>
+              <div class="l">Must-Haves</div>
+            </div>
+            <div class="s">
+              <div class="n">3/3</div>
+              <div class="l">Erweiterungen</div>
+            </div>
+            <div class="s">
+              <div class="n">30</div>
+              <div class="l">Tests grün</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 27 · Abschluss -->
+      <section data-footer="false">
+        <div class="title-slide">
+          <div class="game"><svg class="icon icon--logo" aria-hidden="true">
+              <use href="#logo" />
+            </svg></div>
+          <h1 style="font-size:2.2em;">Vielen Dank</h1>
+          <div class="sub">Fragen? — Gerne auch live spielen.</div>
+          <div class="team">Keanu · Neo · Paul · Jan</div>
+          <div class="meta"><strong>carcassonne.spelk.de</strong> · Release v1.0.0 · 22.06.2026</div>
+        </div>
+      </section>
+
+      <!-- 28 · Jetzt spielen (QR) -->
+      <section data-footer="false">
+        <div class="qr-slide">
+          <div class="qr-kicker">Jetzt spielen</div>
+          <h2>Probier’s direkt aus</h2>
+          <div class="qr-card">
+            <svg viewBox="0 0 37 37" shape-rendering="crispEdges" aria-label="QR-Code zu carcassonne.spelk.de" role="img">
+              <path fill="#ffffff" d="M0 0h37v37H0z" />
+              <path stroke="#1c2330" d="M4 4.5h7m3 0h2m1 0h1m2 0h1m1 0h2m2 0h7M4 5.5h1m5 0h1m1 0h3m3 0h6m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m3 0h1m1 0h3m1 0h1m3 0h1m1 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m5 0h4m2 0h3m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h5m1 0h1m2 0h3m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m3 0h1m2 0h1m3 0h4m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M15 11.5h4m1 0h2M4 12.5h1m1 0h1m1 0h1m1 0h1m3 0h3m1 0h2m1 0h1m6 0h1m2 0h1M5 13.5h1m2 0h2m4 0h1m3 0h2m4 0h3m2 0h1m2 0h1M7 14.5h5m3 0h3m3 0h2m1 0h1m1 0h2m2 0h3M4 15.5h1m1 0h1m6 0h1m1 0h2m2 0h1m1 0h2m1 0h1m2 0h1m3 0h1M6 16.5h2m2 0h1m1 0h3m5 0h7m2 0h1m1 0h2M6 17.5h1m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h2m5 0h1m2 0h1m2 0h1M4 18.5h1m1 0h1m1 0h5m1 0h1m3 0h4m4 0h1m2 0h1m1 0h2M7 19.5h3m1 0h1m5 0h2m1 0h2m1 0h2m1 0h2m1 0h1m1 0h1M4 20.5h3m1 0h3m2 0h3m2 0h2m1 0h1m2 0h4m1 0h1m1 0h2M5 21.5h1m2 0h1m3 0h2m4 0h2m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1M4 22.5h1m2 0h2m1 0h1m1 0h2m2 0h2m6 0h1m1 0h3m2 0h2M5 23.5h5m2 0h5m2 0h1m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1M4 24.5h1m1 0h2m1 0h3m1 0h1m1 0h1m4 0h2m1 0h6M12 25.5h4m1 0h1m1 0h3m1 0h2m3 0h1m1 0h3M4 26.5h7m5 0h1m1 0h3m2 0h2m1 0h1m1 0h2m1 0h2M4 27.5h1m5 0h1m4 0h4m1 0h3m1 0h1m3 0h2m1 0h1M4 28.5h1m1 0h3m1 0h1m1 0h5m1 0h2m2 0h1m1 0h5m2 0h1M4 29.5h1m1 0h3m1 0h1m2 0h2m1 0h1m1 0h2m3 0h2m2 0h2m1 0h1M4 30.5h1m1 0h3m1 0h1m1 0h2m4 0h1m2 0h1m1 0h1m3 0h3m2 0h1M4 31.5h1m5 0h1m4 0h2m1 0h2m3 0h2m1 0h1m1 0h1m2 0h1M4 32.5h7m1 0h7m1 0h1m2 0h3m2 0h1m2 0h2" />
+            </svg>
+          </div>
+          <div class="qr-url">carcassonne.spelk.de</div>
+          <div class="qr-hint">QR-Code scannen oder im Browser öffnen</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Reveal.js Core -->
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0.06,
+      minScale: 0.2,
+      maxScale: 1.6,
+      hash: true,
+      display: 'flex',
+      slideNumber: 'c/t',
+      transition: 'fade',
+      transitionSpeed: 'fast',
+      controlsTutorial: false,
+      progress: false, // eigene Carcassonne-Straße statt Standard-Balken
+    });
+
+    // Dezenter Footer auf Inhaltsfolien (nicht auf Titel/Abschnitt-Folien)
+    Reveal.on('ready', addFooters);
+    function addFooters() {
+      document.querySelectorAll('.reveal .slides > section').forEach(function (s) {
+        if (s.getAttribute('data-footer') === 'false') return;
+        if (s.querySelector('.slide-footer')) return;
+        var f = document.createElement('div');
+        f.className = 'slide-footer';
+        f.innerHTML = '<span>Carcassonne · Projektpräsentation</span><span>Gruppe 4: Keanu · Neo · Paul · Jan</span>';
+        s.appendChild(f);
+      });
+    }
+
+    // Spieler-Meeple (Carcassonne-Farben) auf jede Abschnitts-Folie
+    var MEEPLE_COLORS = [
+      'var(--p-red)', 'var(--p-blue)', 'var(--p-amber)',
+      'var(--p-green)', 'var(--p-charcoal)', 'var(--accent)'
+    ];
+    Reveal.on('ready', addSectionMeeples);
+    function addSectionMeeples() {
+      document.querySelectorAll('.section-slide').forEach(function (s, i) {
+        if (s.querySelector('.sec-meeple')) return;
+        var d = document.createElement('div');
+        d.className = 'sec-meeple';
+        var col = MEEPLE_COLORS[i % MEEPLE_COLORS.length];
+        d.innerHTML =
+          '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+          '<path d="M 35 90 L 15 90 L 22 60 L 5 50 L 10 35 L 30 35 C 30 10, 70 10, 70 35 ' +
+          'L 90 35 L 95 50 L 78 60 L 85 90 L 65 90 L 50 70 Z" ' +
+          'style="fill:' + col + '" stroke="rgba(0,0,0,.26)" stroke-width="4" ' +
+          'stroke-linejoin="round" stroke-linecap="round" filter="url(#pres-meeple-shadow)"/></svg>';
+        s.insertBefore(d, s.firstChild);
+      });
+    }
+
+    // Fortschritts-Straße: Meeple wandert durch den Vortrag und baut die Straße
+    var roadFill, roadMeeple, roadEl;
+    Reveal.on('ready', function () {
+      roadEl = document.createElement('div');
+      roadEl.className = 'road-progress';
+      roadEl.innerHTML =
+        '<div class="rp-track"></div>' +
+        '<div class="rp-fill"></div>' +
+        '<div class="rp-meeple"><svg aria-hidden="true"><use href="#meeple"/></svg></div>';
+      document.querySelector('.reveal').appendChild(roadEl);
+      roadFill = roadEl.querySelector('.rp-fill');
+      roadMeeple = roadEl.querySelector('.rp-meeple');
+      updateRoad(false);
+    });
+    function updateRoad(step) {
+      if (!roadFill) return;
+      var pct = Math.max(0, Math.min(1, Reveal.getProgress())) * 100;
+      roadFill.style.width = pct + '%';
+      roadMeeple.style.left = pct + '%';
+      if (step) {
+        roadEl.classList.remove('stepping');
+        void roadEl.offsetWidth; // Reflow → Animation neu starten
+        roadEl.classList.add('stepping');
+      }
+    }
+    Reveal.on('slidechanged', function () { updateRoad(true); });
+    Reveal.on('fragmentshown', function () { updateRoad(false); });
+    Reveal.on('fragmenthidden', function () { updateRoad(false); });
+  </script>
+</body>
+
+</html>
