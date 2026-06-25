@@ -17,6 +17,45 @@ IMG_DIR="$WORK/mermaid"
 MD_DIR="$WORK/md"
 mkdir -p "$IMG_DIR" "$MD_DIR"
 
+# --- Cover icon ------------------------------------------------------------
+# Rasterize the app's SVG icon (public/favicon.svg) for the title page.
+# No standalone SVG converter is installed, but the global mermaid-cli ships a
+# bundled puppeteer/Chromium that renders SVG faithfully. Fall back to the
+# prebuilt build/icon.png if the headless render fails for any reason.
+COVER_ICON="$IMG_DIR/cover-icon.png"
+COVER_SVG="$ROOT/public/favicon.svg"
+
+render_cover_icon() {
+  local nm; nm="$(npm root -g)/@mermaid-js/mermaid-cli/node_modules"
+  cat >"$WORK/render-icon.cjs" <<'JS'
+const fs = require('fs');
+const puppeteer = require(require.resolve('puppeteer', { paths: [process.env.MMDC_NM] }));
+(async () => {
+  const svg = fs.readFileSync(process.env.SVG_IN, 'utf8');
+  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+  const page = await browser.newPage();
+  await page.setViewport({ width: 512, height: 512, deviceScaleFactor: 2 });
+  await page.setContent(
+    '<!doctype html><meta charset="utf-8">' +
+    '<style>html,body{margin:0;background:transparent}svg{width:512px;height:512px;display:block}</style>' +
+    svg,
+    { waitUntil: 'load' }
+  );
+  await (await page.$('svg')).screenshot({ path: process.env.PNG_OUT, omitBackground: true });
+  await browser.close();
+})();
+JS
+  MMDC_NM="$nm" SVG_IN="$COVER_SVG" PNG_OUT="$COVER_ICON" node "$WORK/render-icon.cjs"
+}
+
+if [[ -f "$COVER_SVG" ]] && render_cover_icon 2>/dev/null; then
+  :
+elif [[ -f "$ROOT/build/icon.png" ]]; then
+  cp "$ROOT/build/icon.png" "$COVER_ICON"
+else
+  echo "warning: no cover icon available, title page will have none" >&2
+fi
+
 # LaTeX preamble: XeLaTeX does not break \href{...} link targets or long
 # inline-code identifiers by default, so they overflow the text margin and
 # XeLaTeX shrinks interword glue to compensate — which fuses adjacent words
@@ -37,6 +76,30 @@ cat >"$HEADER" <<'TEX'
 \sloppy
 \setlength{\emergencystretch}{3em}
 TEX
+
+# Custom title page: app icon centered above the title, with the team names
+# below it. Written separately (unquoted heredoc) so $COVER_ICON expands while
+# the LaTeX backslash macros stay literal.
+if [[ -f "$COVER_ICON" ]]; then
+  cat >>"$HEADER" <<TEX
+\usepackage{graphicx}
+\makeatletter
+\renewcommand{\maketitle}{%
+  \begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  \includegraphics[width=4.5cm]{$COVER_ICON}\par
+  \vspace{1.6cm}
+  {\Huge\bfseries \@title\par}
+  \vspace{1.2cm}
+  {\Large Von: Keanu, Neo, Paul, Jan\par}
+  \vfill
+  {\large \@date\par}
+  \end{titlepage}
+}
+\makeatother
+TEX
+fi
 
 DOC_FILES=(
   "$DOCS/README.md"
@@ -73,7 +136,10 @@ render_mermaid_blocks() {
       if [[ "$line" == '```' ]]; then
         in_mermaid=0
         local png="$IMG_DIR/${stem}-${MERMAID_IDX}.png"
-        mmdc -i "$mermaid_file" -o "$png" -b white -q
+        # In CI the bundled Chromium must run with --no-sandbox; honour an
+        # optional puppeteer config file when one is provided via the env.
+        mmdc -i "$mermaid_file" -o "$png" -b white -q \
+          ${PUPPETEER_CONFIG_FILE:+-p "$PUPPETEER_CONFIG_FILE"}
         echo "![](${png})" >>"$dest"
         echo "" >>"$dest"
         continue
@@ -111,7 +177,7 @@ pandoc "${PROCESSED[@]}" \
   -V colorlinks=true \
   -V linkcolor=blue \
   -V urlcolor=blue \
-  --metadata title="Carcassonne — Projektdokumentation" \
+  --metadata title="Carcassonne Projektdokumentation" \
   --metadata date="Stand: 22.06.2026"
 
 echo "Wrote $OUT ($(du -h "$OUT" | cut -f1))"

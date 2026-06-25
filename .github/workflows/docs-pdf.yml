@@ -1,0 +1,58 @@
+name: Build Documentation PDF
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-pdf-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build documentation.pdf
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pandoc, XeLaTeX and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pandoc \
+            texlive-xetex \
+            texlive-latex-extra \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            fonts-dejavu
+
+      - name: Install mermaid-cli
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Configure Chromium for headless CI
+        run: |
+          echo '{ "args": ["--no-sandbox", "--disable-gpu"] }' > "$RUNNER_TEMP/puppeteer.json"
+          echo "PUPPETEER_CONFIG_FILE=$RUNNER_TEMP/puppeteer.json" >> "$GITHUB_ENV"
+
+      - name: Build PDF
+        run: bash scripts/build-docs-pdf.sh "$GITHUB_WORKSPACE/documentation.pdf"
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-pdf
+          path: documentation.pdf
+          retention-days: 90
+          if-no-files-found: error
