@@ -1,14 +1,14 @@
-# 07 — Installation & Start
+# 08 — Installation & Start
 
 > **Pflichtfrage 2: „Wie starte ich das Programm?"**
 
 Es gibt **drei Wege**, Carcassonne zu starten:
-**(A)** im Browser ohne Installation (Live-Web-App), **(B)** lokal aus dem Quellcode
-(Entwicklung), **(C)** als Electron-Desktop-App.
+**(1)** im Browser ohne Installation (Live-Web-App), **(2)** lokal aus dem Quellcode
+(Entwicklung), **(3)** als Electron-Desktop-App.
 
 ---
 
-## A) Sofort spielen — ohne Installation
+## 8.1. Sofort spielen — ohne Installation
 
 Die Anwendung ist dauerhaft als Web-App veröffentlicht:
 
@@ -19,7 +19,7 @@ Spiel-Code funktioniert direkt.
 
 ---
 
-## B) Lokal aus dem Quellcode starten (Entwicklung)
+## 8.2. Lokal aus dem Quellcode starten (Entwicklung)
 
 ### Voraussetzungen
 
@@ -29,7 +29,7 @@ Spiel-Code funktioniert direkt.
 | npm | mit Node mitgeliefert |
 | Git | zum Klonen |
 
-### 1. Repository holen & Abhängigkeiten installieren
+### 8.2.1 Repository holen & Abhängigkeiten installieren
 
 ```bash
 git clone <repo-url>
@@ -37,7 +37,7 @@ cd Carcassonne
 npm install
 ```
 
-### 2. Starten
+### 8.2.2 Starten
 
 **Variante 1 — nur das Spiel (UI):** genügt für lokales Spiel (Hot-Seat, Zufalls-/Heuristik-KI):
 
@@ -60,7 +60,7 @@ Anschließend **[http://localhost:5173](http://localhost:5173)** im Browser öff
 > Für **Netzwerk-Multiplayer** und den **Reasoning-AI-KI-Agenten** wird
 > `dev:full` benötigt. Hot-Seat und Zufalls-/Heuristik-KI laufen auch mit `npm run dev`.
 
-### 3. Einzelne Server (optional)
+### 8.2.3 Einzelne Server (optional)
 
 ```bash
 npm run server   # nur Game-/WebSocket-Server (Port 3001)
@@ -71,7 +71,7 @@ Health-Check des MCP-Servers: `curl http://localhost:3002/health`.
 
 ---
 
-## C) Als Desktop-App (Electron)
+## 8.3. Als Desktop-App (Electron)
 
 ### Im Entwicklungsmodus starten
 
@@ -93,7 +93,7 @@ Die fertigen Pakete liegen anschließend im Ordner `release/`.
 
 ---
 
-## KI-Agent konfigurieren (optional, für EW-02)
+## 8.4. KI-Agent konfigurieren (optional, für EW-02)
 
 Der **Reasoning-AI-Modus** nutzt ein OpenAI-kompatibles LLM mit Tool-Use. Lege dazu
 eine `.env` an (Vorlage: `.env.example`). Es genügt **eine** der beiden Optionen:
@@ -126,7 +126,7 @@ einfachen KI-Stufen funktionieren immer ohne `.env`.
 
 ---
 
-## Tests ausführen
+## 8.5. Tests ausführen
 
 ```bash
 npm test               # Unit-/Integrationstests (Vitest)
@@ -138,7 +138,7 @@ npm run lint           # ESLint
 
 ---
 
-## Spiel starten (im Programm)
+## 8.6. Spiel starten (im Programm)
 
 1. **Spieleranzahl** wählen (2–5) und je Spieler einen **Modus** setzen
    (Mensch · Zufall · Heuristik · Reasoning AI).
@@ -149,7 +149,7 @@ npm run lint           # ESLint
 
 ---
 
-## Häufige Stolpersteine
+## 8.7. Häufige Stolpersteine
 
 | Problem | Lösung |
 |---------|--------|
@@ -160,4 +160,4 @@ npm run lint           # ESLint
 
 ---
 
-Weiter mit **[Kapitel 08 — Code-Leitfaden](08_code-leitfaden.md)**
+Weiter mit **[Kapitel 09 — Code-Leitfaden](09_code-leitfaden.md)**

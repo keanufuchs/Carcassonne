@@ -1,4 +1,4 @@
-# 08 — Code-Leitfaden
+# 09 — Code-Leitfaden
 
 > **Pflichtfrage 3: „Wo steige ich in den Code ein und wie geht es weiter?"**
 
@@ -8,7 +8,7 @@ weitermacht**.
 
 ---
 
-## 1. Mentales Modell zuerst
+## 9.1. Mentales Modell zuerst
 
 Vier Schichten, von außen nach innen. **Wer den Code verstehen will, liest von innen
 nach außen** (Core → Controller → UI), **wer einem Klick folgen will, von außen nach
@@ -23,7 +23,7 @@ flowchart LR
 
 ---
 
-## 2. Die wichtigsten Einstiegspunkte (Datei-für-Datei)
+## 9.2. Die wichtigsten Einstiegspunkte (Datei-für-Datei)
 
 | Frage | Einstiegsdatei | Was dort passiert |
 |-------|----------------|-------------------|
@@ -41,7 +41,7 @@ flowchart LR
 
 ---
 
-## 3. Einem Spielzug durch den Code folgen
+## 9.3. Einem Spielzug durch den Code folgen
 
 Beispiel: Ein Mensch legt eine Kachel und setzt einen Meeple.
 
@@ -77,7 +77,7 @@ sequenceDiagram
 
 ---
 
-## 4. „Wie geht es weiter?" — Aufgabenorientierte Wegweiser
+## 9.4. „Wie geht es weiter?" — Aufgabenorientierte Wegweiser
 
 | Du willst … | Beginne in … | Beachte |
 |-------------|--------------|---------|
@@ -93,7 +93,7 @@ sequenceDiagram
 
 ---
 
-## 5. Verzeichnis-Landkarte (Kurzreferenz)
+## 9.5. Verzeichnis-Landkarte (Kurzreferenz)
 
 ```
 electron/        App-Lifecycle (Desktop-Fenster)
@@ -119,7 +119,7 @@ tile-lab/        Entwicklungswerkzeug zur Kachel-Visualisierung (QS-05)
 
 ---
 
-## 6. Konventionen, die man kennen sollte
+## 9.6. Konventionen, die man kennen sollte
 
 - **Schichtregel:** `core/` importiert nichts aus `ui/`, `controller/`, `electron/`,
   `ai/`. Verstöße meldet ESLint (`import/no-restricted-paths`).
@@ -134,9 +134,9 @@ tile-lab/        Entwicklungswerkzeug zur Kachel-Visualisierung (QS-05)
 
 ---
 
-## 7. Empfohlene Lern-Reihenfolge für neue Mitwirkende
+## 9.7. Empfohlene Lern-Reihenfolge für neue Mitwirkende
 
-1. **[Kapitel 03 — Architektur](03_architektur-design.md)** lesen (Schichten + Domänenmodell).
+1. **[Kapitel 04 — Architektur](04_architektur-design.md)** lesen (Schichten + Domänenmodell).
 2. `src/core/game/GameState.ts` → versteht die zentrale Datenstruktur.
 3. `src/core/game/Game.ts` → die Spiel-API (reine Funktionen).
 4. `src/controller/GameController.ts` → wie Befehle/Events fließen.
@@ -145,4 +145,4 @@ tile-lab/        Entwicklungswerkzeug zur Kachel-Visualisierung (QS-05)
 
 ---
 
-Weiter mit **[Kapitel 09 — Glossar & Anhang](09_glossar-anhang.md)**
+Weiter mit **[Kapitel 10 — Glossar & Anhang](10_glossar-anhang.md)**

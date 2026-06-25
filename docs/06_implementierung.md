@@ -1,4 +1,4 @@
-# 05 — Implementierung
+# 06 — Implementierung
 
 > Wie die Anforderungen technisch umgesetzt sind: Spielkern, Wertung, KI und
 > Netzwerk-Multiplayer — mit den jeweils relevanten Code-Stellen.
@@ -11,12 +11,12 @@ Technische Specs: [`specs/03_tile-system.md`](../specs/03_tile-system.md),
 
 ---
 
-## 1. Spielkern (`src/core/`) — MH-01/02/03/07
+## 6.1. Spielkern (`src/core/`) — MH-01/02/03/07
 
 Der Kern ist **framework-frei** und besteht im Wesentlichen aus reinen Funktionen, die
 einen `GameState` lesen und einen neuen Zustand bzw. ein `Result` zurückgeben.
 
-### 1.1 Kacheln & Deck (MH-01, US-C5)
+### 6.1.1 Kacheln & Deck (MH-01, US-C5)
 
 - **`core/tile/`** — definiert eine Kachel über ihre vier Kanten (N/O/S/W) und Segmente;
   `rotation.ts` dreht Kanten/Segmente um 0/90/180/270°.
@@ -25,14 +25,14 @@ einen `GameState` lesen und einen neuen Zustand bzw. ein `Result` zurückgeben.
   nicht hartkodiert (Wartbarkeit/Vorgaben §3). `shuffle()` mischt, `drawPlaceable()` zieht
   und überspringt nicht platzierbare Kacheln.
 
-### 1.2 Platzierung & Regelvalidierung (MH-01, US-C1)
+### 6.1.2 Platzierung & Regelvalidierung (MH-01, US-C1)
 
 `core/board/placement.ts`:
 - **`canPlace(board, tile, coord, rotation)`** — prüft: mindestens ein platzierter Nachbar
   **und** Kantenübereinstimmung an allen Berührungskanten. Nur legale Züge werden zugelassen.
 - **`placeTileInternal(...)`** — legt die Kachel und stößt das Feature-Merging an.
 
-### 1.3 Feature-System: Merge/Union (MH-02, US-C2)
+### 6.1.3 Feature-System: Merge/Union (MH-02, US-C2)
 
 `core/feature/` modelliert Gebiete als **`Feature`-Records** (`CITY|ROAD|MONASTERY|FIELD`)
 mit `segments`, `openEdges`, `meeples`, `shieldCount`, `completed`. Beim Platzieren werden
@@ -40,7 +40,7 @@ benachbarte Segmente per **Union-Find-Semantik** zu einem Feature verschmolzen
 (`merge.ts`); `completion.ts` erkennt **neu fertiggestellte** Gebiete (z. B. geschlossene
 Stadt, Straße mit zwei Enden, Kloster mit 8 Nachbarn).
 
-### 1.4 Spiel-Aggregat & Phasen (MH-07)
+### 6.1.4 Spiel-Aggregat & Phasen (MH-07)
 
 `core/game/Game.ts` exportiert die **öffentlichen Operationen** als reine Funktionen —
 genau jene, die der Controller dünn umhüllt:
@@ -61,7 +61,7 @@ Kachelreihenfolge ohne Mischen).
 
 ---
 
-## 2. Meeple-System (MH-03, US-C3)
+## 6.2. Meeple-System (MH-03, US-C3)
 
 - Meeples liegen auf **`Feature.meeples: MeeplePlacement[]`** (nicht an Kachel/State).
 - `getMeepleTargets(state)` liefert legale Segmente **nur auf der zuletzt gelegten Kachel**.
@@ -72,7 +72,7 @@ Legalitätsregeln & Test-Selektoren: [`specs/09_meeples.md`](../specs/09_meeples
 
 ---
 
-## 3. Wertung (`src/core/scoring/`) — MH-03/07
+## 6.3. Wertung (`src/core/scoring/`) — MH-03/07
 
 | Modul | Wertung |
 |-------|---------|
@@ -82,11 +82,11 @@ Legalitätsregeln & Test-Selektoren: [`specs/09_meeples.md`](../specs/09_meeples
 | `majority.ts` | **Mehrheitsregel**: meiste Meeples auf einem Gebiet erhalten die Punkte; bei Gleichstand **alle** beteiligten Spieler die volle Punktzahl. |
 
 Die Wiesenwertung ist regeltechnisch der anspruchsvollste Teil und wird durch eigene
-Unit-Tests und ein End-Game-Szenario abgesichert (siehe [Kapitel 06](06_qualitaetssicherung.md)).
+Unit-Tests und ein End-Game-Szenario abgesichert (siehe [Kapitel 07](07_qualitaetssicherung.md)).
 
 ---
 
-## 4. Controller (`src/controller/`)
+## 6.4. Controller (`src/controller/`)
 
 `GameController.ts` ist eine **dünne, synchrone Fassade** über dem Core:
 
@@ -102,7 +102,7 @@ die UI lokal *und* online identisch funktioniert.
 
 ---
 
-## 5. KI-Gegner (`src/ai/`) — MH-05, EW-02/02b
+## 6.5. KI-Gegner (`src/ai/`) — MH-05, EW-02/02b
 
 Ein KI-Zug wird zentral von **`executeAITurn(controller, mode, onStatus?, model?)`**
 orchestriert (`ai/index.ts`). Es gibt drei Stufen:
@@ -140,7 +140,7 @@ Absturz**. Der MCP-Server ist optional; ohne ihn führt der Agent dieselben Tool
 
 ---
 
-## 6. Netzwerk-Multiplayer (EW-01/01b) — `server/`
+## 6.6. Netzwerk-Multiplayer (EW-01/01b) — `server/`
 
 Umgesetzt als **autoritatives Client-Server-Modell** (statt P2P):
 
@@ -166,12 +166,12 @@ einzige, gemeinsame Regel-Implementierung (kein Logik-Duplikat).
 
 ---
 
-## 7. Persistenz / Session (MH-09)
+## 6.7. Persistenz / Session (MH-09)
 
 - **Lokal:** `core/serialize.ts` serialisiert den `GameState`; `App.tsx` speichert lokale
   Partien (inkl. Zug-Log) im `localStorage` und nimmt sie beim Neustart wieder auf.
-- **Online:** serverseitige Session-/Spielzustands-Persistenz (siehe §6).
+- **Online:** serverseitige Session-/Spielzustands-Persistenz (siehe §6.6).
 
 ---
 
-Weiter mit **[Kapitel 06 — Qualitätssicherung](06_qualitaetssicherung.md)**
+Weiter mit **[Kapitel 07 — Qualitätssicherung](07_qualitaetssicherung.md)**

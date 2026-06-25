@@ -1,15 +1,15 @@
-# 04 — User Interface
+# 05 — User Interface
 
 > Gestaltung der Bedienoberfläche: UI-Konzept, Bildschirme, 2D-/3D-Board und Bedienung —
 > mit Begründungen.
 
 ---
 
-## 1. UI-Leitprinzipien
+## 5.1. UI-Leitprinzipien
 
 - **Reines Präsentations-Layer:** Die UI enthält **keine Spiellogik**. Sie rendert den
   vom Controller gelieferten `GameState`-Snapshot und schickt Befehle zurück
-  (siehe [Kapitel 03 §5](03_architektur-design.md)).
+  (siehe [Kapitel 04 §4.5](04_architektur-design.md)).
 - **Eine Codebasis, mehrere Ziele:** Dieselben React-Komponenten laufen im Browser
   (Web-App) und in Electron (Desktop) — und responsiv auf **Touch-Geräten** (OPT-08).
 - **Regelkonformität sichtbar machen:** Ungültige Platzierungen werden gar nicht erst
@@ -17,7 +17,7 @@
 
 ---
 
-## 2. Bildschirme & Bedienfluss
+## 5.2. Bildschirme & Bedienfluss
 
 ```mermaid
 flowchart TD
@@ -37,7 +37,7 @@ flowchart TD
 
 ---
 
-## 3. Aufbau des Game-Screens (HUD)
+## 5.3. Aufbau des Game-Screens (HUD)
 
 | Element | Komponente | Zweck |
 |---------|-----------|-------|
@@ -52,7 +52,7 @@ flowchart TD
 
 ---
 
-## 4. Kacheln platzieren & Meeples setzen (Interaktion)
+## 5.4. Kacheln platzieren & Meeples setzen (Interaktion)
 
 ```mermaid
 flowchart LR
@@ -74,7 +74,7 @@ flowchart LR
 
 ---
 
-## 5. Zoom & Pan (MH-08)
+## 5.5. Zoom & Pan (MH-08)
 
 Das Spielfeld lässt sich **zoomen und verschieben**, um auch große Partien zu
 überblicken (Stakeholder-Anforderung aus Meeting #1, US-U2). Implementiert über den
@@ -82,7 +82,7 @@ Hook `ui/hooks/useBoardTransform.ts` (Maus-Rad / Drag bzw. Pinch/Drag auf Touch)
 
 ---
 
-## 6. 2D- und 3D-Ansicht (OPT-05/06)
+## 5.6. 2D- und 3D-Ansicht (OPT-05/06)
 
 Spieler können zwischen **2D** (klassische Kacheldarstellung) und **3D** (prozedural aus
 der Kachel-Topologie generierte Modelle, Three.js) **umschalten** (US-U5).
@@ -95,7 +95,7 @@ Entwicklungswerkzeug **Tile-Lab** (QS-05) zur Visualisierung/Prüfung der Kachel
 
 ---
 
-## 7. Visuelles Konzept
+## 5.7. Visuelles Konzept
 
 - **Theming:** Mittelalterlich angelehntes Menü-/UI-Design (OPT-07) mit animiertem
   `GameShowcase` als Einstieg.
@@ -105,4 +105,4 @@ Entwicklungswerkzeug **Tile-Lab** (QS-05) zur Visualisierung/Prüfung der Kachel
 
 ---
 
-Weiter mit **[Kapitel 05 — Implementierung](05_implementierung.md)**
+Weiter mit **[Kapitel 06 — Implementierung](06_implementierung.md)**

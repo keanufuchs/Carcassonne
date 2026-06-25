@@ -28,9 +28,9 @@ Sie werden ausführlich in eigenen Kapiteln behandelt:
 
 | # | Frage | Kapitel |
 |---|-------|---------|
-| 1 | **Was soll das Ganze?** (Rahmen, Ziele, Anforderungen) | [00 — Einleitung & Zielsetzung](00_einleitung.md) |
-| 2 | **Wie starte ich das Programm?** | [07 — Installation & Start](07_installation-start.md) |
-| 3 | **Wo steige ich in den Code ein und wie geht es weiter?** | [08 — Code-Leitfaden](08_code-leitfaden.md) |
+| 1 | **Was soll das Ganze?** (Rahmen, Ziele, Anforderungen) | [01 — Einleitung & Zielsetzung](01_einleitung.md) |
+| 2 | **Wie starte ich das Programm?** | [08 — Installation & Start](08_installation-start.md) |
+| 3 | **Wo steige ich in den Code ein und wie geht es weiter?** | [09 — Code-Leitfaden](09_code-leitfaden.md) |
 
 ---
 
@@ -38,16 +38,16 @@ Sie werden ausführlich in eigenen Kapiteln behandelt:
 
 | Kapitel | Inhalt |
 |---------|--------|
-| [00 — Einleitung & Zielsetzung](00_einleitung.md) | Rahmen, Ziele, Anforderungen (Pflichtfrage 1), Projektsteckbrief |
-| [01 — Projektmanagement & Vorgehensweise](01_projektmanagement.md) | Wahl des agilen Modells, Stakeholder-Meetings, Feedback-Zyklen, Git-Workflow |
-| [02 — Anforderungen (agiles Pflichtenheft)](02_anforderungen.md) | Epics, User Stories, Arbeitspakete, Validierung/Verifikation |
-| [03 — Architektur & Design](03_architektur-design.md) | Schichtenarchitektur, Domänenmodell, Design-Entscheidungen, UML/Mermaid |
-| [04 — User Interface](04_user-interface.md) | UI/UX-Konzept, 2D/3D-Board, Setup & HUD, Bedienung |
-| [05 — Implementierung](05_implementierung.md) | Tech-Stack, Modulübersicht, Spielkern, KI, Netzwerk-Multiplayer |
-| [06 — Qualitätssicherung](06_qualitaetssicherung.md) | Teststrategie, Testpyramide, CI/CD, Metriken |
-| [07 — Installation & Start](07_installation-start.md) | **Pflichtfrage 2** — Voraussetzungen, Start-Varianten |
-| [08 — Code-Leitfaden](08_code-leitfaden.md) | **Pflichtfrage 3** — Einstiegspunkte, Datenflüsse, „wie geht es weiter" |
-| [09 — Glossar & Anhang](09_glossar-anhang.md) | Begriffe, Abnahmekriterien, Quellenverzeichnis |
+| [01 — Einleitung & Zielsetzung](01_einleitung.md) | Rahmen, Ziele, Anforderungen (Pflichtfrage 1), Projektsteckbrief |
+| [02 — Projektmanagement & Vorgehensweise](02_projektmanagement.md) | Wahl des agilen Modells, Stakeholder-Meetings, Feedback-Zyklen, Git-Workflow |
+| [03 — Anforderungen (agiles Pflichtenheft)](03_anforderungen.md) | Epics, User Stories, Arbeitspakete, Validierung/Verifikation |
+| [04 — Architektur & Design](04_architektur-design.md) | Schichtenarchitektur, Domänenmodell, Design-Entscheidungen, UML/Mermaid |
+| [05 — User Interface](05_user-interface.md) | UI/UX-Konzept, 2D/3D-Board, Setup & HUD, Bedienung |
+| [06 — Implementierung](06_implementierung.md) | Tech-Stack, Modulübersicht, Spielkern, KI, Netzwerk-Multiplayer |
+| [07 — Qualitätssicherung](07_qualitaetssicherung.md) | Teststrategie, Testpyramide, CI/CD, Metriken |
+| [08 — Installation & Start](08_installation-start.md) | **Pflichtfrage 2** — Voraussetzungen, Start-Varianten |
+| [09 — Code-Leitfaden](09_code-leitfaden.md) | **Pflichtfrage 3** — Einstiegspunkte, Datenflüsse, „wie geht es weiter" |
+| [10 — Glossar & Anhang](10_glossar-anhang.md) | Begriffe, Abnahmekriterien, Quellenverzeichnis |
 
 ---
 
@@ -59,7 +59,7 @@ npm run dev:full     # Vite-UI (5173) + Game-Server (3001) + MCP-AI (3002)
 # Browser: http://localhost:5173
 ```
 
-Vollständige Anleitung inkl. Desktop-App und KI-Konfiguration: **[Kapitel 07](07_installation-start.md)**.
+Vollständige Anleitung inkl. Desktop-App und KI-Konfiguration: **[Kapitel 08](08_installation-start.md)**.
 
 ---
 

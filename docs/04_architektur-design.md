@@ -1,4 +1,4 @@
-# 03 — Architektur & Design
+# 04 — Architektur & Design
 
 > Strukturierter Entwurf des Systems: Schichtenarchitektur, Domänenmodell, zentrale
 > Design-Entscheidungen — **mit Begründungen** und UML-/Mermaid-Diagrammen.
@@ -9,7 +9,7 @@ Technische Vertiefung: [`specs/01_architecture.md`](../specs/01_architecture.md)
 
 ---
 
-## 1. Architektur-Leitprinzip: strikte Schichtung
+## 4.1. Architektur-Leitprinzip: strikte Schichtung
 
 Das System ist in **vier strikt gestapelte Schichten** gegliedert. Jede Schicht darf
 **nur von darunterliegenden Schichten** importieren — keine Vermischung der Belange.
@@ -37,7 +37,7 @@ nicht. Durchgesetzt wird die Regel über TypeScript-Pfad-Aliase und eine ESLint-
 
 ---
 
-## 2. Modulübersicht (Ist-Stand)
+## 4.2. Modulübersicht (Ist-Stand)
 
 ```
 src/
@@ -75,7 +75,7 @@ tests/, e2e/            ← Vitest- bzw. Playwright-Tests
 
 ---
 
-## 3. Domänenmodell (Kern-Datenstruktur)
+## 4.3. Domänenmodell (Kern-Datenstruktur)
 
 Das Spiel ist als **ein zentraler `GameState`** modelliert, der durch reine Funktionen
 fortgeschrieben wird (statt verteilter Mutationen). Vereinfachtes Klassen-/Datenmodell:
@@ -122,11 +122,11 @@ classDiagram
 **Wichtige Design-Entscheidung — Meeples leben am Feature:** Meeples werden **nicht** an
 Kacheln oder im globalen State gehalten, sondern auf `Feature.meeples`. So ist „wem gehört
 ein Gebiet" und „ist es belegt" eine *lokale* Eigenschaft des Features — entscheidend für
-korrektes **Merging** und die **Mehrheitswertung** (siehe [Kapitel 05 §3](05_implementierung.md)).
+korrektes **Merging** und die **Mehrheitswertung** (siehe [Kapitel 06 §6.3](06_implementierung.md)).
 
 ---
 
-## 4. Spielablauf als Zustandsautomat (FSM)
+## 4.4. Spielablauf als Zustandsautomat (FSM)
 
 Ein Spielzug durchläuft feste Phasen (`GamePhase`). Der Controller erlaubt nur Befehle,
 die zur aktuellen Phase passen — so sind **nur regelkonforme Züge** möglich (MH-01).
@@ -143,7 +143,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Datenfluss UI ↔ Controller ↔ Core
+## 4.5. Datenfluss UI ↔ Controller ↔ Core
 
 ```mermaid
 sequenceDiagram
@@ -167,7 +167,7 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 
 ---
 
-## 6. Zentrale Design-Entscheidungen (mit Begründung)
+## 4.6. Zentrale Design-Entscheidungen (mit Begründung)
 
 | Entscheidung | Alternative | Begründung |
 |--------------|-------------|------------|
@@ -182,7 +182,7 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 
 ---
 
-## 7. Tech-Stack (Begründung pro Wahl)
+## 4.7. Tech-Stack (Begründung pro Wahl)
 
 | Belang | Wahl | Begründung |
 |--------|------|------------|
@@ -198,4 +198,4 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 
 ---
 
-Weiter mit **[Kapitel 04 — User Interface](04_user-interface.md)**
+Weiter mit **[Kapitel 05 — User Interface](05_user-interface.md)**

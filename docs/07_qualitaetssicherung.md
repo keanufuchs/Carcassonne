@@ -1,4 +1,4 @@
-# 06 — Qualitätssicherung
+# 07 — Qualitätssicherung
 
 > Teststrategie, Testpyramide, CI/CD und Code-Qualität. QS umfasst **Validierung**
 > (Kundenwünsche erfüllt?) und **Verifikation** (Spezifikation korrekt umgesetzt?).
@@ -8,7 +8,7 @@ Vertiefung: [`specs/08_testing.md`](../specs/08_testing.md),
 
 ---
 
-## 1. QS-Konzept im Überblick
+## 7.1. QS-Konzept im Überblick
 
 | Maßnahme | Art | Im Projekt |
 |----------|-----|-----------|
@@ -21,7 +21,7 @@ Vertiefung: [`specs/08_testing.md`](../specs/08_testing.md),
 
 ---
 
-## 2. Teststrategie — vier Ebenen (Testpyramide)
+## 7.2. Teststrategie — vier Ebenen (Testpyramide)
 
 ```mermaid
 flowchart TD
@@ -47,7 +47,7 @@ fast alle Fehler. Die UI erhält bewusst nur **Smoke-Tests** (Aufwand/Nutzen).
 
 ---
 
-## 3. YAML-Szenario-Framework (QS-03)
+## 7.3. YAML-Szenario-Framework (QS-03)
 
 Einzelne Spielregel-Szenarien sind als **YAML** deklariert (`tests/scenarios/*.yaml`) und
 laufen in einer echten Chromium-Sitzung gegen die **reale Engine und das 2D-Board** —
@@ -78,7 +78,7 @@ npx playwright show-report                       # HTML-Report
 
 ---
 
-## 4. Code-Qualität & Metriken (QS-04) — bewusste Entscheidung
+## 7.4. Code-Qualität & Metriken (QS-04) — bewusste Entscheidung
 
 Die ursprüngliche Vorgabe forderte formale Code-Metriken (McCabe < 15, Halstead, C0/C1).
 
@@ -95,7 +95,7 @@ ESLint-Linting (`npm run lint`), strikte Typen und die Trennung der Belange.
 
 ---
 
-## 5. CI/CD (OPS-01)
+## 7.5. CI/CD (OPS-01)
 
 GitHub Actions (`.github/workflows/`) automatisiert Tests, Builds und Deployment:
 
@@ -116,7 +116,7 @@ npm run lint           # ESLint
 
 ---
 
-## 6. Review-Workflow
+## 7.6. Review-Workflow
 
 Jedes Arbeitspaket durchläuft `Offen → In Bearbeitung → Review → Erledigt`. Vor *Erledigt*:
 
@@ -127,7 +127,7 @@ Jedes Arbeitspaket durchläuft `Offen → In Bearbeitung → Review → Erledigt
 
 ---
 
-## 7. Test-Kennzahlen (final)
+## 7.7. Test-Kennzahlen (final)
 
 | Kennzahl | Wert |
 |----------|------|
@@ -139,4 +139,4 @@ Jedes Arbeitspaket durchläuft `Offen → In Bearbeitung → Review → Erledigt
 
 ---
 
-Weiter mit **[Kapitel 07 — Installation & Start](07_installation-start.md)**
+Weiter mit **[Kapitel 08 — Installation & Start](08_installation-start.md)**
