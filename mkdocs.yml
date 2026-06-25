@@ -44,13 +44,13 @@ markdown_extensions:
 
 nav:
   - Start: README.md
-  - 00 — Einleitung & Zielsetzung: 00_einleitung.md
-  - 01 — Projektmanagement: 01_projektmanagement.md
-  - 02 — Anforderungen: 02_anforderungen.md
-  - 03 — Architektur & Design: 03_architektur-design.md
-  - 04 — User Interface: 04_user-interface.md
-  - 05 — Implementierung: 05_implementierung.md
-  - 06 — Qualitätssicherung: 06_qualitaetssicherung.md
-  - 07 — Installation & Start: 07_installation-start.md
-  - 08 — Code-Leitfaden: 08_code-leitfaden.md
-  - 09 — Glossar & Anhang: 09_glossar-anhang.md
+  - 01 — Einleitung & Zielsetzung: 01_einleitung.md
+  - 02 — Projektmanagement: 02_projektmanagement.md
+  - 03 — Anforderungen: 03_anforderungen.md
+  - 04 — Architektur & Design: 04_architektur-design.md
+  - 05 — User Interface: 05_user-interface.md
+  - 06 — Implementierung: 06_implementierung.md
+  - 07 — Qualitätssicherung: 07_qualitaetssicherung.md
+  - 08 — Installation & Start: 08_installation-start.md
+  - 09 — Code-Leitfaden: 09_code-leitfaden.md
+  - 10 — Glossar & Anhang: 10_glossar-anhang.md
