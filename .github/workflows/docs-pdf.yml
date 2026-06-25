@@ -36,7 +36,8 @@ jobs:
             texlive-latex-extra \
             texlive-latex-recommended \
             texlive-fonts-recommended \
-            fonts-dejavu
+            fonts-dejavu \
+            lmodern
 
       - name: Install mermaid-cli
         run: npm install -g @mermaid-js/mermaid-cli
