@@ -46,4 +46,4 @@ praesentation/
   README.md         ← diese Datei
 ```
 
-Inhaltliche Grundlage: `dokumentation/` (Kapitel 00–09) und die Codebasis.
+Inhaltliche Grundlage: `dokumentation/` (Kapitel 01–10) und die Codebasis.

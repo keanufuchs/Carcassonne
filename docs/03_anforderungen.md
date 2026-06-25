@@ -1,4 +1,4 @@
-# 02 — Anforderungen (Agiles Pflichtenheft)
+# 03 — Anforderungen (Agiles Pflichtenheft)
 
 > Anforderungsaufnahme & Spezifikation. Anstelle eines klassischen Lasten-/Pflichtenhefts
 > wurde — mit Stakeholder-Freigabe (Meeting #4) — eine **agile Anforderungsdokumentation**
@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Lastenheft vs. agiles Pflichtenheft — Begründung
+## 3.1. Lastenheft vs. agiles Pflichtenheft — Begründung
 
 Das **Lastenheft** (das *Was* aus Kundensicht) ergibt sich aus der Aufgabenstellung:
 ein regelkonformes Carcassonne-Basisspiel als Desktop-App mit lokalem Multiplayer,
@@ -20,7 +20,7 @@ wurde vom Stakeholder in Meeting #4 ausdrücklich **freigegeben** (User Story US
 
 ---
 
-## 2. Epic-Struktur
+## 3.2. Epic-Struktur
 
 Die Anforderungen sind in **6 Epics** (+ 1 nachträglich erfasstes DevOps-Epic)
 gegliedert:
@@ -37,7 +37,7 @@ gegliedert:
 
 ---
 
-## 3. User-Story-Katalog (Auszug)
+## 3.3. User-Story-Katalog (Auszug)
 
 Format: *„Als ‹Rolle› möchte ich ‹Ziel›, um ‹Nutzen›."*
 Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakeholder-Meeting
@@ -92,75 +92,75 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 
 ---
 
-## 4. Arbeitspaket-Status (final)
+## 3.4. Arbeitspaket-Status (final)
 
-### 4.1 Must-Have — vollständig erledigt
+### 3.4.1 Must-Have — vollständig erledigt
 
-| ID | Arbeitspaket | Status |
-|----|--------------|--------|
-| MH-01 | Kachelplatzierung mit Regelvalidierung |  |
-| MH-02 | Feature-System (Stadt/Straße/Kloster/Feld, Merge/Union) |  |
-| MH-03 | Meeple-System + Wertung (mid-/end-game) |  |
-| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler) |  |
-| MH-05 | Einfacher KI-Gegner (zufallsbasiert) |  |
-| MH-06 | 2D-GUI als Electron-Desktop-App |  |
-| MH-07 | Spielende + Endabrechnung |  |
-| MH-08 | Spielfeld zoomen & verschieben |  |
-| MH-09 | Session-Persistenz |  |
+| ID | Arbeitspaket |
+|----|--------------|
+| MH-01 | Kachelplatzierung mit Regelvalidierung |
+| MH-02 | Feature-System (Stadt/Straße/Kloster/Feld, Merge/Union) |
+| MH-03 | Meeple-System + Wertung (mid-/end-game) |
+| MH-04 | Hot-Seat-Multiplayer (2–5 Spieler) |
+| MH-05 | Einfacher KI-Gegner (zufallsbasiert) |
+| MH-06 | 2D-GUI als Electron-Desktop-App |
+| MH-07 | Spielende + Endabrechnung |
+| MH-08 | Spielfeld zoomen & verschieben |
+| MH-09 | Session-Persistenz |
 
-### 4.2 Pflicht-Erweiterungen — erledigt
+### 3.4.2 Pflicht-Erweiterungen — erledigt
 
-| ID | Arbeitspaket | Status |
-|----|--------------|--------|
-| EW-01 | **Netzwerk-Multiplayer** — Client-Server mit autoritativem Backend (REST + WebSocket/Polling) |  |
-| EW-01b | Online-/Cloud-Multiplayer — Spiel-Code-Beitritt, serverseitige Persistenz |  |
-| EW-02 | **Intelligenter KI-Agent (Reasoning AI)** — OpenAI-kompatibles LLM (z. B. OpenRouter/Custom-Endpunkt) mit Tool-Use über MCP-Server |  |
-| EW-02b | Heuristik-/Greedy-KI — eigene Spielstufe + Fallback ohne API-Key/Timeout |  |
+| ID | Arbeitspaket |
+|----|--------------|
+| EW-01 | **Netzwerk-Multiplayer** — Client-Server mit autoritativem Backend (REST + WebSocket/Polling) |
+| EW-01b | Online-/Cloud-Multiplayer — Spiel-Code-Beitritt, serverseitige Persistenz |
+| EW-02 | **Intelligenter KI-Agent (Reasoning AI)** — OpenAI-kompatibles LLM (z. B. OpenRouter/Custom-Endpunkt) mit Tool-Use über MCP-Server |
+| EW-02b | Heuristik-/Greedy-KI — eigene Spielstufe + Fallback ohne API-Key/Timeout |
 
 > **Architektur-Entscheidung:** EW-01 wurde statt P2P-WebSocket als **Client-Server-Modell**
 > umgesetzt (autoritatives Backend = einfachere Synchronisation, weniger Cheating-Risiko).
 > Das ursprünglich skizzierte Vercel-Deployment wurde durch ein **VPS-Deployment** (OPS-02) ersetzt.
 
-### 4.3 Qualitätssicherung
+### 3.4.3 Qualitätssicherung
 
-| ID | Arbeitspaket | Status |
-|----|--------------|--------|
-| QS-01 | Testsystem-Dokumentation (`docs/`, `specs/08_testing.md`) |  |
-| QS-02 | Unit- & Integrationstests (Vitest) |  |
-| QS-03 | E2E-Automatisierung (Playwright) + YAML-Szenario-Framework |  |
-| QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug |  |
-| ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ | verworfen* |
+| ID | Arbeitspaket |
+|----|--------------|
+| QS-01 | Testsystem-Dokumentation (`docs/`, `specs/08_testing.md`) |
+| QS-02 | Unit- & Integrationstests (Vitest) |
+| QS-03 | E2E-Automatisierung (Playwright) + YAML-Szenario-Framework |
+| QS-05 | Tile-Lab — Entwicklungs-/Visualisierungswerkzeug |
+| ~~QS-04~~ | ~~Formale Code-Metriken (McCabe/Halstead)~~ — verworfen* |
 
 > **QS-03 (E2E):** Stakeholder-Anforderung aus Meeting #1; technische Umsetzung (Playwright,
 > YAML-Szenario-Framework, CI-Gate) erfolgte **erst kurz vor Meeting #4**.
 
 *\* QS-04 wurde bewusst nicht formal umgesetzt; der QS-Nachweis erfolgt stattdessen über
 **50 automatisierte Tests + CI-Gating + Code-Reviews**. Begründung & Konsequenz siehe
-[Kapitel 06 §4](06_qualitaetssicherung.md).*
+[Kapitel 07 §7.4](07_qualitaetssicherung.md).*
 
-### 4.4 DevOps / Betrieb (nachträglich erfasst)
+### 3.4.4 DevOps / Betrieb (nachträglich erfasst)
 
-| ID | Arbeitspaket | Status |
-|----|--------------|--------|
-| OPS-01 | CI/CD-Pipeline (GitHub Actions: Szenario-Tests, Desktop-Build, Deploy) |  |
-| OPS-02 | Produktiv-/Staging-Deployment auf VPS (PM2, rsync, SSH) |  |
-| OPS-03 | Electron-Desktop-Pakete (macOS `.dmg`) |  |
+| ID | Arbeitspaket |
+|----|--------------|
+| OPS-01 | CI/CD-Pipeline (GitHub Actions: Szenario-Tests, Desktop-Build, Deploy) |
+| OPS-02 | Produktiv-/Staging-Deployment auf VPS (PM2, rsync, SSH) |
+| OPS-03 | Electron-Desktop-Pakete (macOS `.dmg`) |
 
-### 4.5 Optionale Zusatzpakete (über die Pflicht hinaus)
+### 3.4.5 Optionale Zusatzpakete (über die Pflicht hinaus)
 
-| ID | Arbeitspaket | Status |
-|----|--------------|--------|
-| OPT-05 | 3D-Spielbrett (Three.js/R3F) + 2D/3D-Umschaltung |  |
-| OPT-06 | Prozedurale 3D-Kachelgenerierung aus der Kachel-Topologie |  |
-| OPT-07 | Menü-/UI-Theming (Medieval) + animierter GameShowcase |  |
-| OPT-08 | Mobile-/Responsive-Layout (Touch, drag-to-place) |  |
+| ID | Arbeitspaket |
+|----|--------------|
+| OPT-05 | 3D-Spielbrett (Three.js/R3F) + 2D/3D-Umschaltung |
+| OPT-06 | Prozedurale 3D-Kachelgenerierung aus der Kachel-Topologie |
+| OPT-07 | Menü-/UI-Theming (Medieval) + animierter GameShowcase |
+| OPT-08 | Mobile-/Responsive-Layout (Touch, drag-to-place) |
 
 **Verworfen / nicht umgesetzt (Archiv):** OPT-01 Großer Meeple · OPT-02 2.5D-CSS (durch
 echtes 3D ersetzt) · OPT-03 Erweiterungsfiguren · OPT-04 Android-Port · QS-04 Code-Metriken.
 
 ---
 
-## 5. Validierung & Verifikation
+## 3.5. Validierung & Verifikation
 
 Die Qualitätssicherung adressiert beide QS-Dimensionen:
 
@@ -171,7 +171,7 @@ Die Qualitätssicherung adressiert beide QS-Dimensionen:
 
 ---
 
-## 6. Abnahmekriterien (final erfüllt)
+## 3.6. Abnahmekriterien (final erfüllt)
 
 - [x] Alle Must-Haves vollständig implementiert und getestet
 - [x] 2 Erweiterungen stabil: Netzwerk-Multiplayer + Intelligenter KI-Agent
@@ -183,4 +183,4 @@ Die Qualitätssicherung adressiert beide QS-Dimensionen:
 
 ---
 
-Weiter mit **[Kapitel 03 — Architektur & Design](03_architektur-design.md)**
+Weiter mit **[Kapitel 04 — Architektur & Design](04_architektur-design.md)**

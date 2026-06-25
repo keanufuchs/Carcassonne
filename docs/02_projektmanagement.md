@@ -1,19 +1,19 @@
-# 01 — Projektmanagement & Vorgehensweise
+# 02 — Projektmanagement & Vorgehensweise
 
 > Wahl der Vorgehensweise, Stakeholder-Kommunikation, Feedback-Zyklen und der
 > Git-/Release-Workflow — **mit Begründungen**.
 
 ---
 
-## 1. Wahl der Vorgehensweise: agil (Scrum-orientiert)
+## 2.1. Wahl der Vorgehensweise: agil (Scrum-orientiert)
 
-### 1.1 Entscheidung
+### 2.1.1 Entscheidung
 
 Das Projekt wurde nach einem **agilen, an Scrum angelehnten Vorgehensmodell**
 durchgeführt. Die vier Stakeholder-Meetings fungieren als **Sprint-/Inkrement-Reviews**;
 jedes Meeting liefert Feedback, das direkt in den Backlog zurückfließt.
 
-### 1.2 Begründung (agil vs. klassisch)
+### 2.1.2 Begründung (agil vs. klassisch)
 
 
 | Kriterium                             | Klassisch (Wasserfall) | **Agil (gewählt)**              |
@@ -34,11 +34,11 @@ kurz vor Meeting #4 umgesetzt** — siehe Feedback-Zyklen unten).
 
 Als **Ersatz für ein klassisches Lasten-/Pflichtenheft** wurde — mit Freigabe des
 Stakeholders in Meeting #4 — eine **agile Anforderungsdokumentation** aus *Epics →
-User Stories → Tasks* erstellt (siehe [Kapitel 02](02_anforderungen.md)).
+User Stories → Tasks* erstellt (siehe [Kapitel 03](03_anforderungen.md)).
 
 ---
 
-## 2. Werkzeuge & Organisation
+## 2.2. Werkzeuge & Organisation
 
 
 | Zweck                                       | Werkzeug                                   |
@@ -72,7 +72,7 @@ zweite Person** (Tester ≠ Entwickler, gemäß QS-Vorgaben).
 
 ---
 
-## 3. Stakeholder-Meetings (4 von 4)
+## 2.3. Stakeholder-Meetings (4 von 4)
 
 Die Vorgaben verlangen **mindestens 4 Stakeholder-Updates**. Alle vier wurden
 durchgeführt; jedes mit lauffähiger Demo und Statusbericht.
@@ -88,7 +88,7 @@ durchgeführt; jedes mit lauffähiger Demo und Statusbericht.
 
 ---
 
-## 4. Feedback-Zyklen (Inkrement → Review → Backlog)
+## 2.4. Feedback-Zyklen (Inkrement → Review → Backlog)
 
 Jedes Meeting ist ein Review-Punkt; das Feedback wird unmittelbar in den Backlog
 eingearbeitet:
@@ -112,9 +112,9 @@ flowchart LR
 
 ---
 
-## 5. Git- & Release-Workflow
+## 2.5. Git- & Release-Workflow
 
-### 5.1 Branch-Modell (GitFlow)
+### 2.5.1 Branch-Modell (GitFlow)
 
 ```mermaid
 flowchart TD
@@ -138,13 +138,13 @@ flowchart TD
 
 Vollständige Regeln: `[specs/10_git-workflow.md](../specs/10_git-workflow.md)`.
 
-### 5.2 Conventional Commits & SemVer
+### 2.5.2 Conventional Commits & SemVer
 
 Commit-Format: `type(scope): description` (z. B. `feat(ai): add MCP tool-use`).
 Versionsableitung: `feat` → MINOR, `fix`/`perf` → PATCH, Breaking Change → MAJOR.
 **Tags ausschließlich auf `main`** und nur als annotierte semantische Tags (`vX.Y.Z`).
 
-### 5.3 Versionierung & realer Release-Stand
+### 2.5.3 Versionierung & realer Release-Stand
 
 `v1.0.0` war als *erster finaler Release* definiert; im Projektverlauf wurden iterative
 Dev-Tags (`v0.1.0`–`v0.6.0`) sowie Stakeholder-Tags (`stakeholder-v3-2026-06-01`)
@@ -158,7 +158,7 @@ zur **internen Meilenstein-Steuerung** verwendet.
 
 ---
 
-## 6. Rollout
+## 2.6. Rollout
 
 - **CI/CD** (GitHub Actions): Szenario-/E2E-Tests als Merge-Gate, Desktop-Builds,
 automatisches Deployment.
@@ -166,12 +166,12 @@ automatisches Deployment.
 - **Desktop-Pakete** via `electron-builder` (z. B. macOS `.dmg`).
 - **Abschlusspräsentation** am 22.06.2026.
 
-Details siehe [Kapitel 06 §5 (CI/CD)](06_qualitaetssicherung.md) und
-[Kapitel 07 (Start/Build)](07_installation-start.md).
+Details siehe [Kapitel 07 §7.5 (CI/CD)](07_qualitaetssicherung.md) und
+[Kapitel 08 (Start/Build)](08_installation-start.md).
 
 ---
 
-## 7. Umgang mit Unsicherheiten & Risiken
+## 2.7. Umgang mit Unsicherheiten & Risiken
 
 Bei fehlenden/widersprüchlichen Informationen galt die Regel: vorhandene Doku prüfen →
 frühere Stakeholder-Ergebnisse prüfen → Unsicherheit dokumentieren → **konservativste,
@@ -186,4 +186,4 @@ nachvollziehbarste Entscheidung** treffen → ggf. Klärungspunkt fürs nächste
 
 ---
 
-Weiter mit **[Kapitel 02 — Anforderungen (agiles Pflichtenheft)](02_anforderungen.md)**
+Weiter mit **[Kapitel 03 — Anforderungen (agiles Pflichtenheft)](03_anforderungen.md)**

@@ -1,8 +1,8 @@
-# 09 — Glossar & Anhang
+# 10 — Glossar & Anhang
 
 ---
 
-## 1. Glossar
+## 10.1. Glossar
 
 ### Spielbegriffe
 
@@ -37,7 +37,7 @@
 
 ---
 
-## 2. Arbeitspaket-Kürzel
+## 10.2. Arbeitspaket-Kürzel
 
 | Präfix | Bedeutung |
 |--------|-----------|
@@ -52,7 +52,7 @@
 
 ---
 
-## 3. Abnahmekriterien (final erfüllt)
+## 10.3. Abnahmekriterien (final erfüllt)
 
 - [x] Alle Must-Haves vollständig implementiert und getestet
 - [x] 2 Erweiterungen stabil: Netzwerk-Multiplayer (EW-01) + Intelligenter KI-Agent (EW-02)
@@ -64,7 +64,7 @@
 
 ---
 
-## 4. Release- & Meilenstein-Übersicht
+## 10.4. Release- & Meilenstein-Übersicht
 
 | Datum | Meilenstein |
 |-------|-------------|
@@ -79,11 +79,11 @@
 
 > **Versionierungshinweis:** Maßgeblicher öffentlicher Release ist **`v1.0.0`**. Frühere
 > Dev-Tags (`v0.1.0`–`v0.6.0`, `stakeholder-v3-2026-06-01`) waren interne
-> Planungs-Meilensteine (siehe [Kapitel 01 §5.3](01_projektmanagement.md)).
+> Planungs-Meilensteine (siehe [Kapitel 02 §2.5.3](02_projektmanagement.md)).
 
 ---
 
-## 5. Quellen- & Verweisverzeichnis
+## 10.5. Quellen- & Verweisverzeichnis
 
 ### Im Repository
 
@@ -112,7 +112,7 @@
 
 ---
 
-## 6. Team & Rollen
+## 10.6. Team & Rollen
 
 Das Projekt wurde als selbstorganisiertes Studierendenteam (3–6 Personen) umgesetzt; die
 Implementierung war auf alle Mitglieder verteilt. Für die Qualitätssicherung galt das
