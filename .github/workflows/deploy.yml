@@ -33,10 +33,10 @@ jobs:
         env:
           VITE_WS_URL: wss://carcassonne.spelk.de/ws
           VITE_API_URL: https://carcassonne.spelk.de
-          # Intelligent AI agent (EW-02) — baked into the client bundle.
-          # NOTE: VITE_* vars are exposed in the public JS bundle.
-          VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
-          VITE_AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          # Reasoning AI (EW-02): the LLM call now runs SERVER-SIDE (server/aiService.ts),
+          # so the API key must NOT be baked into the public client bundle. Only the
+          # (non-sensitive) model list is exposed, for the setup dropdown. The key is
+          # injected into the backend in the "Deploy backend to VPS" step below.
           VITE_AI_MODELS: ${{ vars.VITE_AI_MODELS }}
           VITE_BUILD_ID: ${{ github.sha }}
 
@@ -45,16 +45,36 @@ jobs:
 
       - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1
+        env:
+          # Server-side Reasoning-AI credentials (EW-02). Reuses the existing
+          # secret/vars; forwarded into the remote shell via `envs:` below. The key
+          # stays on the server and is never shipped in the client bundle.
+          AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
+          AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          AI_MODELS: ${{ vars.VITE_AI_MODELS }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: AI_API_KEY,AI_BASE_URL,AI_MODELS
           script: |
             set -e
             cd /var/www/carcassonne-app
 
             git fetch origin main
             git reset --hard origin/main
+
+            # Persist server-side AI credentials to .env (read by server/loadEnv.ts).
+            # Upsert the AI_* keys without clobbering any other existing entries.
+            touch .env
+            grep -v -E '^(AI_API_KEY|AI_BASE_URL|AI_MODELS)=' .env > .env.tmp || true
+            {
+              echo "AI_API_KEY=${AI_API_KEY}"
+              echo "AI_BASE_URL=${AI_BASE_URL}"
+              echo "AI_MODELS=${AI_MODELS}"
+            } >> .env.tmp
+            mv .env.tmp .env
+            chmod 600 .env
 
             rm -rf node_modules
             npm ci
@@ -98,8 +118,9 @@ jobs:
         env:
           VITE_WS_URL: wss://carcassonne.dev.spelk.de/ws
           VITE_API_URL: https://carcassonne.dev.spelk.de
-          VITE_AI_API_KEY: ${{ secrets.VITE_AI_API_KEY }}
-          VITE_AI_BASE_URL: ${{ vars.VITE_AI_BASE_URL }}
+          # See production build above: the AI key is server-side only; the client
+          # bundle gets just the model list. Staging deploys frontend only — the
+          # staging backend must have AI_API_KEY/AI_BASE_URL/AI_MODELS in its env.
           VITE_AI_MODELS: ${{ vars.VITE_AI_MODELS }}
           VITE_BUILD_ID: ${{ github.sha }}
 
