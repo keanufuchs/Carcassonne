@@ -114,7 +114,7 @@ Spalte **Herkunft**: *Anforderung* = aus Aufgabenstellung, *M#n* = aus Stakehold
 |----|--------------|
 | EW-01 | **Netzwerk-Multiplayer** — Client-Server mit autoritativem Backend (REST + WebSocket/Polling) |
 | EW-01b | Online-/Cloud-Multiplayer — Spiel-Code-Beitritt, serverseitige Persistenz |
-| EW-02 | **Intelligenter KI-Agent (Reasoning AI)** — OpenAI-kompatibles LLM (z. B. OpenRouter/Custom-Endpunkt) mit Tool-Use über MCP-Server |
+| EW-02 | **Intelligenter KI-Agent (Reasoning AI)** — OpenAI-kompatibles LLM (z. B. OpenRouter/Custom-Endpunkt) mit Tool-Use; LLM-Aufruf serverseitig (API-Key bleibt am Server) |
 | EW-02b | Heuristik-/Greedy-KI — eigene Spielstufe + Fallback ohne API-Key/Timeout |
 
 > **Architektur-Entscheidung:** EW-01 wurde statt P2P-WebSocket als **Client-Server-Modell**

@@ -1,3 +1,4 @@
+import './loadEnv.js'; // populate process.env from .env before anything reads it
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer } from 'http';
 import { fileURLToPath } from 'url';

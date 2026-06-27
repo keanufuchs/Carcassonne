@@ -58,14 +58,16 @@ src/
     index.ts            ← executeAITurn(): orchestriert einen KI-Zug
     random.ts           ← Zufalls-KI (MH-05)
     heuristic.ts        ← Heuristik-/Greedy-KI (EW-02b, Fallback)
-    intelligent.ts      ← LLM-Agent (EW-02) via MCP-Tool-Use
+    intelligent.ts      ← Reasoning-AI-Client (EW-02): POST /api/ai/move (kein Key im Client)
   three/                ← 3D-Rendering & prozedurale Kachelgenerierung (OPT-05/06)
   ui/                   ← React-Komponenten (Board, HUD, Setup, Lobby)
 server/
-  app.ts                ← Express-REST-API
+  app.ts                ← Express-REST-API (inkl. POST /api/ai/move)
   index.ts              ← HTTP + WebSocket-Server (Port 3001)
+  aiService.ts          ← Reasoning-AI serverseitig (EW-02): LLM-Aufruf + Tool-Loop, API-Key
   mcp-ai.ts             ← MCP-AI-Analyse-Server (Port 3002)
   gameService.ts        ← serverseitige Spiel-/Session-Logik
+  loadEnv.ts            ← lädt .env in process.env (ohne externe Abhängigkeit)
   store/                ← Persistenz (Memory / Blob)
 electron/
   main.ts               ← BrowserWindow, lädt die (Web-)App
@@ -177,7 +179,7 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 | **Meeples am `Feature`** | Meeples an Kachel/GameState | Belegung & Eigentum sind Feature-lokal → korrektes Merging/Scoring. |
 | **Controller mit Pub/Sub** | UI pollt Core | Entkopplung; UI reagiert auf Events; netzwerktauglich. |
 | **Client-Server-Multiplayer** | P2P-WebSocket (Peer-to-Peer) | Autoritatives Backend = einfachere Synchronisation, weniger Cheating. |
-| **KI über MCP-Tool-Use** | Prompt mit rohem Board-Dump | Strukturierte Analyse-Tools → bessere & nachvollziehbare KI-Züge; lokaler Fallback. |
+| **Reasoning AI serverseitig (Tool-Use)** | LLM-Aufruf im Browser | Strukturierte Analyse-Tools → bessere & nachvollziehbare KI-Züge; **API-Key bleibt am Server** (Client postet nur den Spielzustand); Heuristik-Fallback. |
 | **Datengesteuerte Kacheln** | Hartkodierte Kachellogik | Wartbarkeit/Erweiterbarkeit (Vorgaben §3): Verteilung als Daten (JSON/Prototypen). |
 
 ---
@@ -193,7 +195,7 @@ dieselbe Logik lokal *und* über das Netzwerk (`NetworkController`) zu betreiben
 | Desktop | **Electron + electron-builder** | macOS-Pakete aus einer Web-Codebasis. |
 | Backend | **Node + Express + ws** | REST + WebSocket für autoritativen Multiplayer (EW-01). |
 | Tests | **Vitest + Playwright** | Unit/Integration + echte Browser-E2E/Szenarien. |
-| KI | **OpenAI-kompatibles LLM + MCP** | Reasoning AI; flexibel (OpenRouter/Custom-Endpunkt), Tool-Use, Fallback. |
+| KI | **OpenAI-kompatibles LLM (serverseitig) + Tool-Use** | Reasoning AI; flexibel (Custom-Endpunkt/OpenRouter); LLM-Aufruf am Server, Heuristik-Fallback. |
 | CI | **GitHub Actions** | Test-Gate, Builds, Deploy. |
 
 ---

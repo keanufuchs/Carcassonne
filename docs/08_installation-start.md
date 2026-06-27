@@ -96,33 +96,40 @@ Die fertigen Pakete liegen anschließend im Ordner `release/`.
 ## 8.4. KI-Agent konfigurieren (optional, für EW-02)
 
 Der **Reasoning-AI-Modus** nutzt ein OpenAI-kompatibles LLM mit Tool-Use. Lege dazu
-eine `.env` an (Vorlage: `.env.example`). Es genügt **eine** der beiden Optionen:
+eine `.env` an (Vorlage: `.env.example`):
 
 ```bash
-# Option A — eigener/kompatibler Endpunkt (z. B. RH Köln, OpenAI, Ollama)
-VITE_AI_BASE_URL=https://api.ai.rh-koeln.de/v1
-VITE_AI_API_KEY=dein-key
-VITE_AI_MODELS=modell-1,modell-2        # optional: Auswahl im Setup-Screen
+# Server-seitig (NICHT VITE_-präfixiert → bleibt im Server-Prozess, nie im Browser)
+AI_BASE_URL=https://api.ai.rh-koeln.de/v1
+AI_API_KEY=dein-key
+AI_MODELS=modell-1,modell-2             # erstes Modell = Default
 
-# Option B — OpenRouter (ein Key für viele Modelle)
-VITE_OPENROUTER_API_KEY=sk-or-v1-...
-VITE_AI_MODEL=anthropic/claude-sonnet-4-6   # optional
+# Client-seitig (nur Modell-Namen, nicht sensibel) — befüllt das Setup-Dropdown
+VITE_AI_MODELS=modell-1,modell-2
 ```
+
+> **Sicherheit (wichtig):** Der API-Key ist **bewusst nicht** mit `VITE_` präfixiert.
+> Vite bettet jede `VITE_*`-Variable in das Client-Bundle ein — ein `VITE_AI_API_KEY`
+> würde also im Browser landen. Der LLM-Aufruf erfolgt deshalb **ausschließlich
+> serverseitig** (`server/aiService.ts`): Der Client schickt den Spielzustand an
+> `POST /api/ai/move`, der Server ruft das LLM auf und liefert nur den Zug zurück
+> (vgl. [04 – Architektur](04_architektur-design.md), [06 – Implementierung](06_implementierung.md)).
 
 **Ohne Konfiguration kein Problem:** Fehlt ein Key oder kommt es zu einem Timeout, fällt
 der KI-Modus **automatisch auf die Heuristik-KI** zurück (kein Absturz). Hot-Seat und die
-einfachen KI-Stufen funktionieren immer ohne `.env`.
+einfachen KI-Stufen funktionieren immer ohne `.env`. Die `.env` wird vom Server beim Start
+geladen (`server/loadEnv.ts`, ohne externe Abhängigkeit, runtime-unabhängig).
 
 ### Wichtige Umgebungsvariablen
 
 | Variable | Nötig für | Beschreibung |
 |----------|-----------|--------------|
-| `VITE_AI_BASE_URL` | Custom-LLM | OpenAI-kompatible Base-URL |
-| `VITE_AI_API_KEY` | Custom-LLM | API-Key zum Endpunkt |
-| `VITE_OPENROUTER_API_KEY` | OpenRouter | OpenRouter-Key (`sk-or-…`) |
-| `VITE_AI_MODEL` | optional | Modell-ID |
+| `AI_BASE_URL` | Reasoning AI | OpenAI-kompatible Base-URL (server-seitig) |
+| `AI_API_KEY` | Reasoning AI | API-Key zum Endpunkt (server-seitig, **nie im Client**) |
+| `AI_MODELS` | optional | Modell-Liste (komma-separiert); erstes = server-seitiger Default |
+| `VITE_AI_MODELS` | optional | Modell-Auswahl im Setup-Screen (nur Namen, nicht sensibel) |
 | `PORT` | optional | Game-Server-Port (Default 3001) |
-| `MCP_PORT` | optional | MCP-Server-Port (Default 3002) |
+| `MCP_PORT` | optional | MCP-Analyse-Server-Port (Default 3002) |
 
 ---
 
