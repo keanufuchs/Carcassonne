@@ -8,6 +8,7 @@ import {
   handleMessage,
   joinGame,
 } from './gameService.js';
+import { computeIntelligentMoveServer, isIntelligentAIConfigured } from './aiService.js';
 
 export function createApp(): express.Express {
   const app = express();
@@ -49,6 +50,23 @@ export function createApp(): express.Express {
     if (payload && 'error' in payload) { res.status(payload.status).json({ error: payload.error }); return; }
     if (!payload) { res.status(204).end(); return; }
     res.json(payload);
+  });
+
+  // Reasoning AI (EW-02). The client posts the serialized game state; the LLM
+  // provider call happens here, server-side, so the API key never reaches the
+  // browser. Returns the chosen move plus replayable status events for the UI.
+  app.get('/api/ai/status', (_req, res) => {
+    res.json({ configured: isIntelligentAIConfigured() });
+  });
+
+  app.post('/api/ai/move', async (req, res) => {
+    const { state, model } = req.body as { state?: string; model?: string };
+    if (typeof state !== 'string' || !state) { res.status(400).json({ error: 'state required' }); return; }
+    try {
+      res.json(await computeIntelligentMoveServer(state, model));
+    } catch (e) {
+      res.status(500).json({ error: e instanceof Error ? e.message : String(e) });
+    }
   });
 
   app.post('/api/games/:id/action', async (req, res) => {

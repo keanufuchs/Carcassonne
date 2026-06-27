@@ -1,3 +1,4 @@
+import './loadEnv.js'; // populate process.env from .env before anything reads it
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';

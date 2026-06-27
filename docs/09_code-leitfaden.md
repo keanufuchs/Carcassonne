@@ -86,7 +86,7 @@ sequenceDiagram
 | **Platzierungsregeln anpassen** | `src/core/board/placement.ts` (`canPlace`) | `placement.test.ts` deckt Kantenmatch/Nachbarn ab. |
 | **das Feature-Merging verstehen/ändern** | `src/core/feature/merge.ts`, `segments.ts`, `completion.ts` | Union-Find-Semantik; `merge.test.ts`. |
 | **eine neue UI-Komponente / HUD** | `src/ui/hud/`, `src/ui/board/` | Nur Präsentation; State immer über Controller-Snapshot. |
-| **die KI verbessern** | `src/ai/heuristic.ts` (Greedy) bzw. `src/ai/intelligent.ts` (LLM) | Gemeinsamer Einstieg `ai/index.ts`; MCP-Tools in `server/mcp-ai.ts`. |
+| **die KI verbessern** | `src/ai/heuristic.ts` (Greedy); LLM serverseitig in `server/aiService.ts` (Client-Adapter: `src/ai/intelligent.ts`) | Gemeinsamer Einstieg `ai/index.ts`; Analyse-Tools in `src/ai/boardAnalysis.ts` (in-process + via `server/mcp-ai.ts`). |
 | **Netzwerk-Protokoll erweitern** | `server/gameService.ts`, `server/app.ts`, `controller/NetworkController.ts` | Aktionen laufen über denselben Core; nicht duplizieren. |
 | **ein neues Regel-Szenario testen** | `tests/scenarios/*.yaml` (+ `tests/scenarios/README.md`) | `npm run test:scenarios`. |
 | **3D-Darstellung anpassen** | `src/three/` (Generatoren), `src/ui/board/Board3DView.tsx` | Kacheln werden prozedural aus der Topologie erzeugt. |
@@ -108,10 +108,10 @@ src/
     deck/, tile/ Kacheldaten & Rotation
     serialize.ts Persistenz
   controller/    GameController (lokal) + NetworkController (online) + pubsub
-  ai/            random / heuristic / intelligent + index (executeAITurn)
+  ai/            random / heuristic / intelligent(Client-Adapter) + index (executeAITurn)
   three/         3D-Rendering & prozedurale Kacheln
   ui/            React-Komponenten (board, hud, setup, lobby, hooks)
-server/          Express-REST + WebSocket + MCP-AI + Persistenz
+server/          Express-REST + WebSocket + Reasoning-AI (aiService) + MCP-AI + Persistenz
 specs/           technische Spezifikationen (Vertiefung)
 tests/, e2e/     Vitest- bzw. Playwright-/Szenario-Tests
 tile-lab/        Entwicklungswerkzeug zur Kachel-Visualisierung (QS-05)

@@ -111,32 +111,47 @@ orchestriert (`ai/index.ts`). Es gibt drei Stufen:
 |-------|-------|--------------|
 | **Zufall** (MH-05) | `random.ts` | Wählt zufällig aus allen legalen Zügen. Treiber der E2E-Vollpartien. |
 | **Heuristik** (EW-02b) | `heuristic.ts` | Regelbasierte Bewertung (Greedy); **kein API-Key nötig**; zugleich Fallback. |
-| **Intelligent / Reasoning AI** (EW-02) | `intelligent.ts` | **LLM-Agent** (OpenAI-kompatibel, z. B. OpenRouter/Custom-Endpunkt) mit **Tool-Use** über den MCP-Server. |
+| **Intelligent / Reasoning AI** (EW-02) | `intelligent.ts` (Client) + `server/aiService.ts` (Server) | **LLM-Agent** (OpenAI-kompatibel). Der LLM-Aufruf läuft **serverseitig**; der Client schickt nur den Spielzustand und erhält den Zug zurück. |
 
 ```mermaid
 flowchart TD
   T[executeAITurn] --> M{Modus}
   M -->|random| R[zufälliger legaler Zug]
   M -->|heuristic| H[Greedy-Bewertung]
-  M -->|intelligent| I[LLM ruft MCP-Analyse-Tools]
-  I -->|kein Key / Timeout / ungültig| H
+  M -->|intelligent| C[Client: POST /api/ai/move + Spielzustand]
+  C --> S[Server aiService.ts: LLM + Tool-Loop in-process]
+  S -->|Zug + Status-Events| C
+  C -->|kein Key / Timeout / ungültig| H
   R --> P[placeTile + Meeple-Wahl]
   H --> P
-  I --> P
+  C --> P
 ```
 
-**Intelligenter Agent (EW-02):** Das LLM bekommt nicht das rohe Brett, sondern ruft über
-den **MCP-Server** (Port 3002) gezielte Analyse-Tools auf:
+**Intelligenter Agent (EW-02) — "Online-Gegner"-Architektur:** Der Client behandelt die
+Reasoning AI wie einen Netzwerk-Gegner: Er serialisiert den Spielzustand und sendet ihn an
+**`POST /api/ai/move`** (`server/app.ts`). Den eigentlichen **LLM-Aufruf** und den
+**Tool-Loop** führt der Server in **`server/aiService.ts`** aus — der **API-Key bleibt damit
+ausschließlich auf dem Server** (vgl. [08 – KI-Setup](08_installation-start.md)). Der Server
+liefert den gewählten Zug plus eine Liste von Status-Events zurück, die der Client für die
+Live-Anzeige (`AIStatusPanel`) abspielt.
 
-| MCP-Tool | Liefert |
+Das LLM bekommt nicht das rohe Brett, sondern ruft gezielte Analyse-Tools auf. Diese werden
+serverseitig **in-process** ausgeführt (kein HTTP-Umweg):
+
+| Tool | Liefert |
 |----------|---------|
 | `list_legal_moves` | alle gültigen Platzierungen der aktuellen Kachel |
 | `get_board_features` | Städte/Straßen/Klöster inkl. Meeple-Eigentum |
 | `get_player_status` | Punkte, Meeple-Vorräte, verbleibende Kacheln |
+| `get_meeple_targets` | legal beanspruchbare Segmente eines geplanten Zugs |
 
-**Robustheit (US-A3):** Fehlt ein API-Key oder läuft die Anfrage in einen Timeout / liefert
-einen ungültigen Zug, fällt der Agent **automatisch auf die Heuristik** zurück — **kein
-Absturz**. Der MCP-Server ist optional; ohne ihn führt der Agent dieselben Tools lokal aus.
+Dieselben Tool-Funktionen (`src/ai/boardAnalysis.ts`) stellt der **MCP-Server** (Port 3002)
+zusätzlich über HTTP bereit — für externe MCP-Clients und das Tool-Logging.
+
+**Robustheit (US-A3):** Fehlt ein API-Key, läuft die Anfrage in einen Timeout oder liefert
+einen ungültigen Zug, fällt der Client **automatisch auf die Heuristik** zurück — **kein
+Absturz**. Die Konfigurationsprüfung erfolgt serverseitig; der Client braucht keinerlei
+Credentials.
 
 ---
 
