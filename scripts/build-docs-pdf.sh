@@ -13,6 +13,9 @@ command -v mmdc >/dev/null || { echo "mmdc not found (npm i -g @mermaid-js/merma
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
+# Date shown on the cover page — current day in German DD.MM.YYYY format.
+BUILD_DATE="$(date +%d.%m.%Y)"
+
 IMG_DIR="$WORK/mermaid"
 MD_DIR="$WORK/md"
 mkdir -p "$IMG_DIR" "$MD_DIR"
@@ -178,6 +181,6 @@ pandoc "${PROCESSED[@]}" \
   -V linkcolor=blue \
   -V urlcolor=blue \
   --metadata title="Carcassonne Projektdokumentation" \
-  --metadata date="Stand: 22.06.2026"
+  --metadata date="Stand: $BUILD_DATE"
 
 echo "Wrote $OUT ($(du -h "$OUT" | cut -f1))"
